@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Icon, Avatar } from "@/components/ui";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { SettingsMenu } from "@/components/settings/SettingsMenu";
+import { Messages } from "@/components/screens/shared/Messages";
 import type { Role } from "@/lib/types";
 
 interface NavItem {
@@ -69,6 +70,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const { role, logout } = useSettings();
   const [open, setOpen] = useState(false); // mobile drawer
   const [collapsed, setCollapsed] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false); // fullscreen overlay
 
   useEffect(() => {
     try {
@@ -96,6 +98,10 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const navTo = (path: string) => {
     router.push(path);
+    setOpen(false);
+  };
+  const openMessages = () => {
+    setMessagesOpen(true);
     setOpen(false);
   };
   const onLogout = () => {
@@ -127,7 +133,7 @@ export function Shell({ children }: { children: ReactNode }) {
             return (
               <button
                 key={n.key}
-                onClick={() => navTo(n.path)}
+                onClick={() => (n.key === "mensajes" ? openMessages() : navTo(n.path))}
                 title={mini ? n.label : undefined}
                 style={{
                   display: "flex",
@@ -217,6 +223,25 @@ export function Shell({ children }: { children: ReactNode }) {
         </header>
         <main style={{ flex: 1, overflow: "auto", padding: "clamp(16px, 2.5vw, 28px)" }}>{children}</main>
       </div>
+
+      {messagesOpen ? (
+        <div style={{ position: "fixed", inset: 0, zIndex: 90, background: "var(--surface-page)", display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderBottom: "1px solid var(--border-subtle)", background: "var(--surface-card)", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+              <span style={{ width: 34, height: 34, borderRadius: "var(--radius-md)", background: "var(--primary-100)", color: "var(--primary-600)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name="chat" size={20} />
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-strong)" }}>Mensajes</span>
+            </div>
+            <button onClick={() => setMessagesOpen(false)} aria-label="Cerrar" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, border: "1px solid var(--border-default)", background: "var(--surface-sunken)", borderRadius: "var(--radius-md)", cursor: "pointer", color: "var(--text-strong)" }}>
+              <Icon name="x" size={18} />
+            </button>
+          </div>
+          <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+            <Messages embedded />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
