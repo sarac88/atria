@@ -372,7 +372,6 @@ a { color: var(--text-link); }
   .atria-collapse-wrap { display: none !important; }
   .atria-2col { grid-template-columns: 1fr !important; }
   .atria-classgrid3 { grid-template-columns: repeat(2, 1fr) !important; }
-  .atria-search { display: none !important; }
   .atria-login-brand { display: none !important; }
   .atria-msg { grid-template-columns: 1fr !important; height: auto !important; }
 }

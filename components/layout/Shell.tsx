@@ -7,7 +7,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, Avatar } from "@/components/ui";
 import { useSettings } from "@/components/settings/SettingsContext";
-import { SettingsMenu } from "@/components/settings/SettingsMenu";
 import { Messages } from "@/components/screens/shared/Messages";
 import type { Role } from "@/lib/types";
 
@@ -207,11 +206,6 @@ export function Shell({ children }: { children: ReactNode }) {
             <span style={{ fontSize: 20, fontWeight: 700, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
           </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="atria-search" style={{ display: "flex", alignItems: "center", gap: 8, height: 40, padding: "0 14px", background: "var(--surface-page)", borderRadius: "var(--radius-pill)", width: 220 }}>
-              <Icon name="search" size={18} color="var(--text-muted)" />
-              <input placeholder="Buscar…" style={{ border: "none", background: "transparent", outline: "none", fontFamily: "var(--font-sans)", fontSize: 14, color: "var(--text-strong)", width: "100%" }} />
-            </div>
-            <SettingsMenu />
             <button aria-label="Notificaciones" style={{ position: "relative", border: "none", background: "var(--surface-page)", width: 40, height: 40, borderRadius: "50%", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               <Icon name="bell" size={20} color="var(--text-strong)" />
               <span style={{ position: "absolute", top: 6, right: 7, minWidth: 8, height: 8, borderRadius: "50%", background: "var(--status-error)", border: "2px solid var(--surface-page)" }} />
