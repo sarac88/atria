@@ -5,6 +5,7 @@ import { Icon, Badge, Button } from "@/components/ui";
 import { Chip, EmptyState, ClassShell } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
 import { modules } from "@/lib/data";
+import { useActivities } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import type { BadgeColor, ClassInfo } from "@/lib/types";
 
@@ -20,12 +21,14 @@ export interface StudentClassProps {
   onBack: () => void;
   onProfile: () => void;
   onLogout: () => void;
-  onSubmit: () => void;
+  onSubmit: (activityId: string) => void;
 }
 
 export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: StudentClassProps) {
   const { role } = useSettings();
   const c = klass;
+  const { data: activities } = useActivities(c.id);
+  const firstActivityId = activities?.[0]?.id;
   const [tab, setTab] = useState("contenido");
   const [selMod, setSelMod] = useState<string | null>(modules[0]?.id ?? null);
   const curMod = modules.find((m) => m.id === selMod) || modules[0];
@@ -100,7 +103,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
                       <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{it.meta}</div>
                     </div>
                     {it.label.includes("Ensayo") ? (
-                      <Button size="small" variant="accent" onClick={onSubmit}>Entregar</Button>
+                      <Button size="small" variant="accent" disabled={!firstActivityId} onClick={() => firstActivityId && onSubmit(firstActivityId)}>Entregar</Button>
                     ) : it.state ? (
                       <Badge color={badgeColor[it.state] || "default"}>{it.state}</Badge>
                     ) : (
@@ -113,7 +116,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
           ) : null}
         </div>
       ) : tab === "notas" ? (
-        <StudentGradesTable />
+        <StudentGradesTable classId={c.id} />
       ) : (
         <EmptyState
           illo={tab === "foro" ? "empty-messages" : "empty-submissions"}

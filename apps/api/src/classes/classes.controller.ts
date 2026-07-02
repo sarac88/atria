@@ -21,6 +21,24 @@ export class ClassesController {
     return this.classes.findOne(id);
   }
 
+  @Get(":id/activities")
+  @UseGuards(ClassMembershipGuard)
+  activities(@Param("id") id: string) {
+    return this.classes.listActivities(id);
+  }
+
+  @Get(":id/gradebook")
+  @UseGuards(ClassMembershipGuard)
+  gradebook(@Param("id") id: string) {
+    return this.classes.gradebook(id);
+  }
+
+  @Get(":id/my-submissions")
+  @UseGuards(ClassMembershipGuard)
+  mySubmissions(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.classes.mySubmissions(id, user.userId);
+  }
+
   @Post()
   @UseGuards(RolesGuard)
   @Roles("docente")

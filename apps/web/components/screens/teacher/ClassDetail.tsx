@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { DataTable, Badge, Button, Icon, Avatar, type Column } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { DataTable, Badge, Button, Icon, Avatar, Select, type Column } from "@/components/ui";
 import { Chip, Panel, EmptyState, ClassShell, ProgressBar } from "@/components/layout";
 import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
 import { GradeModal } from "@/components/modals/GradeModal";
-import { activities, submissions, modules, students } from "@/lib/data";
+import { modules, students } from "@/lib/data";
+import { useActivities, useGradebook, useGradeSubmission, useSubmissions } from "@/lib/api/classwork";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
-import type { BadgeColor, ClassInfo, Module, ModuleItem, Submission } from "@/lib/types";
+import type { BadgeColor, ClassInfo, Module, ModuleItem, SubmissionDto } from "@/lib/types";
 
 const statusMap: Record<string, BadgeColor> = { Entregado: "success", Pendiente: "warning", Atrasado: "error", Borrador: "default" };
 
@@ -157,6 +158,7 @@ function ClassStudents() {
 }
 
 function ClassOverview({ c }: { c: ClassInfo }) {
+  const { data: activities } = useActivities(c.id);
   const details = [
     { icon: "academic-cap", label: "Código", value: c.code, tint: "var(--primary-100)", fg: "var(--primary-600)" },
     { icon: "home", label: "Aula", value: c.room, tint: "var(--info-100)", fg: "var(--info-600)" },
@@ -183,7 +185,7 @@ function ClassOverview({ c }: { c: ClassInfo }) {
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 22, alignItems: "stretch" }} className="atria-2col">
         <Panel title="Actividades">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {activities.map((a) => {
+            {(activities ?? []).map((a) => {
               const [tIcon, tColor] = typeMeta(a.type);
               return (
                 <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)" }}>
@@ -227,15 +229,28 @@ export interface ClassDetailProps {
 export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity }: ClassDetailProps) {
   const { role, modLayout } = useSettings();
   const [tab, setTab] = useState("resumen");
-  const [gradeSub, setGradeSub] = useState<Submission | null>(null);
+  const [gradeSub, setGradeSub] = useState<SubmissionDto | null>(null);
   const c = klass;
 
-  const subCols: Column<Submission>[] = [
+  const { data: activities } = useActivities(c.id);
+  const [activityId, setActivityId] = useState<string>("");
+  useEffect(() => {
+    if (!activityId && activities && activities.length) setActivityId(activities[0].id);
+  }, [activities, activityId]);
+  const { data: subs } = useSubmissions(activityId || undefined);
+  const gradebook = useGradebook(c.id);
+  const gradeMut = useGradeSubmission(activityId || undefined, c.id);
+
+  const rows = subs ?? [];
+  const pendientes = rows.filter((r) => r.status !== "Entregado").length;
+  const selectedActivity = (activities ?? []).find((a) => a.id === activityId);
+
+  const subCols: Column<SubmissionDto>[] = [
     { key: "student", label: "Alumno", render: (v) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={v as string} size="sm" /> <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)" }}>{v as string}</span></span> },
     { key: "date", label: "Entrega" },
     { key: "status", label: "Estado", render: (v) => <Badge color={statusMap[v as string]}>{v as string}</Badge> },
     { key: "grade", label: "Nota", render: (v) => <span style={{ fontWeight: 700, color: v === "—" ? "var(--text-muted)" : "var(--text-strong)" }}>{v as string}</span> },
-    { key: "actions", label: "", sortable: false, align: "right", render: (_, r) => <Button size="small" variant={r.grade === "—" ? "accent" : "outline"} onClick={() => setGradeSub(r)}>{r.grade === "—" ? "Calificar" : "Revisar"}</Button> },
+    { key: "actions", label: "", sortable: false, align: "right", render: (_, r) => (r.id.startsWith("pending-") ? <span style={{ fontSize: 13, color: "var(--text-muted)" }}>—</span> : <Button size="small" variant={r.grade === "—" ? "accent" : "outline"} onClick={() => setGradeSub(r)}>{r.grade === "—" ? "Calificar" : "Revisar"}</Button>) },
   ];
 
   return (
@@ -264,26 +279,37 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity 
         {tab === "modulos" ? <ClassModules layout={modLayout} /> : null}
         {tab === "entregas" ? (
           <DataTable
-            title="Entregas · Explica tu idea: límites"
+            title={`Entregas · ${selectedActivity?.title ?? "Actividad"}`}
             rowKey="id"
             columns={subCols}
-            rows={submissions}
+            rows={rows}
             selectable={false}
             toolbar={
               <>
-                <Chip icon="clock">3 pendientes</Chip>
+                <div className="atria-selectwrap" style={{ width: 240 }}>
+                  <Select value={activityId} options={(activities ?? []).map((a) => ({ label: a.title, value: a.id }))} onChange={setActivityId} placeholder="Actividad" />
+                </div>
+                <Chip icon="clock">{pendientes} pendientes</Chip>
                 <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
               </>
             }
           />
         ) : null}
-        {tab === "calificaciones" ? <GradebookTable compact /> : null}
+        {tab === "calificaciones" ? <GradebookTable data={gradebook.data} /> : null}
         {tab === "alumnos" ? <ClassStudents /> : null}
         {tab === "foro" ? (
           <EmptyState illo="empty-messages" title="Aún no hay temas en el foro" text="Abre el primer hilo para que tus alumnos puedan plantear dudas y debatir." action={<Button variant="accent" iconLeft={<Icon name="plus" />}>Nuevo tema</Button>} />
         ) : null}
       </ClassShell>
-      {gradeSub ? <GradeModal submission={gradeSub} onClose={() => setGradeSub(null)} /> : null}
+      {gradeSub ? (
+        <GradeModal
+          submission={gradeSub}
+          onClose={() => setGradeSub(null)}
+          onSave={async (score, feedback) => {
+            await gradeMut.mutateAsync({ id: gradeSub.id, score, feedback });
+          }}
+        />
+      ) : null}
     </>
   );
 }

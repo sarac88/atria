@@ -130,6 +130,38 @@ export interface ClassDetailDto extends ClassInfo {
   roster: Student[];
 }
 
+/** A submission row for the teacher's Entregas table and the student's own view. */
+export interface SubmissionDto {
+  id: string;
+  studentId: string;
+  student: string;
+  activityId: string;
+  activity: string;
+  status: "Entregado" | "Pendiente" | "Atrasado";
+  date: string;
+  grade: string;
+  feedback: string;
+  late: boolean;
+}
+
+export interface GradebookColumn {
+  id: string;
+  title: string;
+}
+
+export interface GradebookRow {
+  studentId: string;
+  student: string;
+  cells: (number | null)[];
+  avg: number | null;
+}
+
+/** Grade matrix for GET /classes/:id/gradebook. */
+export interface GradebookDto {
+  columns: GradebookColumn[];
+  rows: GradebookRow[];
+}
+
 // ---- Zod contracts (shared validation, doc §3–§4) --------------------------
 
 export const loginSchema = z.object({
@@ -148,3 +180,14 @@ export const createClassSchema = z.object({
   desc: z.string().optional().default(""),
 });
 export type CreateClassInput = z.infer<typeof createClassSchema>;
+
+export const gradeSchema = z.object({
+  score: z.number().min(0).max(10),
+  feedback: z.string().optional().default(""),
+});
+export type GradeInput = z.infer<typeof gradeSchema>;
+
+export const submitSchema = z.object({
+  fileName: z.string().optional(),
+});
+export type SubmitInput = z.infer<typeof submitSchema>;

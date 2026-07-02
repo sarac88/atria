@@ -146,6 +146,7 @@ model Submission {
   status      SubmissionStatus @default(pendiente)
   submittedAt DateTime?
   fileId      String?
+  fileName    String?
   activity    Activity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
   student     User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
   file        File?            @relation(fields: [fileId], references: [id])

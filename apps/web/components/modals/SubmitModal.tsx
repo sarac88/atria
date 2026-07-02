@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, Icon, Textarea, Badge } from "@/components/ui";
 import { Modal, Eyebrow } from "@/components/layout";
+import { useSubmitWork } from "@/lib/api/classwork";
 import type { BadgeColor } from "@/lib/types";
 
 interface Task {
@@ -18,14 +19,34 @@ interface UploadFile {
 
 const FALLBACK: Task = { title: "Ensayo de derivadas", cls: "Cálculo II", due: "Vence en 3 días", color: "warning" };
 
-export function SubmitModal({ task, onClose, onDone }: { task?: Task | null; onClose: () => void; onDone?: () => void }) {
+export function SubmitModal({
+  task,
+  activityId,
+  classId,
+  onClose,
+  onDone,
+}: {
+  task?: Task | null;
+  activityId?: string;
+  classId?: string;
+  onClose: () => void;
+  onDone?: () => void;
+}) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const t = task || FALLBACK;
+  const submit = useSubmitWork(classId);
+
+  const onEntregar = async () => {
+    if (activityId) {
+      await submit.mutateAsync({ activityId, fileName: files[0]?.name });
+    }
+    (onDone ?? onClose)();
+  };
 
   const footer = (
     <>
       <Button variant="outline" onClick={onClose}>Guardar borrador</Button>
-      <Button variant="accent" disabled={files.length === 0} onClick={onDone || onClose}>Entregar tarea</Button>
+      <Button variant="accent" disabled={files.length === 0 || submit.isPending} onClick={onEntregar}>{submit.isPending ? "Entregando…" : "Entregar tarea"}</Button>
     </>
   );
 

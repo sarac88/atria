@@ -1,27 +1,25 @@
 "use client";
 
 import { DataTable, Badge, type Column } from "@/components/ui";
+import { useMyGrades } from "@/lib/api/classwork";
+import type { SubmissionDto } from "@/lib/types";
 
-interface GradeRow {
-  id: number;
-  act: string;
-  date: string;
-  grade: string;
-  fb: string;
-}
-
-const rows: GradeRow[] = [
-  { id: 1, act: "Ensayo límites", date: "12 / 10 / 2022", grade: "8.0", fb: "Buen razonamiento" },
-  { id: 2, act: "Derivadas", date: "10 / 10 / 2022", grade: "5.0", fb: "Repasa la regla de la cadena" },
-  { id: 3, act: "Cuestionario 4", date: "18 / 10 / 2022", grade: "7.0", fb: "—" },
-];
-
-export function StudentGradesTable() {
-  const cols: Column<GradeRow>[] = [
-    { key: "act", label: "Actividad", render: (v) => <span style={{ fontWeight: 600, color: "var(--text-strong)" }}>{v as string}</span> },
+export function StudentGradesTable({ classId = "calc2" }: { classId?: string }) {
+  const { data } = useMyGrades(classId);
+  const rows = data ?? [];
+  const cols: Column<SubmissionDto>[] = [
+    { key: "activity", label: "Actividad", render: (v) => <span style={{ fontWeight: 600, color: "var(--text-strong)" }}>{v as string}</span> },
     { key: "date", label: "Fecha" },
-    { key: "fb", label: "Comentario", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{v as string}</span> },
-    { key: "grade", label: "Nota", align: "right", render: (v) => <Badge color={+(v as string) >= 7 ? "success" : +(v as string) >= 5 ? "warning" : "error"}>{v as string}</Badge> },
+    { key: "feedback", label: "Comentario", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{(v as string) || "—"}</span> },
+    {
+      key: "grade", label: "Nota", align: "right",
+      render: (v) => {
+        const g = v as string;
+        if (g === "—") return <Badge color="default">—</Badge>;
+        const n = +g;
+        return <Badge color={n >= 7 ? "success" : n >= 5 ? "warning" : "error"}>{g}</Badge>;
+      },
+    },
   ];
   return <DataTable title="Mis notas" rowKey="id" columns={cols} rows={rows} selectable={false} />;
 }

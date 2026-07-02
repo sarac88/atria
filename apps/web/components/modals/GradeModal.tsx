@@ -3,19 +3,44 @@
 import { useState } from "react";
 import { Button, Avatar, Badge, Icon, Textarea, IconButton } from "@/components/ui";
 import { Modal, Eyebrow } from "@/components/layout";
-import type { Submission } from "@/lib/types";
+import type { SubmissionDto } from "@/lib/types";
 
-const FALLBACK: Submission = { id: 0, student: "Alba García", activity: "Explica tu idea: límites", date: "12 / 10 / 2022", status: "Entregado", grade: "—", late: false };
+const FALLBACK: SubmissionDto = { id: "0", studentId: "0", student: "Alba García", activityId: "a1", activity: "Explica tu idea: límites", date: "12 / 10 / 2022", status: "Entregado", grade: "—", feedback: "", late: false };
 const quick = ["10", "9", "8", "7", "6", "5"];
 
-export function GradeModal({ submission, onClose }: { submission?: Submission | null; onClose: () => void }) {
+export function GradeModal({
+  submission,
+  onClose,
+  onSave,
+}: {
+  submission?: SubmissionDto | null;
+  onClose: () => void;
+  onSave?: (score: number, feedback: string) => Promise<void>;
+}) {
   const s = submission || FALLBACK;
   const [grade, setGrade] = useState(s.grade && s.grade !== "—" ? s.grade : "");
+  const [feedback, setFeedback] = useState(s.feedback ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const score = parseFloat(grade.replace(",", "."));
+    if (!onSave || Number.isNaN(score)) {
+      onClose();
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(score, feedback);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const footer = (
     <>
       <Button variant="outline" onClick={onClose}>Saltar</Button>
-      <Button variant="accent" onClick={onClose}>Guardar nota</Button>
+      <Button variant="accent" onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar nota"}</Button>
     </>
   );
 
@@ -57,7 +82,7 @@ export function GradeModal({ submission, onClose }: { submission?: Submission | 
               <button key={q} onClick={() => setGrade(q)} style={{ width: 38, height: 38, borderRadius: "var(--radius-sm)", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, background: grade === q ? "var(--brand-primary)" : "var(--surface-soft)", color: grade === q ? "#fff" : "var(--text-strong)" }}>{q}</button>
             ))}
           </div>
-          <Textarea label="Comentario para el alumno" rows={5} placeholder="Buen trabajo, has explicado…" />
+          <Textarea label="Comentario para el alumno" rows={5} placeholder="Buen trabajo, has explicado…" value={feedback} onChange={(e) => setFeedback(e.target.value)} />
         </div>
       </div>
     </Modal>

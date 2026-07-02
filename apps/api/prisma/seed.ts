@@ -1,4 +1,4 @@
-import { ActivityType, ClassStatus, PrismaClient } from "@prisma/client";
+import { ActivityType, ClassStatus, PrismaClient, SubmissionStatus } from "@prisma/client";
 import * as argon2 from "argon2";
 
 const prisma = new PrismaClient();
@@ -53,6 +53,29 @@ const ACTIVITIES = [
   { id: "a3", type: ActivityType.cuestionario, title: "Cuestionario 4 — Integrales", dueAt: "18 / 10 / 2022", points: 5, format: "Examen", status: ClassStatus.live, instructions: "10 preguntas de opción múltiple. Un intento, 20 minutos." },
   { id: "a4", type: ActivityType.proyecto, title: "Proyecto: aplicación real", dueAt: "30 / 10 / 2022", points: 20, format: "Archivo", status: ClassStatus.scheduled, instructions: "En grupos de 3, aplicad el cálculo a un problema real." },
 ];
+
+// Roster de Cálculo II (8 alumnos, como en el diseño). Marc Soler reutiliza u-marc.
+const ROSTER = [
+  "Alba García", "Marc Soler", "Lucía Romero", "Iker Mendoza",
+  "Nadia Khan", "Tomás Vidal", "Sara Pons", "Diego Lima",
+];
+const emailOf = (n: string) =>
+  n.toLowerCase()
+    .replace(/[áàä]/g, "a").replace(/[éè]/g, "e").replace(/[íï]/g, "i")
+    .replace(/[óö]/g, "o").replace(/[úü]/g, "u").replace(" ", ".") + "@atria.edu";
+
+// a1 "Explica tu idea" — entregas por índice de ROSTER (Marc=1 y Diego=7 → sin entrega, Pendiente).
+const A1: { i: number; status: SubmissionStatus; date: Date; grade: number | null }[] = [
+  { i: 0, status: SubmissionStatus.entregado, date: new Date(2022, 9, 12), grade: 9.0 },
+  { i: 2, status: SubmissionStatus.atrasado, date: new Date(2022, 9, 13), grade: null },
+  { i: 3, status: SubmissionStatus.entregado, date: new Date(2022, 9, 11), grade: 7.5 },
+  { i: 4, status: SubmissionStatus.entregado, date: new Date(2022, 9, 12), grade: null },
+  { i: 5, status: SubmissionStatus.entregado, date: new Date(2022, 9, 12), grade: 8.0 },
+  { i: 6, status: SubmissionStatus.entregado, date: new Date(2022, 9, 12), grade: null },
+];
+// Matriz de notas (por índice de ROSTER) para a2 (Derivadas) y a3 (Cuestionario 4).
+const A2: (number | null)[] = [8.5, 5.0, 8.0, 7.5, 5.5, 7.0, 9.0, 6.5];
+const A3: (number | null)[] = [9.5, 7.0, 8.5, 9.0, 6.0, 8.0, 9.5, null];
 
 async function main() {
   // Clean (dev seed is re-runnable). Order respects FKs.
@@ -111,7 +134,49 @@ async function main() {
     });
   }
 
-  console.log("Seed completado: 3 usuarios, 6 clases, matrículas, módulos y actividades de Cálculo II.");
+  // Roster de Cálculo II + entregas y notas.
+  const rosterIds: string[] = [];
+  for (const name of ROSTER) {
+    const email = emailOf(name);
+    const user =
+      name === "Marc Soler"
+        ? marc
+        : await prisma.user.create({ data: { name, email, passwordHash, role: "alumno" } });
+    rosterIds.push(user.id);
+    await prisma.enrollment.upsert({
+      where: { userId_classId: { userId: user.id, classId: "calc2" } },
+      update: {},
+      create: { userId: user.id, classId: "calc2", roleInClass: "student" },
+    });
+  }
+
+  const addSub = async (
+    activityId: string,
+    studentId: string,
+    status: SubmissionStatus,
+    date: Date | null,
+    grade: number | null,
+    fileName: string,
+  ) => {
+    const sub = await prisma.submission.create({
+      data: { activityId, studentId, status, submittedAt: date, fileName },
+    });
+    if (grade != null) {
+      await prisma.grade.create({
+        data: { submissionId: sub.id, score: grade, feedback: "", gradedById: elena.id },
+      });
+    }
+  };
+
+  for (const s of A1) await addSub("a1", rosterIds[s.i], s.status, s.date, s.grade, "explica-idea.pdf");
+  for (let i = 0; i < ROSTER.length; i++) {
+    await addSub("a2", rosterIds[i], SubmissionStatus.entregado, new Date(2022, 9, 10), A2[i], "derivadas.pdf");
+  }
+  for (let i = 0; i < ROSTER.length; i++) {
+    if (A3[i] != null) await addSub("a3", rosterIds[i], SubmissionStatus.entregado, new Date(2022, 9, 18), A3[i], "cuestionario4.pdf");
+  }
+
+  console.log("Seed completado: usuarios + roster de Cálculo II, 6 clases, módulos, actividades, entregas y notas.");
 }
 
 main()

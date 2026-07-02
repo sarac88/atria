@@ -16,7 +16,7 @@ export default function ClassDetailPage() {
   const { role, logout } = useSettings();
   const { data: klass, isLoading } = useClass(params.id);
   const [activityOpen, setActivityOpen] = useState<ClassInfo | null>(null);
-  const [submitOpen, setSubmitOpen] = useState(false);
+  const [submitActivityId, setSubmitActivityId] = useState<string | null>(null);
 
   const onBack = () => router.push("/clases");
   const onProfile = () => router.push("/perfil");
@@ -32,12 +32,12 @@ export default function ClassDetailPage() {
   return (
     <div style={{ height: "100vh" }}>
       {role === "alumno" ? (
-        <StudentClass klass={klass} onBack={onBack} onProfile={onProfile} onLogout={onLogout} onSubmit={() => setSubmitOpen(true)} />
+        <StudentClass klass={klass} onBack={onBack} onProfile={onProfile} onLogout={onLogout} onSubmit={(aid) => setSubmitActivityId(aid)} />
       ) : (
         <ClassDetail klass={klass} onBack={onBack} onProfile={onProfile} onLogout={onLogout} onNewActivity={(c) => setActivityOpen(c)} />
       )}
       {activityOpen && <CreateActivityModal klass={activityOpen} onClose={() => setActivityOpen(null)} onDone={() => setActivityOpen(null)} />}
-      {submitOpen && <SubmitModal onClose={() => setSubmitOpen(false)} onDone={() => setSubmitOpen(false)} />}
+      {submitActivityId && <SubmitModal activityId={submitActivityId} classId={klass.id} onClose={() => setSubmitActivityId(null)} onDone={() => setSubmitActivityId(null)} />}
     </div>
   );
 }
