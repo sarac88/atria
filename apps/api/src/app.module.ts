@@ -6,6 +6,8 @@ import { UsersModule } from "./users/users.module";
 import { ClassesModule } from "./classes/classes.module";
 import { ActivitiesModule } from "./activities/activities.module";
 import { SubmissionsModule } from "./submissions/submissions.module";
+import { ConversationsModule } from "./conversations/conversations.module";
+import { MessagingModule } from "./messaging/messaging.module";
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { SubmissionsModule } from "./submissions/submissions.module";
     ClassesModule,
     ActivitiesModule,
     SubmissionsModule,
+    ConversationsModule,
+    MessagingModule,
   ],
 })
 export class AppModule {}

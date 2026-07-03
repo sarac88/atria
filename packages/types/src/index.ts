@@ -162,6 +162,28 @@ export interface GradebookDto {
   rows: GradebookRow[];
 }
 
+/** A conversation row for the Messages list (mirrors the Thread shape). */
+export interface ConversationDto {
+  id: string;
+  name: string;
+  role: string;
+  last: string;
+  time: string;
+  unread: number;
+  channel: boolean;
+}
+
+/** A single chat message. */
+export interface MessageDto {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  from: "me" | "them";
+  text: string;
+  time: string;
+  createdAt: string;
+}
+
 // ---- Zod contracts (shared validation, doc §3–§4) --------------------------
 
 export const loginSchema = z.object({
@@ -191,3 +213,9 @@ export const submitSchema = z.object({
   fileName: z.string().optional(),
 });
 export type SubmitInput = z.infer<typeof submitSchema>;
+
+export const sendMessageSchema = z.object({
+  conversationId: z.string().min(1),
+  body: z.string().min(1),
+});
+export type SendMessageInput = z.infer<typeof sendMessageSchema>;

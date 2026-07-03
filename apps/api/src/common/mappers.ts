@@ -3,12 +3,24 @@ import type {
   ActivityType,
   Class,
   ClassStatus,
+  Conversation,
+  ConversationParticipant,
   Grade,
+  Message,
   Submission,
   SubmissionStatus,
   User,
 } from "@prisma/client";
-import type { Activity as ActivityDto, ClassInfo, Role, StatusTuple, SubmissionDto, UserDto } from "@atria/types";
+import type {
+  Activity as ActivityDto,
+  ClassInfo,
+  ConversationDto,
+  MessageDto,
+  Role,
+  StatusTuple,
+  SubmissionDto,
+  UserDto,
+} from "@atria/types";
 
 export function toUserDto(user: User): UserDto {
   return {
@@ -97,5 +109,54 @@ export function toSubmissionDto(s: SubmissionWithRelations): SubmissionDto {
     grade: s.grade ? s.grade.score.toFixed(1) : "—",
     feedback: s.grade?.feedback ?? "",
     late: s.status === "atrasado",
+  };
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+/** Relative time label used in the messages list and bubbles. */
+function formatTime(d: Date): string {
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Ayer";
+  const diffDays = (now.getTime() - d.getTime()) / 86_400_000;
+  if (diffDays < 7) return DAY_NAMES[d.getDay()];
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+}
+
+const ROLE_LABEL: Record<string, string> = { docente: "Docente", alumno: "Alumno", admin: "Administración" };
+
+type ConversationWithRelations = Conversation & {
+  participants: (ConversationParticipant & { user: Pick<User, "id" | "name" | "role"> })[];
+  messages: Message[];
+};
+
+export function toConversationDto(c: ConversationWithRelations, meId: string, unread: number): ConversationDto {
+  const isChannel = c.type !== "direct";
+  const other = c.participants.find((p) => p.userId !== meId)?.user;
+  const last = c.messages[0];
+  return {
+    id: c.id,
+    name: isChannel ? c.title : other?.name ?? "Conversación",
+    role: isChannel ? (c.type === "group" ? "Grupo" : "Clase") : ROLE_LABEL[other?.role ?? "alumno"] ?? "",
+    last: last?.body ?? "",
+    time: last ? formatTime(last.createdAt) : "",
+    unread,
+    channel: isChannel,
+  };
+}
+
+export function toMessageDto(m: Message, meId: string): MessageDto {
+  return {
+    id: m.id,
+    conversationId: m.conversationId,
+    senderId: m.senderId,
+    from: m.senderId === meId ? "me" : "them",
+    text: m.body,
+    time: formatTime(m.createdAt),
+    createdAt: m.createdAt.toISOString(),
   };
 }
