@@ -173,6 +173,25 @@ export interface ConversationDto {
   channel: boolean;
 }
 
+export type NotificationType = "submission" | "grade" | "deadline" | "system";
+
+/** An event notification for the bell feed. */
+export interface NotificationDto {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  link: string | null;
+  read: boolean;
+  time: string;
+  createdAt: string;
+}
+
+export interface NotificationFeed {
+  items: NotificationDto[];
+  unread: number;
+}
+
 /** A single chat message. */
 export interface MessageDto {
   id: string;

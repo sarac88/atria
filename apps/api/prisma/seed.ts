@@ -245,7 +245,19 @@ async function main() {
     messages: [{ senderId: elena.id, body: "Reunión de departamento el viernes a las 12.", createdAt: at(12, 0, 1) }],
   });
 
-  console.log("Seed completado: usuarios + roster, clases, entregas, notas y conversaciones.");
+  // Plazo próximo para el planificador (a4 "Proyecto" sin entregas → avisos a los alumnos).
+  await prisma.activity.update({ where: { id: "a4" }, data: { dueDate: new Date(Date.now() + 18 * 3600 * 1000) } });
+
+  // Notificaciones iniciales para Elena (2 sin leer).
+  await prisma.notification.createMany({
+    data: [
+      { userId: elena.id, type: "submission", title: "Nueva entrega", body: "Alba García entregó «Explica tu idea: límites»", link: "/clase/calc2", entityId: "seed-1", createdAt: at(9, 52) },
+      { userId: elena.id, type: "submission", title: "Nueva entrega", body: "Iker Mendoza entregó «Ensayo de derivadas»", link: "/clase/calc2", entityId: "seed-2", createdAt: at(8, 30) },
+      { userId: elena.id, type: "system", title: "Recordatorio", body: "El plazo de «Cuestionario 4» cierra mañana", link: "/clase/calc2", entityId: "seed-3", readAt: new Date(), createdAt: at(7, 0) },
+    ],
+  });
+
+  console.log("Seed completado: usuarios + roster, clases, entregas, notas, conversaciones y notificaciones.");
 }
 
 main()

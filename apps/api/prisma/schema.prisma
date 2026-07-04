@@ -56,8 +56,25 @@ model User {
   messages           Message[]
   gradesGiven        Grade[]                   @relation("GradedBy")
   conversations      ConversationParticipant[]
+  notifications      Notification[]
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String    @default("")
+  link      String?
+  entityId  String?
+  readAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId, createdAt])
 }
 
 model Class {
@@ -131,6 +148,7 @@ model Activity {
   title        String
   instructions String       @default("")
   dueAt        String       @default("")
+  dueDate      DateTime?
   points       Int          @default(0)
   format       String       @default("Archivo")
   status       ClassStatus  @default(live)

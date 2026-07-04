@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import type { SubmissionDto, SubmitInput } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { toSubmissionDto } from "../common/mappers";
 
 const SUBMISSION_INCLUDE = {
@@ -12,7 +13,10 @@ const SUBMISSION_INCLUDE = {
 
 @Injectable()
 export class ActivitiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   private async activityOrThrow(activityId: string) {
     const activity = await this.prisma.activity.findUnique({
@@ -72,6 +76,19 @@ export class ActivitiesService {
       create: { activityId, studentId: user.userId, status: "entregado", submittedAt: new Date(), fileName },
       include: SUBMISSION_INCLUDE,
     });
+
+    // Avisar al docente dueño de la clase.
+    void this.notifications
+      .create({
+        userId: activity.class.ownerId,
+        type: "submission",
+        title: "Nueva entrega",
+        body: `${sub.student.name} entregó «${activity.title}»`,
+        link: `/clase/${activity.classId}`,
+        entityId: sub.id,
+      })
+      .catch(() => undefined);
+
     return toSubmissionDto(sub);
   }
 }

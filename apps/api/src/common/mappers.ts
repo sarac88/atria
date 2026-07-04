@@ -7,6 +7,7 @@ import type {
   ConversationParticipant,
   Grade,
   Message,
+  Notification,
   Submission,
   SubmissionStatus,
   User,
@@ -16,6 +17,8 @@ import type {
   ClassInfo,
   ConversationDto,
   MessageDto,
+  NotificationDto,
+  NotificationType,
   Role,
   StatusTuple,
   SubmissionDto,
@@ -158,5 +161,18 @@ export function toMessageDto(m: Message, meId: string): MessageDto {
     text: m.body,
     time: formatTime(m.createdAt),
     createdAt: m.createdAt.toISOString(),
+  };
+}
+
+export function toNotificationDto(n: Notification): NotificationDto {
+  return {
+    id: n.id,
+    type: n.type as NotificationType,
+    title: n.title,
+    body: n.body,
+    link: n.link ?? null,
+    read: n.readAt != null,
+    time: formatTime(n.createdAt),
+    createdAt: n.createdAt.toISOString(),
   };
 }

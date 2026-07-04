@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import type { GradeInput, SubmissionDto } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { toSubmissionDto } from "../common/mappers";
 
 const SUBMISSION_INCLUDE = {
@@ -12,7 +13,10 @@ const SUBMISSION_INCLUDE = {
 
 @Injectable()
 export class SubmissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   /** PATCH /submissions/:id/grade — solo el docente dueño de la clase (o admin). */
   async grade(user: AuthUser, submissionId: string, input: GradeInput): Promise<SubmissionDto> {
@@ -35,6 +39,19 @@ export class SubmissionsService {
       where: { id: submissionId },
       include: SUBMISSION_INCLUDE,
     });
+
+    // Avisar al alumno de su nota.
+    void this.notifications
+      .create({
+        userId: submission.studentId,
+        type: "grade",
+        title: "Nueva nota",
+        body: `Has recibido una nota en «${submission.activity.title}»`,
+        link: `/clase/${submission.activity.classId}`,
+        entityId: submission.id,
+      })
+      .catch(() => undefined);
+
     return toSubmissionDto(full);
   }
 }

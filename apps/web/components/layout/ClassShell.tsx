@@ -6,6 +6,7 @@
 import type { ReactNode } from "react";
 import { Icon, Avatar, Badge } from "@/components/ui";
 import { PROFILE } from "./Shell";
+import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import type { BadgeColor, ClassInfo, Role } from "@/lib/types";
 
 interface ClassTab {
@@ -85,10 +86,7 @@ export function ClassShell({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/markLight.svg" alt="Atria" style={{ width: 30, height: 30, marginLeft: 4 }} />
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-            <button aria-label="Notificaciones" style={{ position: "relative", border: "none", background: "rgba(255,255,255,0.10)", width: 38, height: 38, borderRadius: "50%", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
-              <Icon name="bell" size={19} />
-              <span style={{ position: "absolute", top: 7, right: 8, minWidth: 8, height: 8, borderRadius: "50%", background: "var(--status-error)", border: "2px solid var(--primary-500)" }} />
-            </button>
+            <NotificationsBell tone="onDark" />
             <button onClick={onProfile} aria-label="Perfil" style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "inline-flex", borderRadius: "50%" }}>
               <Avatar name={me.greeting} />
             </button>

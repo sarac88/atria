@@ -5,5 +5,6 @@ import { MessagingGateway } from "./messaging.gateway";
 @Module({
   imports: [JwtModule.register({})],
   providers: [MessagingGateway],
+  exports: [MessagingGateway],
 })
 export class MessagingModule {}

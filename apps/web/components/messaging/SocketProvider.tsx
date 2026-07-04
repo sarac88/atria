@@ -64,6 +64,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       void qc.invalidateQueries({ queryKey: ["conversations"] });
     });
 
+    socket.on("notification.new", () => {
+      void qc.invalidateQueries({ queryKey: ["notifications"] });
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;

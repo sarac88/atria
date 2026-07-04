@@ -51,6 +51,11 @@ export class MessagingGateway implements OnGatewayConnection {
     }
   }
 
+  /** Emit an event to every socket of a given user (used by notifications). */
+  emitToUser(userId: string, event: string, payload: unknown): void {
+    this.server.to(`user:${userId}`).emit(event, payload);
+  }
+
   async handleConnection(client: Socket): Promise<void> {
     const userId = this.userIdFrom(client);
     if (!userId) {
