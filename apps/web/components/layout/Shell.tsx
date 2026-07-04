@@ -9,6 +9,7 @@ import { Icon, Avatar } from "@/components/ui";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { Messages } from "@/components/screens/shared/Messages";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
+import { useConversations } from "@/lib/api/messaging";
 import type { Role } from "@/lib/types";
 
 interface NavItem {
@@ -95,6 +96,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const nav = NAV[role] || NAV.docente;
   const me = PROFILE[role] || PROFILE.docente;
   const { active, title } = resolveActive(pathname, role);
+  const { data: conversations } = useConversations();
+  const unreadMessages = (conversations ?? []).reduce((n, c) => n + c.unread, 0);
 
   const navTo = (path: string) => {
     router.push(path);
@@ -161,6 +164,15 @@ export function Shell({ children }: { children: ReactNode }) {
                   <Icon name={n.icon} size={20} />
                 </span>
                 {mini ? null : n.label}
+                {n.key === "mensajes" && unreadMessages > 0 ? (
+                  mini ? (
+                    <span style={{ position: "absolute", top: 7, right: 12, minWidth: 8, height: 8, borderRadius: 999, background: "var(--brand-accent)" }} />
+                  ) : (
+                    <span style={{ marginLeft: "auto", minWidth: 20, height: 20, padding: "0 6px", borderRadius: 999, background: "var(--brand-accent)", color: "var(--primary-700)", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                      {unreadMessages > 9 ? "9+" : unreadMessages}
+                    </span>
+                  )
+                ) : null}
               </button>
             );
           })}
