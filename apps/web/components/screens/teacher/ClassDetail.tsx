@@ -6,10 +6,18 @@ import { Chip, Panel, EmptyState, ClassShell, ProgressBar } from "@/components/l
 import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
 import { GradeModal } from "@/components/modals/GradeModal";
-import { modules, students } from "@/lib/data";
-import { useActivities, useGradebook, useGradeSubmission, useSubmissions } from "@/lib/api/classwork";
+import {
+  useActivities,
+  useAddResource,
+  useCreateModule,
+  useGradebook,
+  useGradeSubmission,
+  useModules,
+  useRoster,
+  useSubmissions,
+} from "@/lib/api/classwork";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
-import type { BadgeColor, ClassInfo, Module, ModuleItem, SubmissionDto } from "@/lib/types";
+import type { BadgeColor, ClassInfo, ModuleItem, SubmissionDto } from "@/lib/types";
 
 const statusMap: Record<string, BadgeColor> = { Entregado: "success", Pendiente: "warning", Atrasado: "error", Borrador: "default" };
 
@@ -41,9 +49,50 @@ function ModuleResource({ it }: { it: ModuleItem }) {
   );
 }
 
-function ModulesRailLayout({ flat }: { flat?: boolean }) {
-  const [sel, setSel] = useState<string | null>(modules[0]?.id ?? null);
-  const current = modules.find((m) => m.id === sel) || modules[0];
+/** Ghost button that expands into a small inline text field (crear unidad/recurso). */
+function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: string) => void; pending?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [val, setVal] = useState("");
+  const commit = () => {
+    const v = val.trim();
+    if (!v) return;
+    onAdd(v);
+    setVal("");
+    setOpen(false);
+  };
+  if (!open) {
+    return (
+      <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => setOpen(true)}>
+        {label}
+      </Button>
+    );
+  }
+  return (
+    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6, flexWrap: "wrap" }}>
+      <input
+        autoFocus
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setOpen(false); }}
+        placeholder="Escribe y pulsa Enter…"
+        style={{ flex: 1, minWidth: 200, maxWidth: 320, height: 36, padding: "0 12px", border: "none", borderRadius: "var(--radius-sm)", boxShadow: "inset 0 0 0 1px var(--border-default)", fontFamily: "var(--font-sans)", fontSize: 14, color: "var(--text-strong)", background: "#fff" }}
+      />
+      <Button size="small" variant="accent" disabled={!val.trim() || pending} onClick={commit}>Añadir</Button>
+      <Button size="small" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+    </div>
+  );
+}
+
+function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean }) {
+  const { data: modules } = useModules(classId);
+  const createModule = useCreateModule(classId);
+  const addResource = useAddResource(classId);
+  const list = modules ?? [];
+  const [sel, setSel] = useState<string | null>(null);
+  useEffect(() => {
+    if ((!sel || !list.some((m) => m.id === sel)) && list.length) setSel(list[0].id);
+  }, [list, sel]);
+  const current = list.find((m) => m.id === sel) || list[0];
   const chrome = flat
     ? { background: "#fff", boxShadow: "none", borderRadius: 0, padding: "8px 0" }
     : { background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" };
@@ -53,8 +102,8 @@ function ModulesRailLayout({ flat }: { flat?: boolean }) {
       <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0, borderColor: "rgb(237, 236, 236)" }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {modules.map((m) => {
-            const active = m.id === current.id;
+          {list.map((m) => {
+            const active = m.id === (current?.id ?? "");
             const [lead, sub] = modParts(m.title);
             return (
               <button
@@ -75,8 +124,9 @@ function ModulesRailLayout({ flat }: { flat?: boolean }) {
               </button>
             );
           })}
+          {list.length === 0 ? <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px" }}>Aún no hay unidades.</div> : null}
         </div>
-        <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 10 }}>Añadir unidad</Button>
+        <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
       </div>
 
       {current ? (
@@ -90,19 +140,28 @@ function ModulesRailLayout({ flat }: { flat?: boolean }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {current.items.map((it, i) => <ModuleResource key={i} it={it} />)}
-            <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 2 }}>Añadir recurso</Button>
+            <AddInline label="Añadir recurso" pending={addResource.isPending} onAdd={(label) => addResource.mutate({ moduleId: current.id, type: "document-text", label, meta: "" })} />
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div style={{ paddingLeft: 28, color: "var(--text-muted)", fontSize: 14 }}>Crea la primera unidad para empezar.</div>
+      )}
     </div>
   );
 }
 
-function ModulesAccordion() {
-  const [open, setOpen] = useState<string | null>(modules[0]?.id ?? null);
+function ModulesAccordion({ classId }: { classId: string }) {
+  const { data: modules } = useModules(classId);
+  const createModule = useCreateModule(classId);
+  const addResource = useAddResource(classId);
+  const list = modules ?? [];
+  const [open, setOpen] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open && list.length) setOpen(list[0].id);
+  }, [list, open]);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {modules.map((m) => {
+      {list.map((m) => {
         const expanded = m.id === open;
         const [lead, sub] = modParts(m.title);
         return (
@@ -129,32 +188,34 @@ function ModulesAccordion() {
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
                 {m.items.map((it, i) => <ModuleResource key={i} it={it} />)}
-                <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 2 }}>Añadir recurso</Button>
+                <AddInline label="Añadir recurso" pending={addResource.isPending} onAdd={(label) => addResource.mutate({ moduleId: m.id, type: "document-text", label, meta: "" })} />
               </div>
             ) : null}
           </div>
         );
       })}
-      <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start" }}>Añadir unidad</Button>
+      {list.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
+      <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
     </div>
   );
 }
 
-function ClassModules({ layout }: { layout: ModLayout }) {
-  if (layout === "plano") return <ModulesRailLayout flat />;
-  if (layout === "acordeon") return <ModulesAccordion />;
-  return <ModulesRailLayout />;
+function ClassModules({ classId, layout }: { classId: string; layout: ModLayout }) {
+  if (layout === "plano") return <ModulesRailLayout classId={classId} flat />;
+  if (layout === "acordeon") return <ModulesAccordion classId={classId} />;
+  return <ModulesRailLayout classId={classId} />;
 }
 
-function ClassStudents() {
-  const rows = students.slice(0, 8).map((s) => ({ ...s, avgStr: s.avg.toFixed(1) }));
+function ClassStudents({ classId }: { classId: string }) {
+  const { data: roster } = useRoster(classId);
+  const rows = (roster ?? []).map((s) => ({ ...s, avgStr: s.avg.toFixed(1) }));
   const cols: Column<(typeof rows)[number]>[] = [
     { key: "name", label: "Alumno", render: (v) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={v as string} size="sm" /><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
     { key: "email", label: "Correo", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{v as string}</span> },
     { key: "progress", label: "Progreso", render: (v) => <div style={{ width: 120 }}><ProgressBar value={v as number} showLabel /></div> },
     { key: "avgStr", label: "Media", render: (v) => <span style={{ fontWeight: 700, color: "var(--text-strong)" }}>{v as string}</span> },
   ];
-  return <DataTable title="Alumnos · 32" rowKey="id" columns={cols} rows={rows} selectable={false} toolbar={<Button size="small" variant="outline" iconLeft={<Icon name="plus" size={16} />}>Invitar</Button>} />;
+  return <DataTable title={`Alumnos · ${rows.length}`} rowKey="id" columns={cols} rows={rows} selectable={false} toolbar={<Button size="small" variant="outline" iconLeft={<Icon name="plus" size={16} />}>Invitar</Button>} />;
 }
 
 function ClassOverview({ c }: { c: ClassInfo }) {
@@ -224,9 +285,27 @@ export interface ClassDetailProps {
   onProfile: () => void;
   onLogout: () => void;
   onNewActivity: (c: ClassInfo) => void;
+  onEdit: (c: ClassInfo) => void;
+  onDelete: (c: ClassInfo) => void;
 }
 
-export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity }: ClassDetailProps) {
+function HeaderAction({ icon, label, danger, onClick }: { icon: string; label: string; danger?: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "rgba(255,255,255,0.12)", color: danger ? "var(--red-200, #fecaca)" : "#fff", transition: "background .15s ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = danger ? "rgba(239,68,68,0.35)" : "rgba(255,255,255,0.22)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; }}
+    >
+      <Icon name={icon} size={18} />
+    </button>
+  );
+}
+
+export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity, onEdit, onDelete }: ClassDetailProps) {
   const { role, modLayout } = useSettings();
   const [tab, setTab] = useState("resumen");
   const [gradeSub, setGradeSub] = useState<SubmissionDto | null>(null);
@@ -263,7 +342,13 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity 
         onLogout={onLogout}
         meta={`${c.code} · ${c.room} · ${c.students} alumnos · ${c.openActivities} actividades abiertas`}
         badge={c.status}
-        actions={<Button variant="accent" iconLeft={<Icon name="plus" />} onClick={() => onNewActivity(c)}>Nueva actividad</Button>}
+        actions={
+          <>
+            <HeaderAction icon="pencil" label="Editar clase" onClick={() => onEdit(c)} />
+            <HeaderAction icon="trash" label="Eliminar clase" danger onClick={() => onDelete(c)} />
+            <Button variant="accent" iconLeft={<Icon name="plus" />} onClick={() => onNewActivity(c)}>Nueva actividad</Button>
+          </>
+        }
         tab={tab}
         onTab={setTab}
         tabs={[
@@ -276,7 +361,7 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity 
         ]}
       >
         {tab === "resumen" ? <ClassOverview c={c} /> : null}
-        {tab === "modulos" ? <ClassModules layout={modLayout} /> : null}
+        {tab === "modulos" ? <ClassModules classId={c.id} layout={modLayout} /> : null}
         {tab === "entregas" ? (
           <DataTable
             title={`Entregas · ${selectedActivity?.title ?? "Actividad"}`}
@@ -296,7 +381,7 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity 
           />
         ) : null}
         {tab === "calificaciones" ? <GradebookTable data={gradebook.data} /> : null}
-        {tab === "alumnos" ? <ClassStudents /> : null}
+        {tab === "alumnos" ? <ClassStudents classId={c.id} /> : null}
         {tab === "foro" ? (
           <EmptyState illo="empty-messages" title="Aún no hay temas en el foro" text="Abre el primer hilo para que tus alumnos puedan plantear dudas y debatir." action={<Button variant="accent" iconLeft={<Icon name="plus" />}>Nuevo tema</Button>} />
         ) : null}

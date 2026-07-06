@@ -7,7 +7,9 @@ import type {
   ConversationParticipant,
   Grade,
   Message,
+  Module,
   Notification,
+  Resource,
   Submission,
   SubmissionStatus,
   User,
@@ -17,6 +19,7 @@ import type {
   ClassInfo,
   ConversationDto,
   MessageDto,
+  Module as ModuleDto,
   NotificationDto,
   NotificationType,
   Role,
@@ -174,5 +177,16 @@ export function toNotificationDto(n: Notification): NotificationDto {
     read: n.readAt != null,
     time: formatTime(n.createdAt),
     createdAt: n.createdAt.toISOString(),
+  };
+}
+
+type ModuleWithResources = Module & { resources: Resource[] };
+
+export function toModuleDto(m: ModuleWithResources): ModuleDto {
+  return {
+    id: m.id,
+    title: m.title,
+    done: m.done,
+    items: m.resources.map((r) => ({ type: r.type, label: r.label, meta: r.meta, state: r.state })),
   };
 }

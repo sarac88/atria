@@ -219,8 +219,35 @@ export const createClassSchema = z.object({
   color: z.string().min(1),
   icon: z.string().min(1),
   desc: z.string().optional().default(""),
+  publish: z.boolean().optional().default(true),
 });
 export type CreateClassInput = z.infer<typeof createClassSchema>;
+
+export const updateClassSchema = createClassSchema.partial();
+export type UpdateClassInput = z.infer<typeof updateClassSchema>;
+
+export const createActivitySchema = z.object({
+  type: z.enum(["tarea", "cuestionario", "proyecto", "ensayo", "debate"]),
+  title: z.string().min(1),
+  instructions: z.string().optional().default(""),
+  dueAt: z.string().optional().default(""),
+  points: z.number().int().min(0).optional().default(0),
+  format: z.string().optional().default("Archivo"),
+  status: z.enum(["live", "draft"]).optional().default("live"),
+});
+export type CreateActivityInput = z.infer<typeof createActivitySchema>;
+
+export const createModuleSchema = z.object({
+  title: z.string().min(1),
+});
+export type CreateModuleInput = z.infer<typeof createModuleSchema>;
+
+export const addResourceSchema = z.object({
+  type: z.string().min(1),
+  label: z.string().min(1),
+  meta: z.string().optional().default(""),
+});
+export type AddResourceInput = z.infer<typeof addResourceSchema>;
 
 export const gradeSchema = z.object({
   score: z.number().min(0).max(10),

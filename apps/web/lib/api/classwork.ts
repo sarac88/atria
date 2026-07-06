@@ -1,5 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Activity, GradebookDto, SubmissionDto } from "@atria/types";
+import type {
+  Activity,
+  AddResourceInput,
+  CreateActivityInput,
+  CreateModuleInput,
+  GradebookDto,
+  Module,
+  Student,
+  SubmissionDto,
+} from "@atria/types";
 import { apiFetch } from "./client";
 
 export function useActivities(classId: string) {
@@ -61,5 +70,51 @@ export function useSubmitWork(classId?: string) {
       void qc.invalidateQueries({ queryKey: ["submissions", v.activityId] });
       if (classId) void qc.invalidateQueries({ queryKey: ["myGrades", classId] });
     },
+  });
+}
+
+export function useModules(classId: string) {
+  return useQuery({
+    queryKey: ["modules", classId],
+    queryFn: () => apiFetch<Module[]>(`/classes/${classId}/modules`),
+    enabled: !!classId,
+  });
+}
+
+export function useRoster(classId: string) {
+  return useQuery({
+    queryKey: ["roster", classId],
+    queryFn: () => apiFetch<Student[]>(`/classes/${classId}/roster`),
+    enabled: !!classId,
+  });
+}
+
+export function useCreateActivity(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateActivityInput) =>
+      apiFetch<Activity>(`/classes/${classId}/activities`, { method: "POST", body: JSON.stringify(input) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["activities", classId] }),
+  });
+}
+
+export function useCreateModule(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateModuleInput) =>
+      apiFetch<Module>(`/classes/${classId}/modules`, { method: "POST", body: JSON.stringify(input) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useAddResource(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { moduleId: string } & AddResourceInput) =>
+      apiFetch<Module>(`/modules/${v.moduleId}/resources`, {
+        method: "POST",
+        body: JSON.stringify({ type: v.type, label: v.label, meta: v.meta }),
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
   });
 }

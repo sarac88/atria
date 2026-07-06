@@ -27,7 +27,7 @@ export default function DashboardPage() {
       {role === "docente" && <TeacherDashboard classes={list} onOpenClass={openClass} onCreate={() => setCreateOpen(true)} onNav={onNav} />}
       {role === "alumno" && <StudentDashboard classes={list} onOpenClass={openClass} onNav={onNav} />}
       {role === "admin" && <AdminDashboard onNav={onNav} />}
-      {createOpen && <CreateClassModal onClose={() => setCreateOpen(false)} onDone={() => { setCreateOpen(false); router.push("/clases"); }} />}
+      {createOpen && <CreateClassModal onClose={() => setCreateOpen(false)} onDone={(id) => { setCreateOpen(false); router.push(`/clase/${id}`); }} />}
     </>
   );
 }

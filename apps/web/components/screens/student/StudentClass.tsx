@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon, Badge, Button } from "@/components/ui";
 import { Chip, EmptyState, ClassShell } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
-import { modules } from "@/lib/data";
-import { useActivities } from "@/lib/api/classwork";
+import { useActivities, useModules } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import type { BadgeColor, ClassInfo } from "@/lib/types";
 
@@ -29,8 +28,13 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
   const c = klass;
   const { data: activities } = useActivities(c.id);
   const firstActivityId = activities?.[0]?.id;
+  const { data: modulesData } = useModules(c.id);
+  const modules = modulesData ?? [];
   const [tab, setTab] = useState("contenido");
-  const [selMod, setSelMod] = useState<string | null>(modules[0]?.id ?? null);
+  const [selMod, setSelMod] = useState<string | null>(null);
+  useEffect(() => {
+    if ((!selMod || !modules.some((m) => m.id === selMod)) && modules.length) setSelMod(modules[0].id);
+  }, [modules, selMod]);
   const curMod = modules.find((m) => m.id === selMod) || modules[0];
 
   const progress = (

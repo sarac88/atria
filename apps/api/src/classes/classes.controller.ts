@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
-import { createClassSchema, type CreateClassInput } from "@atria/types";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { createActivitySchema, createClassSchema, updateClassSchema, type CreateActivityInput, type CreateClassInput, type UpdateClassInput } from "@atria/types";
 import { CurrentUser, Roles, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard, RolesGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
@@ -33,6 +33,12 @@ export class ClassesController {
     return this.classes.gradebook(id);
   }
 
+  @Get(":id/roster")
+  @UseGuards(ClassMembershipGuard)
+  roster(@Param("id") id: string) {
+    return this.classes.roster(id);
+  }
+
   @Get(":id/my-submissions")
   @UseGuards(ClassMembershipGuard)
   mySubmissions(@Param("id") id: string, @CurrentUser() user: AuthUser) {
@@ -47,5 +53,34 @@ export class ClassesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.classes.create(user.userId, body);
+  }
+
+  @Patch(":id")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  update(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateClassSchema)) body: UpdateClassInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.classes.update(user, id, body);
+  }
+
+  @Delete(":id")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.classes.remove(user, id);
+  }
+
+  @Post(":id/activities")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  createActivity(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(createActivitySchema)) body: CreateActivityInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.classes.createActivity(user, id, body);
   }
 }

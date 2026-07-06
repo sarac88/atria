@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import type { Activity, GradebookDto, ClassInfo, CreateClassInput, SubmissionDto } from "@atria/types";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, SubmissionDto, UpdateClassInput } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toActivityDto, toClassInfo, toSubmissionDto } from "../common/mappers";
@@ -50,12 +50,103 @@ export class ClassesService {
         color: input.color,
         icon: input.icon,
         desc: input.desc ?? "",
-        status: "draft",
+        status: input.publish === false ? "draft" : "live",
         ownerId,
         enrollments: { create: { userId: ownerId, roleInClass: "teacher" } },
       },
     });
     return toClassInfo(cls);
+  }
+
+  /** Comprueba que el usuario es el docente dueño (o admin). Devuelve la clase. */
+  private async assertOwner(user: AuthUser, classId: string) {
+    const cls = await this.prisma.class.findUnique({ where: { id: classId } });
+    if (!cls) throw new NotFoundException();
+    if (user.role !== "admin" && cls.ownerId !== user.userId) throw new ForbiddenException();
+    return cls;
+  }
+
+  /** PATCH /classes/:id — edita la clase (docente dueño o admin). */
+  async update(user: AuthUser, classId: string, input: UpdateClassInput): Promise<ClassInfo> {
+    await this.assertOwner(user, classId);
+    const { publish, ...rest } = input;
+    const cls = await this.prisma.class.update({
+      where: { id: classId },
+      data: {
+        ...rest,
+        ...(publish === undefined ? {} : { status: publish ? "live" : "draft" }),
+      },
+    });
+    return toClassInfo(cls);
+  }
+
+  /** DELETE /classes/:id — borra la clase y su contenido (docente dueño o admin). */
+  async remove(user: AuthUser, classId: string): Promise<{ id: string }> {
+    await this.assertOwner(user, classId);
+    // Desligamos las conversaciones (classId opcional) y dejamos que el resto
+    // (matrículas, módulos, actividades, entregas, notas) caiga por cascada.
+    await this.prisma.$transaction([
+      this.prisma.conversation.updateMany({ where: { classId }, data: { classId: null } }),
+      this.prisma.class.delete({ where: { id: classId } }),
+    ]);
+    return { id: classId };
+  }
+
+  /** GET /classes/:id/roster — alumnos matriculados con media/entregas/progreso reales. */
+  async roster(classId: string): Promise<Student[]> {
+    const [enrolled, activityCount] = await Promise.all([
+      this.prisma.enrollment.findMany({
+        where: { classId, roleInClass: "student" },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      this.prisma.activity.count({ where: { classId } }),
+    ]);
+    const subs = await this.prisma.submission.findMany({
+      where: { activity: { classId }, studentId: { in: enrolled.map((e) => e.userId) } },
+      select: { studentId: true, grade: { select: { score: true } } },
+    });
+    const agg = new Map<string, { count: number; grades: number[] }>();
+    for (const s of subs) {
+      const cur = agg.get(s.studentId) ?? { count: 0, grades: [] };
+      cur.count += 1;
+      if (s.grade) cur.grades.push(s.grade.score);
+      agg.set(s.studentId, cur);
+    }
+    return enrolled.map((e) => {
+      const a = agg.get(e.user.id) ?? { count: 0, grades: [] };
+      const avg = a.grades.length ? Math.round((a.grades.reduce((x, y) => x + y, 0) / a.grades.length) * 10) / 10 : 0;
+      return {
+        id: e.user.id,
+        name: e.user.name,
+        email: e.user.email,
+        avg,
+        progress: activityCount ? a.count / activityCount : 0,
+        submitted: a.count,
+        attendance: 0,
+      };
+    });
+  }
+
+  /** POST /classes/:id/activities — crea una actividad (docente dueño). */
+  async createActivity(user: AuthUser, classId: string, input: CreateActivityInput): Promise<Activity> {
+    const cls = await this.prisma.class.findUnique({ where: { id: classId }, select: { ownerId: true } });
+    if (!cls) throw new NotFoundException();
+    if (user.role !== "admin" && cls.ownerId !== user.userId) throw new ForbiddenException();
+    const total = await this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } });
+    const activity = await this.prisma.activity.create({
+      data: {
+        classId,
+        type: input.type,
+        title: input.title,
+        instructions: input.instructions ?? "",
+        dueAt: input.dueAt ?? "",
+        points: input.points ?? 0,
+        format: input.format ?? "Archivo",
+        status: input.status ?? "live",
+      },
+    });
+    return toActivityDto(activity, 0, total);
   }
 
   /** GET /classes/:id/activities — con recuentos de entregas/alumnos. */
