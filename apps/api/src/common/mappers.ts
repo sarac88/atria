@@ -187,6 +187,6 @@ export function toModuleDto(m: ModuleWithResources): ModuleDto {
     id: m.id,
     title: m.title,
     done: m.done,
-    items: m.resources.map((r) => ({ type: r.type, label: r.label, meta: r.meta, state: r.state })),
+    items: m.resources.map((r) => ({ type: r.type, label: r.label, meta: r.meta, state: r.state, url: r.url })),
   };
 }

@@ -113,8 +113,21 @@ export function useAddResource(classId: string) {
     mutationFn: (v: { moduleId: string } & AddResourceInput) =>
       apiFetch<Module>(`/modules/${v.moduleId}/resources`, {
         method: "POST",
-        body: JSON.stringify({ type: v.type, label: v.label, meta: v.meta }),
+        body: JSON.stringify({ type: v.type, label: v.label, meta: v.meta, url: v.url }),
       }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useUploadResource(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { moduleId: string; file: File; label?: string }) => {
+      const form = new FormData();
+      form.append("file", v.file);
+      if (v.label) form.append("label", v.label);
+      return apiFetch<Module>(`/modules/${v.moduleId}/resources/upload`, { method: "POST", body: form });
+    },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
   });
 }

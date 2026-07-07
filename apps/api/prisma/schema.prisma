@@ -134,6 +134,7 @@ model Resource {
   label     String
   meta      String   @default("")
   state     String   @default("")
+  url       String   @default("")
   fileId    String?
   module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   file      File?    @relation(fields: [fileId], references: [id])

@@ -1,8 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { extname } from "path";
 import type { AddResourceInput, CreateModuleInput, Module as ModuleDto } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toModuleDto } from "../common/mappers";
+import { humanSize, uploadUrl } from "../common/uploads";
 
 const MODULE_INCLUDE = { resources: { orderBy: { createdAt: "asc" as const } } };
 
@@ -40,8 +42,40 @@ export class ModulesService {
     if (!mod) throw new NotFoundException();
     await this.assertClassOwner(user, mod.classId);
     await this.prisma.resource.create({
-      data: { moduleId, type: input.type, label: input.label, meta: input.meta ?? "" },
+      data: { moduleId, type: input.type, label: input.label, meta: input.meta ?? "", url: input.url ?? "" },
     });
+    return this.moduleDto(moduleId);
+  }
+
+  /** Sube un fichero (PDF/DOC/DOCX), lo registra como File y crea el recurso enlazado. */
+  async uploadResource(
+    user: AuthUser,
+    moduleId: string,
+    file: Express.Multer.File,
+    label?: string,
+  ): Promise<ModuleDto> {
+    const mod = await this.prisma.module.findUnique({ where: { id: moduleId }, select: { classId: true } });
+    if (!mod) throw new NotFoundException();
+    await this.assertClassOwner(user, mod.classId);
+
+    const ext = extname(file.originalname).replace(".", "").toUpperCase();
+    const saved = await this.prisma.file.create({
+      data: { ownerId: user.userId, key: file.filename, name: file.originalname, size: file.size, mime: file.mimetype },
+    });
+    await this.prisma.resource.create({
+      data: {
+        moduleId,
+        type: "document-text",
+        label: (label ?? "").trim() || file.originalname,
+        meta: `${ext} · ${humanSize(file.size)}`,
+        url: uploadUrl(saved.key),
+        fileId: saved.id,
+      },
+    });
+    return this.moduleDto(moduleId);
+  }
+
+  private async moduleDto(moduleId: string): Promise<ModuleDto> {
     const full = await this.prisma.module.findUniqueOrThrow({ where: { id: moduleId }, include: MODULE_INCLUDE });
     return toModuleDto(full);
   }

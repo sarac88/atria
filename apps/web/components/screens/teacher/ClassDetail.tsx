@@ -6,9 +6,9 @@ import { Chip, Panel, EmptyState, ClassShell, ProgressBar } from "@/components/l
 import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
 import { GradeModal } from "@/components/modals/GradeModal";
+import { AddResourceModal } from "@/components/modals/AddResourceModal";
 import {
   useActivities,
-  useAddResource,
   useCreateModule,
   useGradebook,
   useGradeSubmission,
@@ -16,6 +16,8 @@ import {
   useRoster,
   useSubmissions,
 } from "@/lib/api/classwork";
+import { resourceUrl } from "@/lib/api/client";
+import { BRAND_RESOURCE } from "@/components/icons/brand-glyphs";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
 import type { BadgeColor, ClassInfo, ModuleItem, SubmissionDto } from "@/lib/types";
 
@@ -36,17 +38,41 @@ function modParts(title: string): [string, string] {
 }
 const MOD_BADGE: Record<string, BadgeColor> = { Nuevo: "new", Abierto: "info", Visto: "default", Completado: "success" };
 
+function ResourceGlyph({ type }: { type: string }) {
+  const brand = BRAND_RESOURCE[type];
+  if (brand) return <span style={{ color: brand.color, display: "inline-flex", flexShrink: 0 }}>{brand.glyph(20)}</span>;
+  return <Icon name={type} size={20} color="var(--text-muted)" />;
+}
+
 function ModuleResource({ it }: { it: ModuleItem }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)" }}>
-      <Icon name={it.type} size={20} color="var(--text-muted)" />
+  const href = it.url ? resourceUrl(it.url) : "";
+  const inner = (
+    <>
+      <ResourceGlyph type={it.type} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)" }}>{it.label}</div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>{it.meta}</div>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.meta}</div>
       </div>
       {it.state ? <Badge color={MOD_BADGE[it.state] || "default"}>{it.state}</Badge> : null}
-    </div>
+      {href ? <Icon name="chevron-right" size={18} color="var(--text-muted)" /> : null}
+    </>
   );
+  const base = { display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)" } as const;
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        style={{ ...base, textDecoration: "none", cursor: "pointer", transition: "background .15s ease" }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+      >
+        {inner}
+      </a>
+    );
+  }
+  return <div style={base}>{inner}</div>;
 }
 
 /** Ghost button that expands into a small inline text field (crear unidad/recurso). */
@@ -86,9 +112,9 @@ function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: st
 function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean }) {
   const { data: modules } = useModules(classId);
   const createModule = useCreateModule(classId);
-  const addResource = useAddResource(classId);
   const list = modules ?? [];
   const [sel, setSel] = useState<string | null>(null);
+  const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
   useEffect(() => {
     if ((!sel || !list.some((m) => m.id === sel)) && list.length) setSel(list[0].id);
   }, [list, sel]);
@@ -98,6 +124,7 @@ function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean 
     : { background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" };
 
   return (
+    <>
     <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: "256px 1fr", gap: 0, alignItems: "start", ...chrome }}>
       <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0, borderColor: "rgb(237, 236, 236)" }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
@@ -140,22 +167,26 @@ function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean 
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {current.items.map((it, i) => <ModuleResource key={i} it={it} />)}
-            <AddInline label="Añadir recurso" pending={addResource.isPending} onAdd={(label) => addResource.mutate({ moduleId: current.id, type: "document-text", label, meta: "" })} />
+            <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => setAddTo({ id: current.id, title: current.title })}>
+              Añadir recurso
+            </Button>
           </div>
         </div>
       ) : (
         <div style={{ paddingLeft: 28, color: "var(--text-muted)", fontSize: 14 }}>Crea la primera unidad para empezar.</div>
       )}
     </div>
+    {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
+    </>
   );
 }
 
 function ModulesAccordion({ classId }: { classId: string }) {
   const { data: modules } = useModules(classId);
   const createModule = useCreateModule(classId);
-  const addResource = useAddResource(classId);
   const list = modules ?? [];
   const [open, setOpen] = useState<string | null>(null);
+  const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
   useEffect(() => {
     if (!open && list.length) setOpen(list[0].id);
   }, [list, open]);
@@ -188,7 +219,9 @@ function ModulesAccordion({ classId }: { classId: string }) {
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
                 {m.items.map((it, i) => <ModuleResource key={i} it={it} />)}
-                <AddInline label="Añadir recurso" pending={addResource.isPending} onAdd={(label) => addResource.mutate({ moduleId: m.id, type: "document-text", label, meta: "" })} />
+                <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => setAddTo({ id: m.id, title: m.title })}>
+                  Añadir recurso
+                </Button>
               </div>
             ) : null}
           </div>
@@ -196,6 +229,7 @@ function ModulesAccordion({ classId }: { classId: string }) {
       })}
       {list.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
       <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
+      {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
     </div>
   );
 }

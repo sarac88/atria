@@ -4,6 +4,15 @@
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
 
+/** API origin without the /api/v1 prefix — used to resolve static uploads. */
+export const API_ORIGIN = BASE.replace(/\/api\/v1\/?$/, "");
+
+/** Resolve a resource url: external links pass through; /uploads paths get the API origin. */
+export function resourceUrl(url: string): string {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `${API_ORIGIN}${url}`;
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -12,10 +21,13 @@ export class ApiError extends Error {
 }
 
 function raw(path: string, opts?: RequestInit): Promise<Response> {
+  // For FormData (file uploads) let the browser set the multipart boundary.
+  const isForm = typeof FormData !== "undefined" && opts?.body instanceof FormData;
+  const base: Record<string, string> = isForm ? {} : { "Content-Type": "application/json" };
   return fetch(`${BASE}${path}`, {
     credentials: "include",
     ...opts,
-    headers: { "Content-Type": "application/json", ...(opts?.headers ?? {}) },
+    headers: { ...base, ...((opts?.headers as Record<string, string>) ?? {}) },
   });
 }
 

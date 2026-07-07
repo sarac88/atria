@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   addResourceSchema,
   createModuleSchema,
@@ -8,6 +19,7 @@ import {
 import { CurrentUser, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
+import { resourceUploadOptions } from "../common/uploads";
 import { ModulesService } from "./modules.service";
 
 @Controller()
@@ -37,5 +49,17 @@ export class ModulesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.modules.addResource(user, id, body);
+  }
+
+  @Post("modules/:id/resources/upload")
+  @UseInterceptors(FileInterceptor("file", resourceUploadOptions))
+  uploadResource(
+    @Param("id") id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body("label") label: string | undefined,
+    @CurrentUser() user: AuthUser,
+  ) {
+    if (!file) throw new BadRequestException("No se ha recibido ningún fichero.");
+    return this.modules.uploadResource(user, id, file, label);
   }
 }

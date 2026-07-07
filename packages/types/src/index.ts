@@ -73,6 +73,7 @@ export interface ModuleItem {
   label: string;
   meta: string;
   state: string;
+  url: string;
 }
 
 export interface Module {
@@ -246,6 +247,7 @@ export const addResourceSchema = z.object({
   type: z.string().min(1),
   label: z.string().min(1),
   meta: z.string().optional().default(""),
+  url: z.string().optional().default(""),
 });
 export type AddResourceInput = z.infer<typeof addResourceSchema>;
 
