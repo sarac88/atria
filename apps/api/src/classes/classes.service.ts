@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, SubmissionDto, UpdateClassInput } from "@atria/types";
+import type { Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toActivityDto, toClassInfo, toSubmissionDto } from "../common/mappers";
@@ -134,15 +135,29 @@ export class ClassesService {
     if (!cls) throw new NotFoundException();
     if (user.role !== "admin" && cls.ownerId !== user.userId) throw new ForbiddenException();
     const total = await this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } });
+
+    const config: Prisma.InputJsonValue = {};
+    if (input.questions?.length) (config as Record<string, unknown>).questions = input.questions;
+    if (input.quiz) (config as Record<string, unknown>).quiz = input.quiz;
+    if (input.debate) (config as Record<string, unknown>).debate = input.debate;
+
+    let points = input.points ?? 0;
+    if (input.type === "cuestionario" && input.questions?.length) {
+      points = input.questions.reduce((sum, q) => sum + (Number(q.points) || 0), 0);
+    }
+
     const activity = await this.prisma.activity.create({
       data: {
         classId,
+        moduleId: input.moduleId ?? null,
         type: input.type,
         title: input.title,
         instructions: input.instructions ?? "",
         dueAt: input.dueAt ?? "",
-        points: input.points ?? 0,
+        points,
         format: input.format ?? "Archivo",
+        allowLate: input.allowLate ?? true,
+        config,
         status: input.status ?? "live",
       },
     });

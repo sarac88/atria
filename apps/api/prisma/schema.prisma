@@ -116,15 +116,16 @@ model Enrollment {
 }
 
 model Module {
-  id        String     @id @default(cuid())
-  classId   String
-  title     String
-  position  Int        @default(0)
-  done      Boolean    @default(false)
-  class     Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
-  resources Resource[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String     @id @default(cuid())
+  classId    String
+  title      String
+  position   Int        @default(0)
+  done       Boolean    @default(false)
+  class      Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  resources  Resource[]
+  activities Activity[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model Resource {
@@ -145,6 +146,7 @@ model Resource {
 model Activity {
   id           String       @id @default(cuid())
   classId      String
+  moduleId     String?
   type         ActivityType @default(tarea)
   title        String
   instructions String       @default("")
@@ -152,8 +154,11 @@ model Activity {
   dueDate      DateTime?
   points       Int          @default(0)
   format       String       @default("Archivo")
+  allowLate    Boolean      @default(true)
+  config       Json         @default("{}")
   status       ClassStatus  @default(live)
   class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  module       Module?      @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   submissions  Submission[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt

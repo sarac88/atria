@@ -71,6 +71,7 @@ const ACTIVITY_LABEL: Record<ActivityType, string> = {
 };
 
 export function toActivityDto(a: Activity, submitted: number, total: number): ActivityDto {
+  const rawConfig = a.config && typeof a.config === "object" && !Array.isArray(a.config) ? (a.config as ActivityDto["config"]) : undefined;
   return {
     id: a.id,
     classId: a.classId,
@@ -82,6 +83,9 @@ export function toActivityDto(a: Activity, submitted: number, total: number): Ac
     total,
     status: STATUS[a.status],
     desc: a.instructions,
+    moduleId: a.moduleId ?? undefined,
+    allowLate: a.allowLate,
+    config: rawConfig && Object.keys(rawConfig).length ? rawConfig : undefined,
   };
 }
 

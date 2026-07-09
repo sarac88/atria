@@ -56,6 +56,43 @@ export interface Activity {
   total: number;
   status: StatusTuple;
   desc: string;
+  moduleId?: string;
+  allowLate?: boolean;
+  config?: ActivityConfig;
+}
+
+export interface QuizQuestionOption {
+  id: string;
+  text: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  kind: "multiple" | "truefalse" | "short";
+  text: string;
+  points: number;
+  options?: QuizQuestionOption[];
+  correct?: number;
+  answer?: string;
+}
+
+export interface QuizConfig {
+  timeLimitMin?: number;
+  attempts?: string;
+  shuffle?: boolean;
+}
+
+export interface DebateConfig {
+  openingQuestion?: string;
+  minReplies?: number;
+  minWords?: number;
+  postBeforeSeeing?: boolean;
+}
+
+export interface ActivityConfig {
+  questions?: QuizQuestion[];
+  quiz?: QuizConfig;
+  debate?: DebateConfig;
 }
 
 export interface Submission {
@@ -228,6 +265,34 @@ export type CreateClassInput = z.infer<typeof createClassSchema>;
 export const updateClassSchema = createClassSchema.partial();
 export type UpdateClassInput = z.infer<typeof updateClassSchema>;
 
+export const quizQuestionOptionSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+});
+
+export const quizQuestionSchema = z.object({
+  id: z.string(),
+  kind: z.enum(["multiple", "truefalse", "short"]),
+  text: z.string(),
+  points: z.number().int().min(0),
+  options: z.array(quizQuestionOptionSchema).optional(),
+  correct: z.number().int().min(0).optional(),
+  answer: z.string().optional(),
+});
+
+export const quizConfigSchema = z.object({
+  timeLimitMin: z.number().int().min(0).optional(),
+  attempts: z.string().optional(),
+  shuffle: z.boolean().optional(),
+});
+
+export const debateConfigSchema = z.object({
+  openingQuestion: z.string().optional(),
+  minReplies: z.number().int().min(0).optional(),
+  minWords: z.number().int().min(0).optional(),
+  postBeforeSeeing: z.boolean().optional(),
+});
+
 export const createActivitySchema = z.object({
   type: z.enum(["tarea", "cuestionario", "proyecto", "ensayo", "debate"]),
   title: z.string().min(1),
@@ -236,6 +301,11 @@ export const createActivitySchema = z.object({
   points: z.number().int().min(0).optional().default(0),
   format: z.string().optional().default("Archivo"),
   status: z.enum(["live", "draft"]).optional().default("live"),
+  moduleId: z.string().optional(),
+  allowLate: z.boolean().optional().default(true),
+  questions: z.array(quizQuestionSchema).optional(),
+  quiz: quizConfigSchema.optional(),
+  debate: debateConfigSchema.optional(),
 });
 export type CreateActivityInput = z.infer<typeof createActivitySchema>;
 
