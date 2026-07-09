@@ -131,3 +131,12 @@ export function useUploadResource(classId: string) {
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
   });
 }
+
+export function useDeleteResource(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (resourceId: string) =>
+      apiFetch<Module>(`/resources/${resourceId}`, { method: "DELETE" }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}

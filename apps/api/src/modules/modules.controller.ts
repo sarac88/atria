@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -61,5 +62,10 @@ export class ModulesController {
   ) {
     if (!file) throw new BadRequestException("No se ha recibido ningún fichero.");
     return this.modules.uploadResource(user, id, file, label);
+  }
+
+  @Delete("resources/:id")
+  deleteResource(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.modules.deleteResource(user, id);
   }
 }

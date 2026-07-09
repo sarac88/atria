@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Icon, Badge, Button } from "@/components/ui";
+import { Icon, Button } from "@/components/ui";
 import { Chip, EmptyState, ClassShell } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
+import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { useActivities, useModules } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
-import type { BadgeColor, ClassInfo } from "@/lib/types";
-
-const badgeColor: Record<string, BadgeColor> = { Nuevo: "new", Abierto: "info", Visto: "default", Completado: "success" };
+import type { ClassInfo } from "@/lib/types";
 
 function modParts(title: string): [string, string] {
   const ix = title.indexOf("·");
@@ -98,24 +97,17 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
                 <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{curMod.title}</h3>
                 <Chip>{curMod.items.length} recursos</Chip>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {curMod.items.map((it, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)", cursor: "pointer" }}>
-                    <Icon name={it.type} size={20} color="var(--text-muted)" />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)" }}>{it.label}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{it.meta}</div>
-                    </div>
-                    {it.label.includes("Ensayo") ? (
-                      <Button size="small" variant="accent" disabled={!firstActivityId} onClick={() => firstActivityId && onSubmit(firstActivityId)}>Entregar</Button>
-                    ) : it.state ? (
-                      <Badge color={badgeColor[it.state] || "default"}>{it.state}</Badge>
-                    ) : (
-                      <Icon name="chevron-right" size={18} color="var(--text-muted)" />
-                    )}
-                  </div>
-                ))}
-              </div>
+              <ModuleResourceGrid
+                classId={c.id}
+                items={curMod.items}
+                renderExtra={(it) =>
+                  it.label.includes("Ensayo") ? (
+                    <Button size="small" variant="accent" disabled={!firstActivityId} onClick={(e) => { e.stopPropagation(); firstActivityId && onSubmit(firstActivityId); }}>
+                      Entregar
+                    </Button>
+                  ) : null
+                }
+              />
             </div>
           ) : null}
         </div>

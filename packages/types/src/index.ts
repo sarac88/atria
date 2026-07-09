@@ -69,6 +69,7 @@ export interface Submission {
 }
 
 export interface ModuleItem {
+  id: string;
   type: string;
   label: string;
   meta: string;

@@ -1,10 +1,11 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { extname } from "path";
+import { unlink } from "fs/promises";
+import { extname, join } from "path";
 import type { AddResourceInput, CreateModuleInput, Module as ModuleDto } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toModuleDto } from "../common/mappers";
-import { humanSize, uploadUrl } from "../common/uploads";
+import { humanSize, UPLOADS_DIR, uploadUrl } from "../common/uploads";
 
 const MODULE_INCLUDE = { resources: { orderBy: { createdAt: "asc" as const } } };
 
@@ -72,6 +73,28 @@ export class ModulesService {
         fileId: saved.id,
       },
     });
+    return this.moduleDto(moduleId);
+  }
+
+  async deleteResource(user: AuthUser, resourceId: string): Promise<ModuleDto> {
+    const resource = await this.prisma.resource.findUnique({
+      where: { id: resourceId },
+      include: { module: { select: { classId: true } }, file: { select: { id: true, key: true } } },
+    });
+    if (!resource) throw new NotFoundException();
+    await this.assertClassOwner(user, resource.module.classId);
+
+    const moduleId = resource.moduleId;
+    const fileKey = resource.file?.key;
+
+    await this.prisma.resource.delete({ where: { id: resourceId } });
+    if (resource.fileId) {
+      await this.prisma.file.delete({ where: { id: resource.fileId } }).catch(() => undefined);
+      if (fileKey) {
+        await unlink(join(UPLOADS_DIR, fileKey)).catch(() => undefined);
+      }
+    }
+
     return this.moduleDto(moduleId);
   }
 

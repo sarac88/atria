@@ -7,6 +7,7 @@ import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
 import { GradeModal } from "@/components/modals/GradeModal";
 import { AddResourceModal } from "@/components/modals/AddResourceModal";
+import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import {
   useActivities,
   useCreateModule,
@@ -16,10 +17,8 @@ import {
   useRoster,
   useSubmissions,
 } from "@/lib/api/classwork";
-import { resourceUrl } from "@/lib/api/client";
-import { BRAND_RESOURCE } from "@/components/icons/brand-glyphs";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
-import type { BadgeColor, ClassInfo, ModuleItem, SubmissionDto } from "@/lib/types";
+import type { BadgeColor, ClassInfo, SubmissionDto } from "@/lib/types";
 
 const statusMap: Record<string, BadgeColor> = { Entregado: "success", Pendiente: "warning", Atrasado: "error", Borrador: "default" };
 
@@ -36,45 +35,6 @@ function modParts(title: string): [string, string] {
   const ix = title.indexOf("·");
   return ix === -1 ? [title, ""] : [title.slice(0, ix).trim(), title.slice(ix + 1).trim()];
 }
-const MOD_BADGE: Record<string, BadgeColor> = { Nuevo: "new", Abierto: "info", Visto: "default", Completado: "success" };
-
-function ResourceGlyph({ type }: { type: string }) {
-  const brand = BRAND_RESOURCE[type];
-  if (brand) return <span style={{ color: brand.color, display: "inline-flex", flexShrink: 0 }}>{brand.glyph(20)}</span>;
-  return <Icon name={type} size={20} color="var(--text-muted)" />;
-}
-
-function ModuleResource({ it }: { it: ModuleItem }) {
-  const href = it.url ? resourceUrl(it.url) : "";
-  const inner = (
-    <>
-      <ResourceGlyph type={it.type} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)" }}>{it.label}</div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.meta}</div>
-      </div>
-      {it.state ? <Badge color={MOD_BADGE[it.state] || "default"}>{it.state}</Badge> : null}
-      {href ? <Icon name="chevron-right" size={18} color="var(--text-muted)" /> : null}
-    </>
-  );
-  const base = { display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)" } as const;
-  if (href) {
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noreferrer"
-        style={{ ...base, textDecoration: "none", cursor: "pointer", transition: "background .15s ease" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-      >
-        {inner}
-      </a>
-    );
-  }
-  return <div style={base}>{inner}</div>;
-}
-
 /** Ghost button that expands into a small inline text field (crear unidad/recurso). */
 function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: string) => void; pending?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -166,10 +126,12 @@ function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean 
             <Chip>{current.items.length} recursos</Chip>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {current.items.map((it, i) => <ModuleResource key={i} it={it} />)}
-            <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => setAddTo({ id: current.id, title: current.title })}>
-              Añadir recurso
-            </Button>
+            <ModuleResourceGrid
+              classId={classId}
+              items={current.items}
+              canDelete
+              onAdd={() => setAddTo({ id: current.id, title: current.title })}
+            />
           </div>
         </div>
       ) : (
@@ -218,10 +180,12 @@ function ModulesAccordion({ classId }: { classId: string }) {
             </button>
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
-                {m.items.map((it, i) => <ModuleResource key={i} it={it} />)}
-                <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => setAddTo({ id: m.id, title: m.title })}>
-                  Añadir recurso
-                </Button>
+                <ModuleResourceGrid
+                  classId={classId}
+                  items={m.items}
+                  canDelete
+                  onAdd={() => setAddTo({ id: m.id, title: m.title })}
+                />
               </div>
             ) : null}
           </div>
