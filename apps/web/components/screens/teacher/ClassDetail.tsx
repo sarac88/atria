@@ -7,7 +7,9 @@ import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
 import { GradeModal } from "@/components/modals/GradeModal";
 import { AddResourceModal } from "@/components/modals/AddResourceModal";
+import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
+import { ActivityPill } from "@/components/activities/ActivityPill";
 import {
   useActivities,
   useCreateModule,
@@ -18,7 +20,26 @@ import {
   useSubmissions,
 } from "@/lib/api/classwork";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
-import type { BadgeColor, ClassInfo, SubmissionDto } from "@/lib/types";
+import { buildUnits, NONE_UNIT } from "@/lib/units";
+import type { Activity, BadgeColor, ClassInfo, SubmissionDto } from "@/lib/types";
+
+const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
+
+/** "Actividades" section for a unit — simple clickable rows, empty note if none. */
+function UnitActivities({ activities, onOpen }: { activities: Activity[]; onOpen: (a: Activity) => void }) {
+  return (
+    <div style={{ marginTop: 22 }}>
+      <div style={SECTION_LABEL}>Actividades</div>
+      {activities.length ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {activities.map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => onOpen(a)} />)}
+        </div>
+      ) : (
+        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>No hay actividades en esta unidad.</div>
+      )}
+    </div>
+  );
+}
 
 const statusMap: Record<string, BadgeColor> = { Entregado: "success", Pendiente: "warning", Atrasado: "error", Borrador: "default" };
 
@@ -69,16 +90,19 @@ function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: st
   );
 }
 
-function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean }) {
+function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?: boolean; onGrade: (activityId: string) => void }) {
   const { data: modules } = useModules(classId);
+  const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
   const list = modules ?? [];
+  const { units, actsOf } = buildUnits(list, activities ?? []);
   const [sel, setSel] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
+  const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
-    if ((!sel || !list.some((m) => m.id === sel)) && list.length) setSel(list[0].id);
-  }, [list, sel]);
-  const current = list.find((m) => m.id === sel) || list[0];
+    if ((!sel || !units.some((m) => m.id === sel)) && units.length) setSel(units[0].id);
+  }, [units, sel]);
+  const current = units.find((m) => m.id === sel) || units[0];
   const chrome = flat
     ? { background: "#fff", boxShadow: "none", borderRadius: 0, padding: "8px 0" }
     : { background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" };
@@ -89,7 +113,7 @@ function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean 
       <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0, borderColor: "rgb(237, 236, 236)" }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {list.map((m) => {
+          {units.map((m) => {
             const active = m.id === (current?.id ?? "");
             const [lead, sub] = modParts(m.title);
             return (
@@ -111,7 +135,7 @@ function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean 
               </button>
             );
           })}
-          {list.length === 0 ? <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px" }}>Aún no hay unidades.</div> : null}
+          {units.length === 0 ? <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px" }}>Aún no hay unidades.</div> : null}
         </div>
         <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
       </div>
@@ -123,39 +147,50 @@ function ModulesRailLayout({ classId, flat }: { classId: string; flat?: boolean 
               <Icon name={current.done ? "check" : "book-open"} size={18} />
             </span>
             <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{current.title}</h3>
-            <Chip>{current.items.length} recursos</Chip>
+            {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <ModuleResourceGrid
-              classId={classId}
-              items={current.items}
-              canDelete
-              onAdd={() => setAddTo({ id: current.id, title: current.title })}
-            />
-          </div>
+          {current.id !== NONE_UNIT ? (
+            <>
+              <div style={SECTION_LABEL}>Recursos</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <ModuleResourceGrid
+                  classId={classId}
+                  items={current.items}
+                  canDelete
+                  onAdd={() => setAddTo({ id: current.id, title: current.title })}
+                />
+              </div>
+            </>
+          ) : null}
+          <UnitActivities activities={actsOf(current.id)} onOpen={setDetail} />
         </div>
       ) : (
         <div style={{ paddingLeft: 28, color: "var(--text-muted)", fontSize: 14 }}>Crea la primera unidad para empezar.</div>
       )}
     </div>
     {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
+    {detail ? <ActivityDetailModal activity={detail} role="docente" onClose={() => setDetail(null)} onGrade={(id) => { setDetail(null); onGrade(id); }} /> : null}
     </>
   );
 }
 
-function ModulesAccordion({ classId }: { classId: string }) {
+function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (activityId: string) => void }) {
   const { data: modules } = useModules(classId);
+  const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
   const list = modules ?? [];
+  const { units, actsOf } = buildUnits(list, activities ?? []);
   const [open, setOpen] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
+  const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
-    if (!open && list.length) setOpen(list[0].id);
-  }, [list, open]);
+    if (!open && units.length) setOpen(units[0].id);
+  }, [units, open]);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {list.map((m) => {
+      {units.map((m) => {
         const expanded = m.id === open;
+        const isNone = m.id === NONE_UNIT;
         const [lead, sub] = modParts(m.title);
         return (
           <div key={m.id} style={{ background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", overflow: "hidden" }}>
@@ -173,35 +208,42 @@ function ModulesAccordion({ classId }: { classId: string }) {
                 <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{lead}</span>
                 {sub ? <span style={{ display: "block", fontSize: 13, color: "var(--text-muted)", marginTop: 1 }}>{sub}</span> : null}
               </span>
-              <Chip>{m.items.length} recursos</Chip>
+              <Chip>{isNone ? `${actsOf(m.id).length} actividades` : `${m.items.length} recursos`}</Chip>
               <span style={{ color: "var(--text-muted)", display: "inline-flex", transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "none" }}>
                 <Icon name="chevron-down" size={20} />
               </span>
             </button>
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
-                <ModuleResourceGrid
-                  classId={classId}
-                  items={m.items}
-                  canDelete
-                  onAdd={() => setAddTo({ id: m.id, title: m.title })}
-                />
+                {!isNone ? (
+                  <>
+                    <div style={SECTION_LABEL}>Recursos</div>
+                    <ModuleResourceGrid
+                      classId={classId}
+                      items={m.items}
+                      canDelete
+                      onAdd={() => setAddTo({ id: m.id, title: m.title })}
+                    />
+                  </>
+                ) : null}
+                <UnitActivities activities={actsOf(m.id)} onOpen={setDetail} />
               </div>
             ) : null}
           </div>
         );
       })}
-      {list.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
+      {units.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
       <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
       {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
+      {detail ? <ActivityDetailModal activity={detail} role="docente" onClose={() => setDetail(null)} onGrade={(id) => { setDetail(null); onGrade(id); }} /> : null}
     </div>
   );
 }
 
-function ClassModules({ classId, layout }: { classId: string; layout: ModLayout }) {
-  if (layout === "plano") return <ModulesRailLayout classId={classId} flat />;
-  if (layout === "acordeon") return <ModulesAccordion classId={classId} />;
-  return <ModulesRailLayout classId={classId} />;
+function ClassModules({ classId, layout, onGrade }: { classId: string; layout: ModLayout; onGrade: (activityId: string) => void }) {
+  if (layout === "plano") return <ModulesRailLayout classId={classId} flat onGrade={onGrade} />;
+  if (layout === "acordeon") return <ModulesAccordion classId={classId} onGrade={onGrade} />;
+  return <ModulesRailLayout classId={classId} onGrade={onGrade} />;
 }
 
 function ClassStudents({ classId }: { classId: string }) {
@@ -359,7 +401,7 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity,
         ]}
       >
         {tab === "resumen" ? <ClassOverview c={c} /> : null}
-        {tab === "modulos" ? <ClassModules classId={c.id} layout={modLayout} /> : null}
+        {tab === "modulos" ? <ClassModules classId={c.id} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "entregas" ? (
           <DataTable
             title={`Entregas · ${selectedActivity?.title ?? "Actividad"}`}

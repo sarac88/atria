@@ -5,14 +5,19 @@ import { Icon, Button } from "@/components/ui";
 import { Chip, EmptyState, ClassShell } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
+import { ActivityPill } from "@/components/activities/ActivityPill";
+import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { useActivities, useModules } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
-import type { ClassInfo } from "@/lib/types";
+import { buildUnits, NONE_UNIT } from "@/lib/units";
+import type { Activity, ClassInfo } from "@/lib/types";
 
 function modParts(title: string): [string, string] {
   const ix = title.indexOf("·");
   return ix === -1 ? [title, ""] : [title.slice(0, ix).trim(), title.slice(ix + 1).trim()];
 }
+
+const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
 
 export interface StudentClassProps {
   klass: ClassInfo;
@@ -29,12 +34,14 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
   const firstActivityId = activities?.[0]?.id;
   const { data: modulesData } = useModules(c.id);
   const modules = modulesData ?? [];
+  const { units, actsOf } = buildUnits(modules, activities ?? []);
   const [tab, setTab] = useState("contenido");
   const [selMod, setSelMod] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
-    if ((!selMod || !modules.some((m) => m.id === selMod)) && modules.length) setSelMod(modules[0].id);
-  }, [modules, selMod]);
-  const curMod = modules.find((m) => m.id === selMod) || modules[0];
+    if ((!selMod || !units.some((m) => m.id === selMod)) && units.length) setSelMod(units[0].id);
+  }, [units, selMod]);
+  const curMod = units.find((m) => m.id === selMod) || units[0];
 
   const progress = (
     <div key="prog" style={{ minWidth: 180 }}>
@@ -63,7 +70,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
           <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {modules.map((m) => {
+              {units.map((m) => {
                 const active = m.id === curMod.id;
                 const [lead, sub] = modParts(m.title);
                 return (
@@ -95,19 +102,34 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
                   <Icon name={curMod.done ? "check" : "book-open"} size={18} />
                 </span>
                 <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{curMod.title}</h3>
-                <Chip>{curMod.items.length} recursos</Chip>
+                {curMod.id !== NONE_UNIT ? <Chip>{curMod.items.length} recursos</Chip> : null}
               </div>
-              <ModuleResourceGrid
-                classId={c.id}
-                items={curMod.items}
-                renderExtra={(it) =>
-                  it.label.includes("Ensayo") ? (
-                    <Button size="small" variant="accent" disabled={!firstActivityId} onClick={(e) => { e.stopPropagation(); firstActivityId && onSubmit(firstActivityId); }}>
-                      Entregar
-                    </Button>
-                  ) : null
-                }
-              />
+              {curMod.id !== NONE_UNIT ? (
+                <>
+                  <div style={SECTION_LABEL}>Recursos</div>
+                  <ModuleResourceGrid
+                    classId={c.id}
+                    items={curMod.items}
+                    renderExtra={(it) =>
+                      it.label.includes("Ensayo") ? (
+                        <Button size="small" variant="accent" disabled={!firstActivityId} onClick={(e) => { e.stopPropagation(); firstActivityId && onSubmit(firstActivityId); }}>
+                          Entregar
+                        </Button>
+                      ) : null
+                    }
+                  />
+                </>
+              ) : null}
+              <div style={{ marginTop: 22 }}>
+                <div style={SECTION_LABEL}>Actividades</div>
+                {actsOf(curMod.id).length ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {actsOf(curMod.id).map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => setDetail(a)} />)}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: "var(--text-muted)" }}>No hay actividades en esta unidad.</div>
+                )}
+              </div>
             </div>
           ) : null}
         </div>
@@ -120,6 +142,14 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
           text="Cuando tu profesora publique algo nuevo aparecerá aquí."
         />
       )}
+      {detail ? (
+        <ActivityDetailModal
+          activity={detail}
+          role="alumno"
+          onClose={() => setDetail(null)}
+          onSubmit={(id) => { setDetail(null); onSubmit(id); }}
+        />
+      ) : null}
     </ClassShell>
   );
 }
