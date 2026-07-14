@@ -5,6 +5,63 @@ import { Modal, Eyebrow, ProgressBar } from "@/components/layout";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import type { Activity, Role } from "@/lib/types";
 
+const HTML_RE = /<\/?[a-z][\s\S]*>/i;
+
+/** Renders rich-text HTML (from the activity editor), or plain text with preserved line breaks for legacy content. */
+function RichView({ html, lineHeight }: { html: string; lineHeight: number }) {
+  if (!HTML_RE.test(html)) {
+    return <p style={{ fontSize: 14, lineHeight, color: "var(--text-body)", margin: "8px 0 0", whiteSpace: "pre-wrap" }}>{html}</p>;
+  }
+  return (
+    <>
+      <div
+        className="atria-richview"
+        style={{ fontSize: 14, lineHeight, color: "var(--text-body)", marginTop: 8 }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+      <style jsx global>{`
+        .atria-richview > * {
+          margin: 0 0 8px;
+        }
+        .atria-richview > *:last-child {
+          margin-bottom: 0;
+        }
+        .atria-richview h3 {
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--text-strong);
+        }
+        .atria-richview ul,
+        .atria-richview ol {
+          padding-left: 22px;
+        }
+        .atria-richview ul {
+          list-style: disc;
+        }
+        .atria-richview ol {
+          list-style: decimal;
+        }
+        .atria-richview li {
+          margin: 2px 0;
+        }
+        .atria-richview li > p {
+          margin: 0;
+        }
+        .atria-richview a {
+          color: var(--primary-600);
+          text-decoration: underline;
+        }
+        .atria-richview img {
+          max-width: 100%;
+          height: auto;
+          border-radius: var(--radius-sm);
+          margin: 4px 0;
+        }
+      `}</style>
+    </>
+  );
+}
+
 function configSummary(a: Activity): string | null {
   const c = a.config;
   if (!c) return null;
@@ -49,7 +106,7 @@ export function ActivityDetailModal({
   );
 
   return (
-    <Modal title="Actividad" onClose={onClose} footer={footer} width={560}>
+    <Modal title="Actividad" onClose={onClose} footer={footer} width={900}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
         <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: "var(--radius-md)", background: `color-mix(in srgb, ${color} 14%, #fff)`, color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           <Icon name={icon} size={22} />
@@ -66,14 +123,14 @@ export function ActivityDetailModal({
       {activity.desc ? (
         <div style={{ marginTop: 18 }}>
           <Eyebrow>Instrucciones</Eyebrow>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-body)", margin: "8px 0 0", whiteSpace: "pre-wrap" }}>{activity.desc}</p>
+          <RichView html={activity.desc} lineHeight={1.6} />
         </div>
       ) : null}
 
       {summary ? (
         <div style={{ marginTop: 18 }}>
           <Eyebrow>{activity.type === "Debate" ? "Pregunta de apertura" : "Detalles"}</Eyebrow>
-          <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--text-body)", margin: "8px 0 0" }}>{summary}</p>
+          <RichView html={summary} lineHeight={1.5} />
         </div>
       ) : null}
 

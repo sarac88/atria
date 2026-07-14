@@ -56,7 +56,7 @@ export function Select({ label, options = [], value, defaultValue, placeholder =
   return (
     <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", position: "relative", ...style }}>
       {label ? (
-        <label htmlFor={selId} style={{ fontFamily: "var(--font-sans)", fontWeight: "var(--weight-medium)" as unknown as number, fontSize: 14, color: "var(--text-strong)" }}>
+        <label htmlFor={selId} style={{ fontFamily: "var(--font-sans)", fontWeight: "var(--weight-medium)" as unknown as number, fontSize: 14, lineHeight: 1, color: "var(--text-strong)" }}>
           {label}
         </label>
       ) : null}

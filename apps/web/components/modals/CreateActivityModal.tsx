@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import { Input, Textarea, Select, Button, Icon, Switch, IconButton } from "@/components/ui";
+import { Input, RichText, Select, Button, Icon, Switch, IconButton } from "@/components/ui";
 import { Modal } from "@/components/layout";
 import { useCreateActivity, useModules, useUpdateActivity } from "@/lib/api/classwork";
 import { ApiError } from "@/lib/api/client";
@@ -24,6 +24,13 @@ const linkGlyph = (
 );
 
 const QUIZ_ATTEMPTS = ["1 intento", "2 intentos", "3 intentos", "Ilimitados"];
+const POINT_SCALES: { label: string; value: string }[] = [
+  { label: "0 - 5", value: "5" },
+  { label: "0 - 10", value: "10" },
+  { label: "0 - 20", value: "20" },
+  { label: "0 - 100", value: "100" },
+  { label: "Personalizado", value: "custom" },
+];
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const transition = "background .15s ease, box-shadow .15s ease, color .15s ease";
@@ -391,7 +398,11 @@ export function CreateActivityModal({ klass, activity, onClose, onDone }: { klas
   const [minWords, setMinWords] = useState(() => (activity?.config?.debate?.minWords != null ? String(activity.config.debate.minWords) : ""));
   const [postBeforeSee, setPostBeforeSee] = useState(() => activity?.config?.debate?.postBeforeSeeing ?? true);
   const [dueAt, setDueAt] = useState(activity?.due ?? "");
-  const [points, setPoints] = useState(activity?.points ? String(activity.points) : "");
+  const [points, setPoints] = useState(activity?.points ? String(activity.points) : "10");
+  const [pointsScale, setPointsScale] = useState<string>(() => {
+    const initial = activity?.points ? String(activity.points) : "10";
+    return POINT_SCALES.some((s) => s.value === initial) ? initial : "custom";
+  });
   const [allowLate, setAllowLate] = useState(activity?.allowLate ?? true);
   const [error, setError] = useState<string | null>(null);
 
@@ -580,21 +591,21 @@ export function CreateActivityModal({ klass, activity, onClose, onDone }: { klas
         ) : (
           <>
             {hasInstructions ? (
-              <Textarea
+              <RichText
                 label="Instrucciones"
-                rows={4}
+                minHeight={130}
                 value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
+                onChange={setInstructions}
                 placeholder="Describe qué deben hacer los alumnos…"
               />
             ) : null}
 
             {isDebate ? (
-              <Textarea
+              <RichText
                 label="Pregunta de apertura"
-                rows={3}
+                minHeight={100}
                 value={openingQuestion}
-                onChange={(e) => setOpeningQuestion(e.target.value)}
+                onChange={setOpeningQuestion}
                 placeholder="Plantea el tema o la pregunta que abrirá el debate…"
               />
             ) : null}
@@ -698,13 +709,7 @@ export function CreateActivityModal({ klass, activity, onClose, onDone }: { klas
             ) : null}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Input
-                label="Fecha límite"
-                value={dueAt}
-                onChange={(e) => setDueAt(e.target.value)}
-                placeholder="30 / 10 / 2022"
-                iconRight={<Icon name="calendar" size={18} color="var(--text-muted)" />}
-              />
+              <Input label="Fecha límite" type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
               {isQuiz ? (
                 <Input
                   label="Puntos totales"
@@ -713,9 +718,29 @@ export function CreateActivityModal({ klass, activity, onClose, onDone }: { klas
                   iconRight={<span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>auto</span>}
                 />
               ) : (
-                <Input label="Puntos" value={points} onChange={(e) => setPoints(e.target.value)} placeholder="10" type="number" />
+                <div className="atria-selectwrap">
+                  <Select
+                    label="Puntos"
+                    value={pointsScale}
+                    options={POINT_SCALES}
+                    onChange={(v) => {
+                      setPointsScale(v);
+                      if (v !== "custom") setPoints(v);
+                    }}
+                  />
+                </div>
               )}
             </div>
+
+            {!isQuiz && pointsScale === "custom" ? (
+              <Input
+                label="Puntos máximos"
+                value={points}
+                onChange={(e) => setPoints(e.target.value)}
+                placeholder="15"
+                type="number"
+              />
+            ) : null}
 
             {!isQuiz ? (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
