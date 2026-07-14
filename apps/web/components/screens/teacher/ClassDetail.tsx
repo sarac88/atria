@@ -8,11 +8,14 @@ import { GradebookTable } from "./GradebookTable";
 import { GradeModal } from "@/components/modals/GradeModal";
 import { AddResourceModal } from "@/components/modals/AddResourceModal";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
+import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
+import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import {
   useActivities,
   useCreateModule,
+  useDeleteActivity,
   useGradebook,
   useGradeSubmission,
   useModules,
@@ -258,8 +261,123 @@ function ClassStudents({ classId }: { classId: string }) {
   return <DataTable title={`Alumnos · ${rows.length}`} rowKey="id" columns={cols} rows={rows} selectable={false} toolbar={<Button size="small" variant="outline" iconLeft={<Icon name="plus" size={16} />}>Invitar</Button>} />;
 }
 
+function OverviewActivityCard({
+  activity,
+  moduleLabel,
+  onEdit,
+  onDelete,
+}: {
+  activity: Activity;
+  moduleLabel: string;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [tIcon, tColor] = typeMeta(activity.type);
+  const meta = [
+    activity.type,
+    activity.points ? `${activity.points} pts` : "",
+    activity.due ? `vence ${activity.due}` : "",
+    moduleLabel,
+  ].filter(Boolean).join(" · ");
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        padding: "12px 14px",
+        borderRadius: "var(--radius-md)",
+        background: "var(--surface-card)",
+        boxShadow: hovered ? "var(--ring-hairline), var(--shadow-md)" : "var(--ring-hairline), var(--shadow-sm)",
+        transform: hovered ? "translateY(-1px)" : "none",
+        transition: "box-shadow .15s ease, transform .15s ease",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span style={{ width: 40, height: 40, borderRadius: "var(--radius-sm)", background: `color-mix(in srgb, ${tColor} 14%, #fff)`, color: tColor, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icon name={tIcon} size={20} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text-strong)" }}>{activity.title}</div>
+        <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>{meta}</div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            opacity: hovered ? 1 : 0,
+            transition: "opacity .15s ease",
+          }}
+        >
+          <button
+            type="button"
+            aria-label="Editar actividad"
+            title="Editar actividad"
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            style={{
+              width: 32,
+              height: 32,
+              border: "none",
+              borderRadius: "var(--radius-md)",
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.92)",
+              color: "var(--primary-600)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <Icon name="pencil" size={16} />
+          </button>
+          <button
+            type="button"
+            aria-label="Eliminar actividad"
+            title="Eliminar actividad"
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            style={{
+              width: 32,
+              height: 32,
+              border: "none",
+              borderRadius: "var(--radius-md)",
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.92)",
+              color: "var(--status-error)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <Icon name="trash" size={16} />
+          </button>
+        </div>
+        <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{activity.submitted}/{activity.total}</span>
+        <Badge type="solid" color={activity.status[1]}>{activity.status[0]}</Badge>
+      </div>
+    </div>
+  );
+}
+
 function ClassOverview({ c }: { c: ClassInfo }) {
   const { data: activities } = useActivities(c.id);
+  const { data: modules } = useModules(c.id);
+  const deleteActivity = useDeleteActivity(c.id);
+  const [editing, setEditing] = useState<Activity | null>(null);
+  const [deleting, setDeleting] = useState<Activity | null>(null);
+
+  const moduleLabelOf = (moduleId?: string) => {
+    if (!moduleId) return "Sin módulo";
+    const mod = (modules ?? []).find((m) => m.id === moduleId);
+    if (!mod) return "Sin módulo";
+    const [lead] = modParts(mod.title);
+    return lead;
+  };
+
   const details = [
     { icon: "academic-cap", label: "Código", value: c.code, tint: "var(--primary-100)", fg: "var(--primary-600)" },
     { icon: "home", label: "Aula", value: c.room, tint: "var(--info-100)", fg: "var(--info-600)" },
@@ -286,24 +404,15 @@ function ClassOverview({ c }: { c: ClassInfo }) {
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 22, alignItems: "stretch" }} className="atria-2col">
         <Panel title="Actividades">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {(activities ?? []).map((a) => {
-              const [tIcon, tColor] = typeMeta(a.type);
-              return (
-                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)" }}>
-                  <span style={{ width: 40, height: 40, borderRadius: "var(--radius-sm)", background: `color-mix(in srgb, ${tColor} 14%, #fff)`, color: tColor, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon name={tIcon} size={20} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text-strong)" }}>{a.title}</div>
-                    <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>{a.type} · {a.points} pts · vence {a.due}</div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{a.submitted}/{a.total}</span>
-                    <Badge type="solid" color={a.status[1]}>{a.status[0]}</Badge>
-                  </div>
-                </div>
-              );
-            })}
+            {(activities ?? []).map((a) => (
+              <OverviewActivityCard
+                key={a.id}
+                activity={a}
+                moduleLabel={moduleLabelOf(a.moduleId)}
+                onEdit={() => setEditing(a)}
+                onDelete={() => setDeleting(a)}
+              />
+            ))}
           </div>
         </Panel>
 
@@ -315,6 +424,27 @@ function ClassOverview({ c }: { c: ClassInfo }) {
           </div>
         </Panel>
       </div>
+
+      {editing ? (
+        <CreateActivityModal
+          klass={c}
+          activity={editing}
+          onClose={() => setEditing(null)}
+          onDone={() => setEditing(null)}
+        />
+      ) : null}
+
+      {deleting ? (
+        <ConfirmDialog
+          title="Eliminar actividad"
+          message={<>¿Seguro que quieres eliminar «{deleting.title}»? Esta acción no se puede deshacer.</>}
+          onClose={() => setDeleting(null)}
+          onConfirm={async () => {
+            await deleteActivity.mutateAsync(deleting.id);
+            setDeleting(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

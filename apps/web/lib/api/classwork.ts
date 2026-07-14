@@ -8,6 +8,7 @@ import type {
   Module,
   Student,
   SubmissionDto,
+  UpdateActivityInput,
 } from "@atria/types";
 import { apiFetch } from "./client";
 
@@ -95,6 +96,32 @@ export function useCreateActivity(classId: string) {
     mutationFn: (input: CreateActivityInput) =>
       apiFetch<Activity>(`/classes/${classId}/activities`, { method: "POST", body: JSON.stringify(input) }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["activities", classId] }),
+  });
+}
+
+export function useUpdateActivity(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string } & UpdateActivityInput) => {
+      const { id, ...body } = v;
+      return apiFetch<Activity>(`/activities/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["activities", classId] });
+      void qc.invalidateQueries({ queryKey: ["modules", classId] });
+    },
+  });
+}
+
+export function useDeleteActivity(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (activityId: string) =>
+      apiFetch<{ id: string }>(`/activities/${activityId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["activities", classId] });
+      void qc.invalidateQueries({ queryKey: ["modules", classId] });
+    },
   });
 }
 

@@ -1,9 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import type { SubmissionDto, SubmitInput } from "@atria/types";
+import type { Activity, SubmissionDto, SubmitInput, UpdateActivityInput } from "@atria/types";
+import type { Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
-import { toSubmissionDto } from "../common/mappers";
+import { toActivityDto, toSubmissionDto } from "../common/mappers";
 
 const SUBMISSION_INCLUDE = {
   student: { select: { id: true, name: true } },
@@ -90,5 +91,60 @@ export class ActivitiesService {
       .catch(() => undefined);
 
     return toSubmissionDto(sub);
+  }
+
+  private assertOwner(user: AuthUser, ownerId: string) {
+    if (user.role !== "admin" && ownerId !== user.userId) throw new ForbiddenException();
+  }
+
+  /** PATCH /activities/:id — edita una actividad (docente dueño o admin). */
+  async update(user: AuthUser, activityId: string, input: UpdateActivityInput): Promise<Activity> {
+    const existing = await this.activityOrThrow(activityId);
+    this.assertOwner(user, existing.class.ownerId);
+
+    const data: Prisma.ActivityUpdateInput = {};
+
+    if (input.type !== undefined) data.type = input.type;
+    if (input.title !== undefined) data.title = input.title;
+    if (input.instructions !== undefined) data.instructions = input.instructions;
+    if (input.dueAt !== undefined) data.dueAt = input.dueAt;
+    if (input.format !== undefined) data.format = input.format;
+    if (input.status !== undefined) data.status = input.status;
+    if (input.allowLate !== undefined) data.allowLate = input.allowLate;
+    if (input.moduleId !== undefined) {
+      data.module = input.moduleId
+        ? { connect: { id: input.moduleId } }
+        : { disconnect: true };
+    }
+
+    if (input.questions !== undefined || input.quiz !== undefined || input.debate !== undefined) {
+      const config: Prisma.InputJsonValue = {};
+      if (input.questions?.length) (config as Record<string, unknown>).questions = input.questions;
+      if (input.quiz) (config as Record<string, unknown>).quiz = input.quiz;
+      if (input.debate) (config as Record<string, unknown>).debate = input.debate;
+      data.config = config;
+    }
+
+    const type = input.type ?? existing.type;
+    if (input.points !== undefined) {
+      data.points = input.points;
+    } else if (type === "cuestionario" && input.questions?.length) {
+      data.points = input.questions.reduce((sum, q) => sum + (Number(q.points) || 0), 0);
+    }
+
+    const activity = await this.prisma.activity.update({ where: { id: activityId }, data });
+    const [total, submitted] = await Promise.all([
+      this.prisma.enrollment.count({ where: { classId: activity.classId, roleInClass: "student" } }),
+      this.prisma.submission.count({ where: { activityId } }),
+    ]);
+    return toActivityDto(activity, submitted, total);
+  }
+
+  /** DELETE /activities/:id — elimina una actividad (docente dueño o admin). */
+  async remove(user: AuthUser, activityId: string): Promise<{ id: string }> {
+    const activity = await this.activityOrThrow(activityId);
+    this.assertOwner(user, activity.class.ownerId);
+    await this.prisma.activity.delete({ where: { id: activityId } });
+    return { id: activityId };
   }
 }

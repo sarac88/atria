@@ -4,30 +4,49 @@ import { Icon, Badge } from "@/components/ui";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import type { Activity } from "@/lib/types";
 
-/** Compact clickable row for an activity inside a unit (Módulos / Contenido). */
+/** Clickable card for an activity inside a unit (Módulos / Contenido). */
 export function ActivityPill({ activity, onOpen }: { activity: Activity; onOpen: () => void }) {
   const [icon, color] = activityTypeMeta(activity.type);
   return (
     <button
       type="button"
       onClick={onOpen}
-      style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", textAlign: "left", border: "none", cursor: "pointer", background: "transparent", padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)", transition: "background .15s ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        width: "100%",
+        textAlign: "left",
+        cursor: "pointer",
+        background: "var(--surface-card)",
+        border: "none",
+        borderLeft: `4px solid ${color}`,
+        padding: "14px 18px",
+        borderRadius: "var(--radius-lg)",
+        boxShadow: "var(--ring-hairline), var(--shadow-sm)",
+        transition: "box-shadow .18s ease, transform .18s ease",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--ring-hairline), var(--shadow-md)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--ring-hairline), var(--shadow-sm)"; e.currentTarget.style.transform = "none"; }}
     >
-      <span style={{ width: 36, height: 36, flexShrink: 0, borderRadius: "var(--radius-sm)", background: `color-mix(in srgb, ${color} 14%, #fff)`, color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-        <Icon name={icon} size={19} />
+      <span style={{ width: 44, height: 44, flexShrink: 0, borderRadius: "var(--radius-md)", background: `color-mix(in srgb, ${color} 16%, #fff)`, color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name={icon} size={22} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{activity.title}</span>
-        <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>
-          {activity.type}
-          {activity.points ? ` · ${activity.points} pts` : ""}
-          {activity.due ? ` · vence ${activity.due}` : ""}
+        <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{activity.title}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, fontSize: 12.5, color: "var(--text-muted)" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 700, color }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block" }} />
+            {activity.type}
+          </span>
+          {activity.points ? <span>· {activity.points} pts</span> : null}
+          {activity.due ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>· <Icon name="calendar" size={13} /> {activity.due}</span> : null}
         </span>
       </span>
       <Badge color={activity.status[1]}>{activity.status[0]}</Badge>
-      <Icon name="chevron-right" size={18} color="var(--text-muted)" />
+      <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: "var(--surface-sunken)", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name="chevron-right" size={16} />
+      </span>
     </button>
   );
 }

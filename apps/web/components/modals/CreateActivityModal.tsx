@@ -3,9 +3,9 @@
 import { Fragment, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Input, Textarea, Select, Button, Icon, Switch, IconButton } from "@/components/ui";
 import { Modal } from "@/components/layout";
-import { useCreateActivity, useModules } from "@/lib/api/classwork";
+import { useCreateActivity, useModules, useUpdateActivity } from "@/lib/api/classwork";
 import { ApiError } from "@/lib/api/client";
-import type { ClassInfo, CreateActivityInput, QuizQuestion } from "@/lib/types";
+import type { Activity, ClassInfo, CreateActivityInput, QuizQuestion } from "@/lib/types";
 
 const types: [string, string, string][] = [
   ["document-text", "Tarea", "var(--success-500)"],
@@ -27,6 +27,11 @@ const QUIZ_ATTEMPTS = ["1 intento", "2 intentos", "3 intentos", "Ilimitados"];
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const transition = "background .15s ease, box-shadow .15s ease, color .15s ease";
+
+function typeIndexFromLabel(label: string): number {
+  const map: Record<string, number> = { Tarea: 0, Ensayo: 0, Cuestionario: 1, Proyecto: 2, Debate: 3 };
+  return map[label] ?? 0;
+}
 
 function SectionLabel({ children, hint }: { children: ReactNode; hint?: string }) {
   return (
@@ -363,28 +368,31 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
   );
 }
 
-export function CreateActivityModal({ klass, onClose, onDone }: { klass?: ClassInfo | null; onClose: () => void; onDone: () => void }) {
-  const classId = klass?.id ?? "";
+export function CreateActivityModal({ klass, activity, onClose, onDone }: { klass?: ClassInfo | null; activity?: Activity | null; onClose: () => void; onDone: () => void }) {
+  const editing = !!activity;
+  const classId = klass?.id ?? activity?.classId ?? "";
   const { data: modules } = useModules(classId);
   const createActivity = useCreateActivity(classId);
+  const updateActivity = useUpdateActivity(classId);
+  const busy = createActivity.isPending || updateActivity.isPending;
 
   const [step, setStep] = useState<1 | 2>(1);
-  const [ty, setTy] = useState(0);
+  const [ty, setTy] = useState(() => (activity ? typeIndexFromLabel(activity.type) : 0));
   const [fmt, setFmt] = useState(0);
-  const [title, setTitle] = useState("");
-  const [moduleId, setModuleId] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [timeLimit, setTimeLimit] = useState("");
-  const [attempts, setAttempts] = useState("1 intento");
-  const [shuffle, setShuffle] = useState(false);
-  const [openingQuestion, setOpeningQuestion] = useState("");
-  const [minReplies, setMinReplies] = useState("");
-  const [minWords, setMinWords] = useState("");
-  const [postBeforeSee, setPostBeforeSee] = useState(true);
-  const [dueAt, setDueAt] = useState("");
-  const [points, setPoints] = useState("");
-  const [allowLate, setAllowLate] = useState(true);
+  const [title, setTitle] = useState(activity?.title ?? "");
+  const [moduleId, setModuleId] = useState(activity?.moduleId ?? "");
+  const [instructions, setInstructions] = useState(activity?.desc ?? "");
+  const [questions, setQuestions] = useState<QuizQuestion[]>(() => activity?.config?.questions ?? []);
+  const [timeLimit, setTimeLimit] = useState(() => (activity?.config?.quiz?.timeLimitMin ? String(activity.config.quiz.timeLimitMin) : ""));
+  const [attempts, setAttempts] = useState(() => activity?.config?.quiz?.attempts ?? "1 intento");
+  const [shuffle, setShuffle] = useState(() => activity?.config?.quiz?.shuffle ?? false);
+  const [openingQuestion, setOpeningQuestion] = useState(() => activity?.config?.debate?.openingQuestion ?? "");
+  const [minReplies, setMinReplies] = useState(() => (activity?.config?.debate?.minReplies != null ? String(activity.config.debate.minReplies) : ""));
+  const [minWords, setMinWords] = useState(() => (activity?.config?.debate?.minWords != null ? String(activity.config.debate.minWords) : ""));
+  const [postBeforeSee, setPostBeforeSee] = useState(() => activity?.config?.debate?.postBeforeSeeing ?? true);
+  const [dueAt, setDueAt] = useState(activity?.due ?? "");
+  const [points, setPoints] = useState(activity?.points ? String(activity.points) : "");
+  const [allowLate, setAllowLate] = useState(activity?.allowLate ?? true);
   const [error, setError] = useState<string | null>(null);
 
   const formats: [ReactNode, string][] = [
@@ -445,7 +453,9 @@ export function CreateActivityModal({ klass, onClose, onDone }: { klass?: ClassI
         };
       }
 
-      await createActivity.mutateAsync(payload);
+      await (editing && activity
+        ? updateActivity.mutateAsync({ id: activity.id, ...payload })
+        : createActivity.mutateAsync(payload));
       onDone();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -454,10 +464,10 @@ export function CreateActivityModal({ klass, onClose, onDone }: { klass?: ClassI
           const msg = parsed.message;
           setError(Array.isArray(msg) ? msg.join(". ") : msg || err.message);
         } catch {
-          setError(err.message || "No se pudo crear la actividad.");
+          setError(err.message || (editing ? "No se pudo guardar la actividad." : "No se pudo crear la actividad."));
         }
       } else {
-        setError("No se pudo crear la actividad.");
+        setError(editing ? "No se pudo guardar la actividad." : "No se pudo crear la actividad.");
       }
     }
   };
@@ -483,17 +493,17 @@ export function CreateActivityModal({ klass, onClose, onDone }: { klass?: ClassI
         <Button variant="outline" onClick={() => setStep(1)}>
           Atrás
         </Button>
-        <Button variant="outline" onClick={() => submit("draft")} disabled={createActivity.isPending}>
+        <Button variant="outline" onClick={() => submit("draft")} disabled={busy}>
           Borrador
         </Button>
-        <Button variant="accent" onClick={() => submit("live")} disabled={createActivity.isPending}>
-          {createActivity.isPending ? "Publicando…" : "Publicar"}
+        <Button variant="accent" onClick={() => submit("live")} disabled={busy}>
+          {busy ? (editing ? "Guardando…" : "Publicando…") : editing ? "Guardar cambios" : "Publicar"}
         </Button>
       </>
     );
 
   return (
-    <Modal title="Nueva actividad" onClose={onClose} footer={footer} width={isQuiz && step === 2 ? 780 : 640}>
+    <Modal title={editing ? "Editar actividad" : "Nueva actividad"} onClose={onClose} footer={footer} width={isQuiz && step === 2 ? 780 : 640}>
       <div className="atria-formcard" style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginTop: -4 }}>
           <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{klass ? klass.name : ""}</div>

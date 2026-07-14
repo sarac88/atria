@@ -309,6 +309,9 @@ export const createActivitySchema = z.object({
 });
 export type CreateActivityInput = z.infer<typeof createActivitySchema>;
 
+export const updateActivitySchema = createActivitySchema.partial();
+export type UpdateActivityInput = z.infer<typeof updateActivitySchema>;
+
 export const createModuleSchema = z.object({
   title: z.string().min(1),
 });

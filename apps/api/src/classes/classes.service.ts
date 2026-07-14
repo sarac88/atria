@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, SubmissionDto, UpdateClassInput } from "@atria/types";
-import type { Prisma } from "@prisma/client";
+import type { Class, Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toActivityDto, toClassInfo, toSubmissionDto } from "../common/mappers";
@@ -16,29 +16,41 @@ export class ClassesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(user: AuthUser): Promise<ClassInfo[]> {
+    let classes: Class[];
     if (user.role === "admin") {
-      const all = await this.prisma.class.findMany({ orderBy: { createdAt: "asc" } });
-      return all.map(toClassInfo);
-    }
-    if (user.role === "docente") {
-      const owned = await this.prisma.class.findMany({
+      classes = await this.prisma.class.findMany({ orderBy: { createdAt: "asc" } });
+    } else if (user.role === "docente") {
+      classes = await this.prisma.class.findMany({
         where: { ownerId: user.userId },
         orderBy: { createdAt: "asc" },
       });
-      return owned.map(toClassInfo);
+    } else {
+      // alumno → clases en las que está matriculado
+      classes = await this.prisma.class.findMany({
+        where: { enrollments: { some: { userId: user.userId } } },
+        orderBy: { createdAt: "asc" },
+      });
     }
-    // alumno → clases en las que está matriculado
-    const enrolled = await this.prisma.class.findMany({
-      where: { enrollments: { some: { userId: user.userId } } },
-      orderBy: { createdAt: "asc" },
-    });
-    return enrolled.map(toClassInfo);
+    const counts = await this.studentCounts(classes.map((c) => c.id));
+    return classes.map((c) => toClassInfo(c, counts.get(c.id) ?? 0));
   }
 
   async findOne(id: string): Promise<ClassInfo> {
     const cls = await this.prisma.class.findUnique({ where: { id } });
     if (!cls) throw new NotFoundException();
-    return toClassInfo(cls);
+    const students = await this.prisma.enrollment.count({ where: { classId: id, roleInClass: "student" } });
+    return toClassInfo(cls, students);
+  }
+
+  /** Recuento real de alumnos (matrículas con rol student) por clase. */
+  private async studentCounts(classIds: string[]): Promise<Map<string, number>> {
+    if (classIds.length === 0) return new Map();
+    const grouped = await this.prisma.enrollment.groupBy({
+      by: ["classId"],
+      where: { classId: { in: classIds }, roleInClass: "student" },
+      _count: true,
+    });
+    return new Map(grouped.map((g) => [g.classId, g._count]));
   }
 
   async create(ownerId: string, input: CreateClassInput): Promise<ClassInfo> {
@@ -56,7 +68,7 @@ export class ClassesService {
         enrollments: { create: { userId: ownerId, roleInClass: "teacher" } },
       },
     });
-    return toClassInfo(cls);
+    return toClassInfo(cls, 0);
   }
 
   /** Comprueba que el usuario es el docente dueño (o admin). Devuelve la clase. */
@@ -78,7 +90,8 @@ export class ClassesService {
         ...(publish === undefined ? {} : { status: publish ? "live" : "draft" }),
       },
     });
-    return toClassInfo(cls);
+    const students = await this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } });
+    return toClassInfo(cls, students);
   }
 
   /** DELETE /classes/:id — borra la clase y su contenido (docente dueño o admin). */

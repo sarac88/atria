@@ -44,13 +44,13 @@ const STATUS: Record<ClassStatus, StatusTuple> = {
   draft: ["Borrador", "default"],
 };
 
-export function toClassInfo(c: Class): ClassInfo {
+export function toClassInfo(c: Class, studentsCount?: number): ClassInfo {
   return {
     id: c.id,
     name: c.name,
     code: c.code,
     room: c.room,
-    students: c.studentsCount,
+    students: studentsCount ?? c.studentsCount,
     color: c.color,
     icon: c.icon,
     status: STATUS[c.status],
