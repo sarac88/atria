@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { Icon, Button } from "@/components/ui";
-import { Chip, EmptyState, ClassShell } from "@/components/layout";
+import { Chip, EmptyState, ClassShell, Panel } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
+import { StudentTaskList } from "@/components/student/StudentTaskList";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
-import { useActivities, useModules } from "@/lib/api/classwork";
+import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
-import type { Activity, ClassInfo } from "@/lib/types";
+import { studentTaskBadge } from "@/lib/student-task";
+import type { Activity, ClassInfo, StudentTaskDto } from "@/lib/types";
 
 function modParts(title: string): [string, string] {
   const ix = title.indexOf("·");
@@ -33,8 +35,15 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
   const { data: activities } = useActivities(c.id);
   const firstActivityId = activities?.[0]?.id;
   const { data: modulesData } = useModules(c.id);
+  const { data: mySubs } = useMyGrades(c.id);
   const modules = modulesData ?? [];
   const { units, actsOf } = buildUnits(modules, activities ?? []);
+  const subByActivity = new Map((mySubs ?? []).map((s) => [s.activityId, s]));
+  const classTasks: StudentTaskDto[] = (activities ?? []).map((a) => ({
+    ...a,
+    className: c.name,
+    mySubmission: subByActivity.get(a.id) ?? null,
+  }));
   const [tab, setTab] = useState("contenido");
   const [selMod, setSelMod] = useState<string | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
@@ -124,7 +133,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
                 <div style={SECTION_LABEL}>Actividades</div>
                 {actsOf(curMod.id).length ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {actsOf(curMod.id).map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => setDetail(a)} />)}
+                    {actsOf(curMod.id).map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => setDetail(a)} badge={studentTaskBadge(subByActivity.get(a.id))} />)}
                   </div>
                 ) : (
                   <div style={{ fontSize: 13, color: "var(--text-muted)" }}>No hay actividades en esta unidad.</div>
@@ -135,10 +144,22 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
         </div>
       ) : tab === "notas" ? (
         <StudentGradesTable classId={c.id} />
+      ) : tab === "tareas" ? (
+        classTasks.length ? (
+          <Panel pad={0}>
+            <StudentTaskList tasks={classTasks} onOpen={setDetail} showClass={false} />
+          </Panel>
+        ) : (
+          <EmptyState
+            illo="empty-submissions"
+            title="No tienes tareas abiertas"
+            text="Cuando tu profesora publique una actividad aparecerá aquí."
+          />
+        )
       ) : (
         <EmptyState
-          illo={tab === "foro" ? "empty-messages" : "empty-submissions"}
-          title={tab === "foro" ? "El foro está tranquilo" : "No tienes tareas abiertas"}
+          illo="empty-messages"
+          title="El foro está tranquilo"
           text="Cuando tu profesora publique algo nuevo aparecerá aquí."
         />
       )}
@@ -146,8 +167,8 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
         <ActivityDetailModal
           activity={detail}
           role="alumno"
+          classId={c.id}
           onClose={() => setDetail(null)}
-          onSubmit={(id) => { setDetail(null); onSubmit(id); }}
         />
       ) : null}
     </ClassShell>

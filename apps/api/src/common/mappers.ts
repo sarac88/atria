@@ -5,6 +5,7 @@ import type {
   ClassStatus,
   Conversation,
   ConversationParticipant,
+  File,
   Grade,
   Message,
   Module,
@@ -27,6 +28,7 @@ import type {
   SubmissionDto,
   UserDto,
 } from "@atria/types";
+import { uploadUrl } from "./uploads";
 
 export function toUserDto(user: User): UserDto {
   return {
@@ -105,6 +107,7 @@ type SubmissionWithRelations = Submission & {
   student: Pick<User, "id" | "name">;
   activity: Pick<Activity, "id" | "title">;
   grade: Grade | null;
+  file?: File | null;
 };
 
 export function toSubmissionDto(s: SubmissionWithRelations): SubmissionDto {
@@ -119,6 +122,9 @@ export function toSubmissionDto(s: SubmissionWithRelations): SubmissionDto {
     grade: s.grade ? s.grade.score.toFixed(1) : "—",
     feedback: s.grade?.feedback ?? "",
     late: s.status === "atrasado",
+    fileName: s.file?.name ?? s.fileName ?? undefined,
+    fileUrl: s.file ? uploadUrl(s.file.key) : undefined,
+    comment: s.comment ?? undefined,
   };
 }
 

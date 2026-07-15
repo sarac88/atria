@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, SubmissionDto, UpdateClassInput } from "@atria/types";
+import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, StudentTaskDto, SubmissionDto, UpdateClassInput } from "@atria/types";
 import type { Class, Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
@@ -9,6 +9,7 @@ const SUBMISSION_INCLUDE = {
   student: { select: { id: true, name: true } },
   activity: { select: { id: true, title: true } },
   grade: true,
+  file: true,
 } as const;
 
 @Injectable()
@@ -220,5 +221,33 @@ export class ClassesService {
       orderBy: { createdAt: "asc" },
     });
     return subs.map(toSubmissionDto);
+  }
+
+  /** GET /classes/student/tasks — todas las actividades de las clases del alumno con su entrega (si la hay). */
+  async studentTasks(user: AuthUser): Promise<StudentTaskDto[]> {
+    const classes = await this.prisma.class.findMany({
+      where: { enrollments: { some: { userId: user.userId } } },
+      select: { id: true, name: true },
+    });
+    if (classes.length === 0) return [];
+    const classIds = classes.map((c) => c.id);
+    const nameOf = new Map(classes.map((c) => [c.id, c.name]));
+
+    const [activities, totals, subCounts, mySubs] = await Promise.all([
+      this.prisma.activity.findMany({ where: { classId: { in: classIds } }, orderBy: { createdAt: "asc" } }),
+      this.prisma.enrollment.groupBy({ by: ["classId"], where: { classId: { in: classIds }, roleInClass: "student" }, _count: true }),
+      this.prisma.submission.groupBy({ by: ["activityId"], where: { activity: { classId: { in: classIds } } }, _count: true }),
+      this.prisma.submission.findMany({ where: { studentId: user.userId, activity: { classId: { in: classIds } } }, include: SUBMISSION_INCLUDE }),
+    ]);
+
+    const totalOf = new Map(totals.map((t) => [t.classId, t._count]));
+    const submittedOf = new Map(subCounts.map((s) => [s.activityId, s._count]));
+    const myByActivity = new Map(mySubs.map((s) => [s.activityId, toSubmissionDto(s)]));
+
+    return activities.map((a) => ({
+      ...toActivityDto(a, submittedOf.get(a.id) ?? 0, totalOf.get(a.classId) ?? 0),
+      className: nameOf.get(a.classId) ?? "",
+      mySubmission: myByActivity.get(a.id) ?? null,
+    }));
   }
 }

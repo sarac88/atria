@@ -2,11 +2,24 @@
 
 import { Icon, Badge } from "@/components/ui";
 import { activityTypeMeta } from "@/lib/activity-meta";
-import type { Activity } from "@/lib/types";
+import type { Activity, BadgeColor } from "@/lib/types";
 
-/** Clickable card for an activity inside a unit (Módulos / Contenido). */
-export function ActivityPill({ activity, onOpen }: { activity: Activity; onOpen: () => void }) {
+/**
+ * Clickable card for an activity inside a unit (Módulos / Contenido).
+ * `badge` overrides the default (teacher) status pill — pass a value for the student's submission
+ * state, or `null` to hide the pill entirely. Leave undefined for the teacher's activity status.
+ */
+export function ActivityPill({
+  activity,
+  onOpen,
+  badge,
+}: {
+  activity: Activity;
+  onOpen: () => void;
+  badge?: { label: string; color: BadgeColor } | null;
+}) {
   const [icon, color] = activityTypeMeta(activity.type);
+  const pill = badge === undefined ? { label: activity.status[0], color: activity.status[1] } : badge;
   return (
     <button
       type="button"
@@ -43,7 +56,7 @@ export function ActivityPill({ activity, onOpen }: { activity: Activity; onOpen:
           {activity.due ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>· <Icon name="calendar" size={13} /> {activity.due}</span> : null}
         </span>
       </span>
-      <Badge color={activity.status[1]}>{activity.status[0]}</Badge>
+      {pill ? <Badge color={pill.color}>{pill.label}</Badge> : null}
       <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: "var(--surface-sunken)", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         <Icon name="chevron-right" size={16} />
       </span>

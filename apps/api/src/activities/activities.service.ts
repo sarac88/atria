@@ -10,6 +10,7 @@ const SUBMISSION_INCLUDE = {
   student: { select: { id: true, name: true } },
   activity: { select: { id: true, title: true } },
   grade: true,
+  file: true,
 } as const;
 
 @Injectable()
@@ -61,20 +62,43 @@ export class ActivitiesService {
     });
   }
 
-  /** POST /activities/:id/submissions — el alumno matriculado entrega (metadatos). */
+  /** POST /activities/:id/submissions — el alumno matriculado entrega (solo metadatos). */
   async submit(user: AuthUser, activityId: string, input: SubmitInput): Promise<SubmissionDto> {
+    const activity = await this.assertStudentEnrolled(user, activityId);
+    return this.persistSubmission(activity, user, { fileName: input.fileName ?? "entrega.pdf", fileId: null, comment: input.comment });
+  }
+
+  /** POST /activities/:id/submissions/upload — el alumno entrega subiendo un fichero real. */
+  async submitUpload(user: AuthUser, activityId: string, file: Express.Multer.File, comment?: string): Promise<SubmissionDto> {
+    const activity = await this.assertStudentEnrolled(user, activityId);
+    const saved = await this.prisma.file.create({
+      data: { ownerId: user.userId, key: file.filename, name: file.originalname, size: file.size, mime: file.mimetype },
+    });
+    return this.persistSubmission(activity, user, { fileName: file.originalname, fileId: saved.id, comment });
+  }
+
+  /** Verifica que el usuario es un alumno matriculado en la clase de la actividad. */
+  private async assertStudentEnrolled(user: AuthUser, activityId: string) {
     if (user.role !== "alumno") throw new ForbiddenException("Solo los alumnos pueden entregar.");
     const activity = await this.activityOrThrow(activityId);
     const enrolled = await this.prisma.enrollment.findUnique({
       where: { userId_classId: { userId: user.userId, classId: activity.classId } },
     });
     if (!enrolled) throw new ForbiddenException();
+    return activity;
+  }
 
-    const fileName = input.fileName ?? "entrega.pdf";
+  private async persistSubmission(
+    activity: Awaited<ReturnType<ActivitiesService["activityOrThrow"]>>,
+    user: AuthUser,
+    data: { fileName: string; fileId: string | null; comment?: string },
+  ): Promise<SubmissionDto> {
+    const comment = data.comment?.trim() || null;
+    const fields = { status: "entregado" as const, submittedAt: new Date(), fileName: data.fileName, fileId: data.fileId, comment };
     const sub = await this.prisma.submission.upsert({
-      where: { activityId_studentId: { activityId, studentId: user.userId } },
-      update: { status: "entregado", submittedAt: new Date(), fileName },
-      create: { activityId, studentId: user.userId, status: "entregado", submittedAt: new Date(), fileName },
+      where: { activityId_studentId: { activityId: activity.id, studentId: user.userId } },
+      update: fields,
+      create: { activityId: activity.id, studentId: user.userId, ...fields },
       include: SUBMISSION_INCLUDE,
     });
 

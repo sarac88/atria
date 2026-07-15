@@ -181,6 +181,15 @@ export interface SubmissionDto {
   grade: string;
   feedback: string;
   late: boolean;
+  fileName?: string;
+  fileUrl?: string;
+  comment?: string;
+}
+
+/** An activity as seen by a student in their task lists, with the class name and their own submission (if any). */
+export interface StudentTaskDto extends Activity {
+  className: string;
+  mySubmission: SubmissionDto | null;
 }
 
 export interface GradebookColumn {
@@ -333,6 +342,7 @@ export type GradeInput = z.infer<typeof gradeSchema>;
 
 export const submitSchema = z.object({
   fileName: z.string().optional(),
+  comment: z.string().optional(),
 });
 export type SubmitInput = z.infer<typeof submitSchema>;
 

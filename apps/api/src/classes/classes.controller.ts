@@ -15,6 +15,11 @@ export class ClassesController {
     return this.classes.findAll(user);
   }
 
+  @Get("student/tasks")
+  studentTasks(@CurrentUser() user: AuthUser) {
+    return this.classes.studentTasks(user);
+  }
+
   @Get(":id")
   @UseGuards(ClassMembershipGuard)
   findOne(@Param("id") id: string) {

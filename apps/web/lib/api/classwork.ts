@@ -7,6 +7,7 @@ import type {
   GradebookDto,
   Module,
   Student,
+  StudentTaskDto,
   SubmissionDto,
   UpdateActivityInput,
 } from "@atria/types";
@@ -44,6 +45,13 @@ export function useMyGrades(classId: string) {
   });
 }
 
+export function useStudentTasks() {
+  return useQuery({
+    queryKey: ["studentTasks"],
+    queryFn: () => apiFetch<StudentTaskDto[]>(`/classes/student/tasks`),
+  });
+}
+
 export function useGradeSubmission(activityId?: string, classId?: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -62,13 +70,21 @@ export function useGradeSubmission(activityId?: string, classId?: string) {
 export function useSubmitWork(classId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { activityId: string; fileName?: string }) =>
-      apiFetch<SubmissionDto>(`/activities/${v.activityId}/submissions`, {
+    mutationFn: (v: { activityId: string; file?: File; fileName?: string; comment?: string }) => {
+      if (v.file) {
+        const form = new FormData();
+        form.append("file", v.file);
+        if (v.comment) form.append("comment", v.comment);
+        return apiFetch<SubmissionDto>(`/activities/${v.activityId}/submissions/upload`, { method: "POST", body: form });
+      }
+      return apiFetch<SubmissionDto>(`/activities/${v.activityId}/submissions`, {
         method: "POST",
-        body: JSON.stringify({ fileName: v.fileName }),
-      }),
+        body: JSON.stringify({ fileName: v.fileName, comment: v.comment }),
+      });
+    },
     onSuccess: (_data, v) => {
       void qc.invalidateQueries({ queryKey: ["submissions", v.activityId] });
+      void qc.invalidateQueries({ queryKey: ["studentTasks"] });
       if (classId) void qc.invalidateQueries({ queryKey: ["myGrades", classId] });
     },
   });
