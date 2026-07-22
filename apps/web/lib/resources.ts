@@ -51,6 +51,16 @@ export function embedUrl(kind: ResourceKind, url: string): string | null {
   return null;
 }
 
+/** Absolute URL for embedding an uploaded file in an iframe, or null if the format can't be previewed (doc/docx). */
+export function filePreviewUrl(url: string): string | null {
+  return extFromUrl(url) === "pdf" ? resourceUrl(url) : null;
+}
+
+/** Uppercase extension of an uploaded file ("PDF", "DOCX"), for file cards. */
+export function fileExtLabel(url: string): string {
+  return extFromUrl(url).toUpperCase();
+}
+
 export function openResource(item: ModuleItem, onView: (item: ModuleItem) => void): void {
   const kind = resourceKind(item);
   const href = item.url ? resourceUrl(item.url) : "";

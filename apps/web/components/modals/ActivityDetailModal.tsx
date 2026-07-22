@@ -207,7 +207,7 @@ export function ActivityDetailModal({
       ) : null}
 
       {isTeacher ? (
-        <div style={{ marginTop: 20, padding: 16, borderRadius: "var(--radius-lg)", background: "var(--surface-sunken)", boxShadow: "var(--ring-hairline)" }}>
+        <div style={{ marginTop: 20, padding: 16, borderRadius: "var(--radius-lg)", background: "var(--yellow-100)", boxShadow: "var(--ring-hairline)" }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
             <Eyebrow>Entregas</Eyebrow>
             <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-strong)" }}>{activity.submitted} de {activity.total} entregadas</span>

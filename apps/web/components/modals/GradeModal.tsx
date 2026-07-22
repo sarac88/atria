@@ -3,10 +3,15 @@
 import { useState } from "react";
 import { Button, Avatar, Badge, Icon, Textarea, IconButton } from "@/components/ui";
 import { Modal, Eyebrow } from "@/components/layout";
+import { fileExtLabel, filePreviewUrl } from "@/lib/resources";
+import { resourceUrl } from "@/lib/api/client";
 import type { SubmissionDto } from "@/lib/types";
 
 const FALLBACK: SubmissionDto = { id: "0", studentId: "0", student: "Alba García", activityId: "a1", activity: "Explica tu idea: límites", date: "12 / 10 / 2022", status: "Entregado", grade: "—", feedback: "", late: false };
-const quick = ["10", "9", "8", "7", "6", "5"];
+/** Grades are typed or dragged: whole numbers stay whole, halves keep one decimal. */
+function formatGrade(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
 
 export function GradeModal({
   submission,
@@ -21,6 +26,10 @@ export function GradeModal({
   const [grade, setGrade] = useState(s.grade && s.grade !== "—" ? s.grade : "");
   const [feedback, setFeedback] = useState(s.feedback ?? "");
   const [saving, setSaving] = useState(false);
+  const parsed = parseFloat(grade.replace(",", "."));
+  const sliderValue = Number.isNaN(parsed) ? 0 : Math.min(10, Math.max(0, parsed));
+  const fileHref = s.fileUrl ? resourceUrl(s.fileUrl) : "";
+  const preview = s.fileUrl ? filePreviewUrl(s.fileUrl) : null;
 
   const save = async () => {
     const score = parseFloat(grade.replace(",", "."));
@@ -45,7 +54,7 @@ export function GradeModal({
   );
 
   return (
-    <Modal title="Calificar entrega" onClose={onClose} footer={footer} width={860}>
+    <Modal title="Calificar entrega" onClose={onClose} footer={footer} width={980}>
       <div className="atria-2col" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 24, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -57,17 +66,44 @@ export function GradeModal({
             <Badge color={s.status === "Atrasado" ? "error" : s.status === "Pendiente" ? "warning" : "success"}>{s.status}</Badge>
           </div>
 
+          {s.comment ? (
+            <div>
+              <Eyebrow>Comentario del alumno</Eyebrow>
+              <p style={{ margin: "10px 0 0", fontSize: 14, lineHeight: 1.7, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{s.comment}</p>
+            </div>
+          ) : null}
+
           <div>
-            <Eyebrow>Respuesta del alumno</Eyebrow>
-            <div style={{ marginTop: 12, fontSize: 14, lineHeight: 1.7, color: "var(--text-body)", display: "flex", flexDirection: "column", gap: 12 }}>
-              <p style={{ margin: 0 }}>El límite de una función describe el valor al que se aproxima cuando la variable independiente se acerca a un punto determinado. No es necesario que la función esté definida en ese punto: lo que importa es la tendencia.</p>
-              <p style={{ margin: 0 }}>Por ejemplo, para f(x) = (x² − 1) / (x − 1), aunque en x = 1 la función no está definida, al simplificar obtenemos x + 1, cuyo límite cuando x → 1 es 2.</p>
-            </div>
-            <div style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
-              <Icon name="document-text" size={20} color="var(--primary-600)" />
-              <div><div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-strong)" }}>ensayo-limites.pdf</div><div style={{ fontSize: 12, color: "var(--text-muted)" }}>240 KB</div></div>
-              <IconButton size="small" variant="ghost" label="Descargar" icon={<Icon name="download" size={18} />} />
-            </div>
+            <Eyebrow>Entrega del alumno</Eyebrow>
+            {fileHref ? (
+              <>
+                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
+                  <Icon name="document-text" size={20} color="var(--primary-600)" />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-strong)", wordBreak: "break-word" }}>{s.fileName ?? "Archivo"}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{fileExtLabel(s.fileUrl ?? "") || "Archivo"}{s.late ? " · entregado tarde" : ""}</div>
+                  </div>
+                  <a href={fileHref} target="_blank" rel="noopener noreferrer" download style={{ display: "inline-flex" }}>
+                    <IconButton size="small" variant="ghost" label="Descargar" icon={<Icon name="download" size={18} />} />
+                  </a>
+                </div>
+                {preview ? (
+                  <iframe
+                    src={preview}
+                    title={s.fileName ?? "Entrega"}
+                    style={{ width: "100%", height: "min(58vh, 440px)", marginTop: 12, border: "none", borderRadius: "var(--radius-md)", background: "var(--surface-sunken)", boxShadow: "var(--ring-hairline)" }}
+                  />
+                ) : (
+                  <p style={{ margin: "12px 0 0", fontSize: 13, color: "var(--text-muted)" }}>
+                    Este formato no se puede previsualizar aquí. Descarga el archivo para revisarlo.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p style={{ margin: "12px 0 0", fontSize: 13.5, color: "var(--text-muted)" }}>
+                {s.comment ? "El alumno no ha adjuntado ningún archivo." : "Sin entrega: el alumno no ha subido archivo ni comentario."}
+              </p>
+            )}
           </div>
         </div>
 
@@ -77,14 +113,66 @@ export function GradeModal({
             <input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="0.0" style={{ width: 96, fontSize: 40, fontWeight: 700, color: "var(--brand-primary)", border: "none", outline: "none", background: "transparent", textAlign: "center", fontFamily: "var(--font-sans)" }} />
             <span style={{ fontSize: 22, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8 }}>/ 10</span>
           </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
-            {quick.map((q) => (
-              <button key={q} onClick={() => setGrade(q)} style={{ width: 38, height: 38, borderRadius: "var(--radius-sm)", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, background: grade === q ? "var(--brand-primary)" : "var(--surface-soft)", color: grade === q ? "#fff" : "var(--text-strong)" }}>{q}</button>
-            ))}
+          <input
+            className="atria-grade-slider"
+            type="range"
+            min={0}
+            max={10}
+            step={0.1}
+            value={sliderValue}
+            aria-label="Nota sobre 10"
+            onChange={(e) => setGrade(formatGrade(parseFloat(e.target.value)))}
+            style={{ ["--fill" as string]: `${sliderValue * 10}%` }}
+          />
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--text-muted)", margin: "4px 0 20px" }}>
+            <span>0</span>
+            <span>10</span>
           </div>
           <Textarea label="Comentario para el alumno" rows={5} placeholder="Buen trabajo, has explicado…" value={feedback} onChange={(e) => setFeedback(e.target.value)} />
         </div>
       </div>
+
+      <style jsx global>{`
+        .atria-grade-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 8px;
+          border-radius: 999px;
+          background: linear-gradient(
+            to right,
+            var(--brand-primary) var(--fill),
+            var(--surface-sunken) var(--fill)
+          );
+          outline: none;
+          cursor: pointer;
+        }
+        .atria-grade-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 999px;
+          background: var(--surface-card);
+          border: 3px solid var(--brand-primary);
+          cursor: grab;
+          box-shadow: var(--shadow-sm);
+        }
+        .atria-grade-slider::-webkit-slider-thumb:active {
+          cursor: grabbing;
+        }
+        .atria-grade-slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 999px;
+          background: var(--surface-card);
+          border: 3px solid var(--brand-primary);
+          cursor: grab;
+        }
+        .atria-grade-slider:focus-visible {
+          box-shadow: var(--focus-ring);
+        }
+      `}</style>
     </Modal>
   );
 }
