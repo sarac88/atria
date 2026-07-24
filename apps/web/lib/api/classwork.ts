@@ -4,6 +4,8 @@ import type {
   AddResourceInput,
   CreateActivityInput,
   CreateModuleInput,
+  DebatePostDto,
+  DebateThreadDto,
   GradebookDto,
   Module,
   Student,
@@ -70,7 +72,7 @@ export function useGradeSubmission(activityId?: string, classId?: string) {
 export function useSubmitWork(classId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { activityId: string; file?: File; fileName?: string; comment?: string }) => {
+    mutationFn: (v: { activityId: string; file?: File; fileName?: string; comment?: string; answers?: Record<string, string> }) => {
       if (v.file) {
         const form = new FormData();
         form.append("file", v.file);
@@ -79,7 +81,7 @@ export function useSubmitWork(classId?: string) {
       }
       return apiFetch<SubmissionDto>(`/activities/${v.activityId}/submissions`, {
         method: "POST",
-        body: JSON.stringify({ fileName: v.fileName, comment: v.comment }),
+        body: JSON.stringify({ fileName: v.fileName, comment: v.comment, answers: v.answers }),
       });
     },
     onSuccess: (_data, v) => {
@@ -87,6 +89,35 @@ export function useSubmitWork(classId?: string) {
       void qc.invalidateQueries({ queryKey: ["studentTasks"] });
       if (classId) void qc.invalidateQueries({ queryKey: ["myGrades", classId] });
     },
+  });
+}
+
+export function useDebateThread(activityId?: string) {
+  return useQuery({
+    queryKey: ["debate", activityId],
+    queryFn: () => apiFetch<DebateThreadDto>(`/activities/${activityId}/debate`),
+    enabled: !!activityId,
+  });
+}
+
+export function useCreateDebatePost(activityId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { body: string; parentId?: string }) =>
+      apiFetch<DebatePostDto>(`/activities/${activityId}/debate`, { method: "POST", body: JSON.stringify(v) }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["debate", activityId] });
+      // La primera intervención cuenta como entrega: refresca la tabla del docente.
+      void qc.invalidateQueries({ queryKey: ["submissions", activityId] });
+    },
+  });
+}
+
+export function useDeleteDebatePost(activityId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (postId: string) => apiFetch<{ id: string }>(`/activities/debate/posts/${postId}`, { method: "DELETE" }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["debate", activityId] }),
   });
 }
 

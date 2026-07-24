@@ -12,9 +12,11 @@ import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ActivityPill } from "@/components/activities/ActivityPill";
+import { DebateBoard } from "@/components/activities/DebateBoard";
 import {
   useActivities,
   useCreateModule,
+  useDebateThread,
   useDeleteActivity,
   useGradebook,
   useGradeSubmission,
@@ -494,6 +496,13 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity,
   const pendientes = rows.filter((r) => r.status !== "Entregado").length;
   const selectedActivity = (activities ?? []).find((a) => a.id === activityId);
 
+  const debates = (activities ?? []).filter((a) => a.type === "Debate");
+  const [debateId, setDebateId] = useState<string>("");
+  const currentDebate = debates.find((a) => a.id === debateId) ?? debates[0];
+
+  // Para calificar un debate hay que ver las intervenciones del alumno en el hilo.
+  const { data: gradedDebate } = useDebateThread(selectedActivity?.type === "Debate" ? activityId : undefined);
+
   const subCols: Column<SubmissionDto>[] = [
     { key: "student", label: "Alumno", render: (v) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={v as string} size="sm" /> <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)" }}>{v as string}</span></span> },
     { key: "date", label: "Entrega" },
@@ -553,12 +562,33 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity,
         {tab === "calificaciones" ? <GradebookTable data={gradebook.data} /> : null}
         {tab === "alumnos" ? <ClassStudents classId={c.id} /> : null}
         {tab === "foro" ? (
-          <EmptyState illo="empty-messages" title="Aún no hay temas en el foro" text="Abre el primer hilo para que tus alumnos puedan plantear dudas y debatir." action={<Button variant="accent" iconLeft={<Icon name="plus" />}>Nuevo tema</Button>} />
+          debates.length ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div className="atria-selectwrap" style={{ width: 320 }}>
+                <Select
+                  value={currentDebate?.id ?? debateId}
+                  options={debates.map((a) => ({ label: a.title, value: a.id }))}
+                  onChange={setDebateId}
+                  placeholder="Debate"
+                />
+              </div>
+              {currentDebate ? <DebateBoard activity={currentDebate} role={role} /> : null}
+            </div>
+          ) : (
+            <EmptyState
+              illo="empty-messages"
+              title="Aún no hay debates abiertos"
+              text="Crea una actividad de tipo Debate y su hilo aparecerá aquí para que participen tus alumnos."
+              action={<Button variant="accent" iconLeft={<Icon name="plus" />} onClick={() => onNewActivity(c)}>Nueva actividad</Button>}
+            />
+          )
         ) : null}
       </ClassShell>
       {gradeSub ? (
         <GradeModal
           submission={gradeSub}
+          questions={selectedActivity?.config?.questions}
+          debatePosts={gradedDebate?.posts}
           onClose={() => setGradeSub(null)}
           onSave={async (score, feedback) => {
             await gradeMut.mutateAsync({ id: gradeSub.id, score, feedback });

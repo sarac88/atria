@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Button, Icon, Badge, Textarea } from "@/components/ui";
 import { Modal, Eyebrow, ProgressBar } from "@/components/layout";
+import { QuizQuestions } from "@/components/activities/QuizQuestions";
 import { useMyGrades, useSubmitWork } from "@/lib/api/classwork";
 import { resourceUrl } from "@/lib/api/client";
 import { activityTypeMeta } from "@/lib/activity-meta";
@@ -111,7 +112,12 @@ export function ActivityDetailModal({
   const alreadySubmitted = !isTeacher && !!submission;
   const studentBadge = studentTaskBadge(submission);
 
+  const questions = activity.type === "Cuestionario" ? (activity.config?.questions ?? []) : [];
+  const isQuiz = questions.length > 0;
+  const isDebate = activity.type === "Debate";
+
   const [showSubmit, setShowSubmit] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [file, setFile] = useState<File | null>(null);
   const [comment, setComment] = useState("");
   const [dragOver, setDragOver] = useState(false);
@@ -151,6 +157,18 @@ export function ActivityDetailModal({
     }
   };
 
+  const answered = questions.filter((q) => (answers[q.id] ?? "").trim() !== "").length;
+
+  const onEntregarQuiz = async () => {
+    setError(null);
+    try {
+      if (classId) await submit.mutateAsync({ activityId: activity.id, answers, comment });
+      onClose();
+    } catch {
+      setError("No se pudieron enviar tus respuestas. Inténtalo de nuevo.");
+    }
+  };
+
   const footer = isTeacher ? (
     <>
       <Button variant="outline" onClick={onClose}>Cerrar</Button>
@@ -160,6 +178,15 @@ export function ActivityDetailModal({
     <>
       <Button variant="outline" onClick={onClose}>Cerrar</Button>
       <Button variant="accent" iconLeft={<Icon name="check" size={16} />} disabled>Entregado</Button>
+    </>
+  ) : isDebate ? (
+    <Button variant="outline" onClick={onClose}>Cerrar</Button>
+  ) : isQuiz ? (
+    <>
+      <Button variant="outline" onClick={onClose}>Cerrar</Button>
+      <Button variant="accent" iconLeft={<Icon name="check" size={16} />} disabled={answered < questions.length || submit.isPending} onClick={onEntregarQuiz}>
+        {submit.isPending ? "Enviando…" : "Entregar respuestas"}
+      </Button>
     </>
   ) : showSubmit ? (
     <>
@@ -206,6 +233,38 @@ export function ActivityDetailModal({
         </div>
       ) : null}
 
+      {isDebate ? (
+        <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderRadius: "var(--radius-md)", background: "var(--surface-sunken)", fontSize: 13.5, color: "var(--text-body)" }}>
+          <Icon name="chat" size={18} color="var(--text-muted)" />
+          {isTeacher
+            ? "El hilo de este debate está en la pestaña Foro de la clase."
+            : "Participa en este debate desde la pestaña Foro de la clase."}
+        </div>
+      ) : null}
+
+      {isQuiz && (isTeacher || !alreadySubmitted) ? (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+            <Eyebrow>Preguntas</Eyebrow>
+            {!isTeacher ? (
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--text-muted)" }}>{answered} de {questions.length} respondidas</span>
+            ) : null}
+          </div>
+          <QuizQuestions
+            questions={questions}
+            answers={answers}
+            onAnswer={isTeacher ? undefined : (id, value) => setAnswers((prev) => ({ ...prev, [id]: value }))}
+            showCorrect={isTeacher}
+          />
+          {!isTeacher ? (
+            <>
+              {error ? <div style={{ marginTop: 14, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
+              <Textarea label="Comentario (opcional)" rows={3} placeholder="Añade una nota para tu profesora…" style={{ marginTop: 18 }} value={comment} onChange={(e) => setComment(e.target.value)} />
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
       {isTeacher ? (
         <div style={{ marginTop: 20, padding: 16, borderRadius: "var(--radius-lg)", background: "var(--yellow-100)", boxShadow: "var(--ring-hairline)" }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
@@ -236,6 +295,7 @@ export function ActivityDetailModal({
           ) : (
             <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 10 }}>Entregado el {submission.date}{submission.late ? " · tarde" : ""}.</div>
           )}
+          {isQuiz ? <QuizQuestions questions={questions} answers={submission.answers ?? {}} showCorrect /> : null}
           {submission.comment ? (
             <div style={{ marginTop: 14 }}>
               <Eyebrow>Tu comentario</Eyebrow>

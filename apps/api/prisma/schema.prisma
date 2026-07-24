@@ -57,6 +57,7 @@ model User {
   gradesGiven        Grade[]                   @relation("GradedBy")
   conversations      ConversationParticipant[]
   notifications      Notification[]
+  debatePosts        DebatePost[]
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
 }
@@ -160,8 +161,27 @@ model Activity {
   class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   module       Module?      @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   submissions  Submission[]
+  debatePosts  DebatePost[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+}
+
+/// Una intervención en una actividad de tipo debate. Las respuestas cuelgan de
+/// un post raíz mediante parentId (un solo nivel de anidamiento).
+model DebatePost {
+  id         String       @id @default(cuid())
+  activityId String
+  authorId   String
+  parentId   String?
+  body       String
+  activity   Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  author     User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent     DebatePost?  @relation("DebateReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    DebatePost[] @relation("DebateReplies")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([activityId])
 }
 
 model Submission {
@@ -173,6 +193,7 @@ model Submission {
   fileId      String?
   fileName    String?
   comment     String?
+  answers     Json?
   activity    Activity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
   student     User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
   file        File?            @relation(fields: [fileId], references: [id])

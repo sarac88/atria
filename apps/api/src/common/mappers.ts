@@ -2,6 +2,7 @@ import type {
   Activity,
   ActivityType,
   Class,
+  DebatePost,
   ClassStatus,
   Conversation,
   ConversationParticipant,
@@ -18,6 +19,7 @@ import type {
 import type {
   Activity as ActivityDto,
   ClassInfo,
+  DebatePostDto,
   ConversationDto,
   MessageDto,
   Module as ModuleDto,
@@ -111,6 +113,10 @@ type SubmissionWithRelations = Submission & {
 };
 
 export function toSubmissionDto(s: SubmissionWithRelations): SubmissionDto {
+  const answers =
+    s.answers && typeof s.answers === "object" && !Array.isArray(s.answers)
+      ? (s.answers as Record<string, string>)
+      : undefined;
   return {
     id: s.id,
     studentId: s.studentId,
@@ -125,6 +131,7 @@ export function toSubmissionDto(s: SubmissionWithRelations): SubmissionDto {
     fileName: s.file?.name ?? s.fileName ?? undefined,
     fileUrl: s.file ? uploadUrl(s.file.key) : undefined,
     comment: s.comment ?? undefined,
+    answers: answers && Object.keys(answers).length ? answers : undefined,
   };
 }
 
@@ -141,6 +148,24 @@ function formatTime(d: Date): string {
   const diffDays = (now.getTime() - d.getTime()) / 86_400_000;
   if (diffDays < 7) return DAY_NAMES[d.getDay()];
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+}
+
+type DebatePostWithAuthor = DebatePost & { author: Pick<User, "id" | "name" | "role"> };
+
+/** Un post del foro de debate. Las respuestas se anidan aparte, en el servicio. */
+export function toDebatePostDto(p: DebatePostWithAuthor, viewerId: string, replies: DebatePostDto[] = []): DebatePostDto {
+  return {
+    id: p.id,
+    activityId: p.activityId,
+    authorId: p.authorId,
+    author: p.author.name,
+    authorRole: p.author.role as Role,
+    body: p.body,
+    date: formatTime(p.createdAt),
+    parentId: p.parentId ?? undefined,
+    replies,
+    mine: p.authorId === viewerId,
+  };
 }
 
 const ROLE_LABEL: Record<string, string> = { docente: "Docente", alumno: "Alumno", admin: "Administración" };

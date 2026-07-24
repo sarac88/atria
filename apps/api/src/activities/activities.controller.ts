@@ -1,6 +1,13 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { submitSchema, updateActivitySchema, type SubmitInput, type UpdateActivityInput } from "@atria/types";
+import {
+  createDebatePostSchema,
+  submitSchema,
+  updateActivitySchema,
+  type CreateDebatePostInput,
+  type SubmitInput,
+  type UpdateActivityInput,
+} from "@atria/types";
 import { CurrentUser, Roles, type AuthUser } from "../auth/decorators";
 import { JwtAuthGuard, RolesGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
@@ -36,6 +43,25 @@ export class ActivitiesController {
   ) {
     if (!file) throw new BadRequestException("No se ha recibido ningún fichero.");
     return this.activities.submitUpload(user, id, file, comment);
+  }
+
+  @Get(":id/debate")
+  debate(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.activities.debateThread(user, id);
+  }
+
+  @Post(":id/debate")
+  postDebate(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(createDebatePostSchema)) body: CreateDebatePostInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.activities.createDebatePost(user, id, body);
+  }
+
+  @Delete("debate/posts/:postId")
+  removeDebatePost(@Param("postId") postId: string, @CurrentUser() user: AuthUser) {
+    return this.activities.removeDebatePost(user, postId);
   }
 
   @Patch(":id")

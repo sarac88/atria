@@ -184,6 +184,36 @@ export interface SubmissionDto {
   fileName?: string;
   fileUrl?: string;
   comment?: string;
+  /** Quiz answers keyed by question id (see submitSchema). */
+  answers?: Record<string, string>;
+}
+
+/** A message in a debate activity's thread. Replies hang one level below a root post. */
+export interface DebatePostDto {
+  id: string;
+  activityId: string;
+  authorId: string;
+  author: string;
+  authorRole: Role;
+  body: string;
+  date: string;
+  parentId?: string;
+  replies: DebatePostDto[];
+  mine: boolean;
+}
+
+/** GET /activities/:id/debate — the thread plus the viewer's own participation state. */
+export interface DebateThreadDto {
+  openingQuestion: string;
+  minReplies: number;
+  minWords: number;
+  /** False when the student must post before seeing their classmates' contributions. */
+  canSeeOthers: boolean;
+  /** Root posts written by the viewer. */
+  myPosts: number;
+  /** Replies to other people's posts written by the viewer. */
+  myReplies: number;
+  posts: DebatePostDto[];
 }
 
 /** An activity as seen by a student in their task lists, with the class name and their own submission (if any). */
@@ -343,8 +373,17 @@ export type GradeInput = z.infer<typeof gradeSchema>;
 export const submitSchema = z.object({
   fileName: z.string().optional(),
   comment: z.string().optional(),
+  /** Quiz answers, keyed by question id: option index for choice questions, free text for short ones. */
+  answers: z.record(z.string(), z.string()).optional(),
 });
 export type SubmitInput = z.infer<typeof submitSchema>;
+
+export const createDebatePostSchema = z.object({
+  body: z.string().min(1),
+  /** Set to reply to an existing post; omit for a root contribution. */
+  parentId: z.string().optional(),
+});
+export type CreateDebatePostInput = z.infer<typeof createDebatePostSchema>;
 
 export const sendMessageSchema = z.object({
   conversationId: z.string().min(1),

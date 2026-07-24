@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Button, Avatar, Badge, Icon, Textarea, IconButton } from "@/components/ui";
 import { Modal, Eyebrow } from "@/components/layout";
+import { QuizQuestions } from "@/components/activities/QuizQuestions";
 import { fileExtLabel, filePreviewUrl } from "@/lib/resources";
 import { resourceUrl } from "@/lib/api/client";
-import type { SubmissionDto } from "@/lib/types";
+import type { DebatePostDto, QuizQuestion, SubmissionDto } from "@/lib/types";
 
 const FALLBACK: SubmissionDto = { id: "0", studentId: "0", student: "Alba García", activityId: "a1", activity: "Explica tu idea: límites", date: "12 / 10 / 2022", status: "Entregado", grade: "—", feedback: "", late: false };
 /** Grades are typed or dragged: whole numbers stay whole, halves keep one decimal. */
@@ -15,10 +16,16 @@ function formatGrade(n: number): string {
 
 export function GradeModal({
   submission,
+  questions,
+  debatePosts,
   onClose,
   onSave,
 }: {
   submission?: SubmissionDto | null;
+  /** Quiz questions of the activity, so the answers can be shown next to the right ones. */
+  questions?: QuizQuestion[];
+  /** Debate thread of the activity; only this student's contributions are shown. */
+  debatePosts?: DebatePostDto[];
   onClose: () => void;
   onSave?: (score: number, feedback: string) => Promise<void>;
 }) {
@@ -28,6 +35,13 @@ export function GradeModal({
   const [saving, setSaving] = useState(false);
   const parsed = parseFloat(grade.replace(",", "."));
   const sliderValue = Number.isNaN(parsed) ? 0 : Math.min(10, Math.max(0, parsed));
+  const isQuiz = !!questions?.length;
+  const isDebate = !!debatePosts;
+  // Sus intervenciones: raíces propias y respuestas propias colgadas de otros.
+  const myRoots = (debatePosts ?? []).filter((p) => p.authorId === s.studentId);
+  const myReplies = (debatePosts ?? [])
+    .flatMap((p) => p.replies.map((r) => ({ reply: r, to: p.author })))
+    .filter(({ reply }) => reply.authorId === s.studentId);
   const fileHref = s.fileUrl ? resourceUrl(s.fileUrl) : "";
   const preview = s.fileUrl ? filePreviewUrl(s.fileUrl) : null;
 
@@ -74,8 +88,31 @@ export function GradeModal({
           ) : null}
 
           <div>
-            <Eyebrow>Entrega del alumno</Eyebrow>
-            {fileHref ? (
+            <Eyebrow>{isQuiz ? "Respuestas del alumno" : isDebate ? "Intervenciones en el debate" : "Entrega del alumno"}</Eyebrow>
+            {isQuiz ? (
+              <QuizQuestions questions={questions ?? []} answers={s.answers ?? {}} showCorrect />
+            ) : isDebate ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
+                <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                  {myRoots.length} intervención{myRoots.length === 1 ? "" : "es"} · {myReplies.length} respuesta{myReplies.length === 1 ? "" : "s"} a compañeros
+                </div>
+                {myRoots.map((p) => (
+                  <div key={p.id} style={{ padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>Intervención · {p.date}</div>
+                    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{p.body}</p>
+                  </div>
+                ))}
+                {myReplies.map(({ reply, to }) => (
+                  <div key={reply.id} style={{ padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>En respuesta a {to} · {reply.date}</div>
+                    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{reply.body}</p>
+                  </div>
+                ))}
+                {!myRoots.length && !myReplies.length ? (
+                  <p style={{ margin: 0, fontSize: 13.5, color: "var(--text-muted)" }}>Este alumno todavía no ha participado en el debate.</p>
+                ) : null}
+              </div>
+            ) : fileHref ? (
               <>
                 <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
                   <Icon name="document-text" size={20} color="var(--primary-600)" />

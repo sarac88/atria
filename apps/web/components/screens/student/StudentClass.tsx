@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Icon, Button } from "@/components/ui";
+import { Icon, Button, Select } from "@/components/ui";
 import { Chip, EmptyState, ClassShell, Panel } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
 import { StudentTaskList } from "@/components/student/StudentTaskList";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ActivityPill } from "@/components/activities/ActivityPill";
+import { DebateBoard } from "@/components/activities/DebateBoard";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
@@ -44,7 +45,10 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
     className: c.name,
     mySubmission: subByActivity.get(a.id) ?? null,
   }));
+  const debates = (activities ?? []).filter((a) => a.type === "Debate");
   const [tab, setTab] = useState("contenido");
+  const [debateId, setDebateId] = useState<string>("");
+  const currentDebate = debates.find((a) => a.id === debateId) ?? debates[0];
   const [selMod, setSelMod] = useState<string | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
@@ -156,11 +160,25 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
             text="Cuando tu profesora publique una actividad aparecerá aquí."
           />
         )
+      ) : debates.length ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {debates.length > 1 ? (
+            <div className="atria-selectwrap" style={{ width: 320 }}>
+              <Select
+                value={currentDebate?.id ?? ""}
+                options={debates.map((a) => ({ label: a.title, value: a.id }))}
+                onChange={setDebateId}
+                placeholder="Debate"
+              />
+            </div>
+          ) : null}
+          {currentDebate ? <DebateBoard activity={currentDebate} role="alumno" /> : null}
+        </div>
       ) : (
         <EmptyState
           illo="empty-messages"
           title="El foro está tranquilo"
-          text="Cuando tu profesora publique algo nuevo aparecerá aquí."
+          text="Cuando tu profesora abra un debate aparecerá aquí para que participes."
         />
       )}
       {detail ? (
