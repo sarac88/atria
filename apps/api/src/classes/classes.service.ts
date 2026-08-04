@@ -179,9 +179,15 @@ export class ClassesService {
   }
 
   /** GET /classes/:id/activities — con recuentos de entregas/alumnos. */
-  async listActivities(classId: string): Promise<Activity[]> {
+  async listActivities(classId: string, user: AuthUser): Promise<Activity[]> {
+    const cls = await this.prisma.class.findUnique({ where: { id: classId }, select: { ownerId: true } });
+    // Los borradores solo son visibles para el docente dueño (o admin); los alumnos no los ven.
+    const canSeeDrafts = user.role === "admin" || cls?.ownerId === user.userId;
     const [activities, total, submissions] = await Promise.all([
-      this.prisma.activity.findMany({ where: { classId }, orderBy: { createdAt: "asc" } }),
+      this.prisma.activity.findMany({
+        where: { classId, ...(canSeeDrafts ? {} : { status: { not: "draft" } }) },
+        orderBy: { createdAt: "asc" },
+      }),
       this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } }),
       this.prisma.submission.groupBy({ by: ["activityId"], where: { activity: { classId } }, _count: true }),
     ]);
@@ -234,7 +240,7 @@ export class ClassesService {
     const nameOf = new Map(classes.map((c) => [c.id, c.name]));
 
     const [activities, totals, subCounts, mySubs] = await Promise.all([
-      this.prisma.activity.findMany({ where: { classId: { in: classIds } }, orderBy: { createdAt: "asc" } }),
+      this.prisma.activity.findMany({ where: { classId: { in: classIds }, status: { not: "draft" } }, orderBy: { createdAt: "asc" } }),
       this.prisma.enrollment.groupBy({ by: ["classId"], where: { classId: { in: classIds }, roleInClass: "student" }, _count: true }),
       this.prisma.submission.groupBy({ by: ["activityId"], where: { activity: { classId: { in: classIds } } }, _count: true }),
       this.prisma.submission.findMany({ where: { studentId: user.userId, activity: { classId: { in: classIds } } }, include: SUBMISSION_INCLUDE }),

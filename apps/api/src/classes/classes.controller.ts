@@ -28,8 +28,8 @@ export class ClassesController {
 
   @Get(":id/activities")
   @UseGuards(ClassMembershipGuard)
-  activities(@Param("id") id: string) {
-    return this.classes.listActivities(id);
+  activities(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.classes.listActivities(id, user);
   }
 
   @Get(":id/gradebook")

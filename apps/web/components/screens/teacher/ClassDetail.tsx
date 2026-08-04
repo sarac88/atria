@@ -266,11 +266,13 @@ function ClassStudents({ classId }: { classId: string }) {
 function OverviewActivityCard({
   activity,
   moduleLabel,
+  onOpen,
   onEdit,
   onDelete,
 }: {
   activity: Activity;
   moduleLabel: string;
+  onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -295,9 +297,14 @@ function OverviewActivityCard({
         boxShadow: hovered ? "var(--ring-hairline), var(--shadow-md)" : "var(--ring-hairline), var(--shadow-sm)",
         transform: hovered ? "translateY(-1px)" : "none",
         transition: "box-shadow .15s ease, transform .15s ease",
+        cursor: "pointer",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
     >
       <span style={{ width: 40, height: 40, borderRadius: "var(--radius-sm)", background: `color-mix(in srgb, ${tColor} 14%, #fff)`, color: tColor, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icon name={tIcon} size={20} />
@@ -365,10 +372,11 @@ function OverviewActivityCard({
   );
 }
 
-function ClassOverview({ c }: { c: ClassInfo }) {
+function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: string) => void }) {
   const { data: activities } = useActivities(c.id);
   const { data: modules } = useModules(c.id);
   const deleteActivity = useDeleteActivity(c.id);
+  const [detail, setDetail] = useState<Activity | null>(null);
   const [editing, setEditing] = useState<Activity | null>(null);
   const [deleting, setDeleting] = useState<Activity | null>(null);
 
@@ -411,6 +419,7 @@ function ClassOverview({ c }: { c: ClassInfo }) {
                 key={a.id}
                 activity={a}
                 moduleLabel={moduleLabelOf(a.moduleId)}
+                onOpen={() => setDetail(a)}
                 onEdit={() => setEditing(a)}
                 onDelete={() => setDeleting(a)}
               />
@@ -426,6 +435,15 @@ function ClassOverview({ c }: { c: ClassInfo }) {
           </div>
         </Panel>
       </div>
+
+      {detail ? (
+        <ActivityDetailModal
+          activity={detail}
+          role="docente"
+          onClose={() => setDetail(null)}
+          onGrade={(id) => { setDetail(null); onGrade(id); }}
+        />
+      ) : null}
 
       {editing ? (
         <CreateActivityModal
@@ -539,7 +557,7 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity,
           { label: "Foro", value: "foro" },
         ]}
       >
-        {tab === "resumen" ? <ClassOverview c={c} /> : null}
+        {tab === "resumen" ? <ClassOverview c={c} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "modulos" ? <ClassModules classId={c.id} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "entregas" ? (
           <DataTable
