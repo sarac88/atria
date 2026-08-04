@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { useClass, useDeleteClass } from "@/lib/api/classes";
 import { ClassDetail } from "@/components/screens/teacher/ClassDetail";
@@ -13,8 +13,19 @@ import { SubmitModal } from "@/components/modals/SubmitModal";
 import type { ClassInfo } from "@/lib/types";
 
 export default function ClassDetailPage() {
+  return (
+    <Suspense fallback={<div style={{ height: "100vh", background: "var(--surface-page)" }} />}>
+      <ClassDetailPageInner />
+    </Suspense>
+  );
+}
+
+function ClassDetailPageInner() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") ?? undefined;
+  const initialActivityId = searchParams.get("activity") ?? undefined;
   const { role, logout } = useSettings();
   const { data: klass, isLoading } = useClass(params.id);
   const deleteClass = useDeleteClass();
@@ -41,6 +52,8 @@ export default function ClassDetailPage() {
       ) : (
         <ClassDetail
           klass={klass}
+          initialTab={initialTab}
+          initialActivityId={initialActivityId}
           onBack={onBack}
           onProfile={onProfile}
           onLogout={onLogout}

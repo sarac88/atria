@@ -469,8 +469,14 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
   );
 }
 
+const CLASS_TABS = ["resumen", "modulos", "entregas", "calificaciones", "alumnos"];
+
 export interface ClassDetailProps {
   klass: ClassInfo;
+  /** Pestaña inicial (p. ej. desde una notificación de entrega). */
+  initialTab?: string;
+  /** Actividad preseleccionada para la pestaña de Entregas. */
+  initialActivityId?: string;
   onBack: () => void;
   onProfile: () => void;
   onLogout: () => void;
@@ -495,17 +501,22 @@ function HeaderAction({ icon, label, danger, onClick }: { icon: string; label: s
   );
 }
 
-export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity, onEdit, onDelete }: ClassDetailProps) {
+export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onProfile, onLogout, onNewActivity, onEdit, onDelete }: ClassDetailProps) {
   const { role, modLayout } = useSettings();
-  const [tab, setTab] = useState("resumen");
+  const [tab, setTab] = useState(initialTab && CLASS_TABS.includes(initialTab) ? initialTab : "resumen");
   const [gradeSub, setGradeSub] = useState<SubmissionDto | null>(null);
   const c = klass;
 
   const { data: activities } = useActivities(c.id);
-  const [activityId, setActivityId] = useState<string>("");
+  const [activityId, setActivityId] = useState<string>(initialActivityId ?? "");
   useEffect(() => {
     if (!activityId && activities && activities.length) setActivityId(activities[0].id);
   }, [activities, activityId]);
+  // Al llegar desde una notificación (la URL cambia), salta a esa pestaña/actividad.
+  useEffect(() => {
+    if (initialTab && CLASS_TABS.includes(initialTab)) setTab(initialTab);
+    if (initialActivityId) setActivityId(initialActivityId);
+  }, [initialTab, initialActivityId]);
   const { data: subs } = useSubmissions(activityId || undefined);
   const gradebook = useGradebook(c.id);
   const gradeMut = useGradeSubmission(activityId || undefined, c.id);

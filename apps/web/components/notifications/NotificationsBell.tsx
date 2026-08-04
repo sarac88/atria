@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui";
-import { useMarkAllRead, useMarkRead, useNotifications } from "@/lib/api/notifications";
+import { useDeleteNotification, useMarkAllRead, useMarkRead, useNotifications } from "@/lib/api/notifications";
 import type { NotificationDto, NotificationType } from "@/lib/types";
 
 const TYPE_META: Record<NotificationType, { icon: string; tint: string; fg: string }> = {
@@ -19,6 +19,7 @@ export function NotificationsBell({ tone = "light" }: { tone?: "light" | "onDark
   const { data } = useNotifications();
   const markAll = useMarkAllRead();
   const markRead = useMarkRead();
+  const removeNotif = useDeleteNotification();
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -102,10 +103,18 @@ export function NotificationsBell({ tone = "light" }: { tone?: "light" | "onDark
                   items.map((n) => {
                     const meta = TYPE_META[n.type] ?? TYPE_META.system;
                     return (
-                      <button
+                      <div
                         key={n.id}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => onItem(n)}
-                        style={{ display: "flex", gap: 12, width: "100%", textAlign: "left", padding: "12px 16px", border: "none", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", background: n.read ? "transparent" : "var(--state-hover-tint)" }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onItem(n);
+                          }
+                        }}
+                        style={{ display: "flex", gap: 12, width: "100%", textAlign: "left", padding: "12px 16px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", background: n.read ? "transparent" : "var(--state-hover-tint)" }}
                         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--state-hover-row)")}
                         onMouseLeave={(e) => (e.currentTarget.style.background = n.read ? "transparent" : "var(--state-hover-tint)")}
                       >
@@ -119,8 +128,30 @@ export function NotificationsBell({ tone = "light" }: { tone?: "light" | "onDark
                           </div>
                           <div style={{ fontSize: 12.5, color: "var(--text-body)", marginTop: 2, lineHeight: 1.4 }}>{n.body}</div>
                         </div>
-                        {!n.read ? <span style={{ alignSelf: "center", width: 8, height: 8, borderRadius: "50%", background: "var(--brand-accent)", flexShrink: 0 }} /> : null}
-                      </button>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                          {!n.read ? <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--brand-accent)" }} /> : null}
+                          <button
+                            type="button"
+                            aria-label="Eliminar notificación"
+                            title="Eliminar"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNotif.mutate(n.id);
+                            }}
+                            style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-muted)", display: "inline-flex", padding: 4, borderRadius: "var(--radius-sm)", lineHeight: 0 }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "var(--status-error)";
+                              e.currentTarget.style.background = "var(--status-error-soft)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "var(--text-muted)";
+                              e.currentTarget.style.background = "transparent";
+                            }}
+                          >
+                            <Icon name="x" size={15} />
+                          </button>
+                        </div>
+                      </div>
                     );
                   })
                 )}

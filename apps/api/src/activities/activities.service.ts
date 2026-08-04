@@ -127,7 +127,8 @@ export class ActivitiesService {
         type: "submission",
         title: "Nueva entrega",
         body: `${sub.student.name} entregó «${activity.title}»`,
-        link: `/clase/${activity.classId}`,
+        // Abre la clase en la pestaña de Entregas con esta actividad ya seleccionada.
+        link: `/clase/${activity.classId}?tab=entregas&activity=${activity.id}`,
         entityId: sub.id,
       })
       .catch(() => undefined);

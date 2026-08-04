@@ -60,4 +60,9 @@ export class NotificationsService {
   async markRead(id: string, userId: string): Promise<void> {
     await this.prisma.notification.updateMany({ where: { id, userId, readAt: null }, data: { readAt: new Date() } });
   }
+
+  /** Borra una notificación del usuario (scoped por userId para que solo borre las suyas). */
+  async remove(id: string, userId: string): Promise<void> {
+    await this.prisma.notification.deleteMany({ where: { id, userId } });
+  }
 }
