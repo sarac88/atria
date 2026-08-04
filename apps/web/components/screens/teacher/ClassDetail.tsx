@@ -607,6 +607,7 @@ export function ClassDetail({ klass, onBack, onProfile, onLogout, onNewActivity,
           submission={gradeSub}
           questions={selectedActivity?.config?.questions}
           debatePosts={gradedDebate?.posts}
+          maxPoints={selectedActivity?.points}
           onClose={() => setGradeSub(null)}
           onSave={async (score, feedback) => {
             await gradeMut.mutateAsync({ id: gradeSub.id, score, feedback });

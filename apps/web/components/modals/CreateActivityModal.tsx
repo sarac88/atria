@@ -184,6 +184,8 @@ function QuizBuilder({ questions, setQuestions }: { questions: QuizQuestion[]; s
                   <Input
                     value={String(q.points)}
                     type="number"
+                    step="0.5"
+                    min="0"
                     placeholder="pts"
                     iconRight={<span style={{ fontSize: 12, color: "var(--text-muted)" }}>pts</span>}
                     onChange={(e) => upd(q.id, { points: Number(e.target.value) || 0 })}

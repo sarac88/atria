@@ -14,10 +14,38 @@ function formatGrade(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
+/** ¿La respuesta del alumno es la correcta? Las de opción/V-F guardan el índice; las cortas, el texto. */
+function isAnswerCorrect(q: QuizQuestion, given: string): boolean {
+  if (q.kind === "short") {
+    if (!q.answer) return false; // sin respuesta esperada no se puede autocorregir
+    return given.trim().toLowerCase() === q.answer.trim().toLowerCase();
+  }
+  return given !== "" && Number(given) === (q.correct ?? -1);
+}
+
+/** Autocorrección de un cuestionario: puntos, aciertos y cuántas preguntas requieren revisión manual. */
+function autoScore(questions: QuizQuestion[], answers: Record<string, string>) {
+  return questions.reduce(
+    (acc, q) => {
+      const given = answers[q.id] ?? "";
+      if (q.kind === "short" && !q.answer) return { ...acc, manual: acc.manual + 1 };
+      const ok = isAnswerCorrect(q, given);
+      return {
+        score: acc.score + (ok ? Number(q.points) || 0 : 0),
+        correct: acc.correct + (ok ? 1 : 0),
+        gradable: acc.gradable + 1,
+        manual: acc.manual,
+      };
+    },
+    { score: 0, correct: 0, gradable: 0, manual: 0 },
+  );
+}
+
 export function GradeModal({
   submission,
   questions,
   debatePosts,
+  maxPoints,
   onClose,
   onSave,
 }: {
@@ -26,17 +54,26 @@ export function GradeModal({
   questions?: QuizQuestion[];
   /** Debate thread of the activity; only this student's contributions are shown. */
   debatePosts?: DebatePostDto[];
+  /** Máximo de la actividad; la nota se califica sobre este valor (por defecto 10). */
+  maxPoints?: number;
   onClose: () => void;
   onSave?: (score: number, feedback: string) => Promise<void>;
 }) {
   const s = submission || FALLBACK;
-  const [grade, setGrade] = useState(s.grade && s.grade !== "—" ? s.grade : "");
+  const max = maxPoints && maxPoints > 0 ? maxPoints : 10;
+  const isQuiz = !!questions?.length;
+  const isDebate = !!debatePosts;
+  // Autocorrección del cuestionario a partir de las respuestas del alumno.
+  const auto = isQuiz ? autoScore(questions ?? [], s.answers ?? {}) : null;
+  const [grade, setGrade] = useState(() => {
+    if (s.grade && s.grade !== "—") return s.grade; // ya calificado: respeta la nota guardada
+    if (auto) return formatGrade(auto.score); // sin calificar: propone la nota automática
+    return "";
+  });
   const [feedback, setFeedback] = useState(s.feedback ?? "");
   const [saving, setSaving] = useState(false);
   const parsed = parseFloat(grade.replace(",", "."));
-  const sliderValue = Number.isNaN(parsed) ? 0 : Math.min(10, Math.max(0, parsed));
-  const isQuiz = !!questions?.length;
-  const isDebate = !!debatePosts;
+  const sliderValue = Number.isNaN(parsed) ? 0 : Math.min(max, Math.max(0, parsed));
   // Sus intervenciones: raíces propias y respuestas propias colgadas de otros.
   const myRoots = (debatePosts ?? []).filter((p) => p.authorId === s.studentId);
   const myReplies = (debatePosts ?? [])
@@ -148,23 +185,54 @@ export function GradeModal({
           <Eyebrow>Nota</Eyebrow>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 8, margin: "8px 0 14px" }}>
             <input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="0.0" style={{ width: 96, fontSize: 40, fontWeight: 700, color: "var(--brand-primary)", border: "none", outline: "none", background: "transparent", textAlign: "center", fontFamily: "var(--font-sans)" }} />
-            <span style={{ fontSize: 22, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8 }}>/ 10</span>
+            <span style={{ fontSize: 22, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8 }}>/ {formatGrade(max)}</span>
           </div>
           <input
             className="atria-grade-slider"
             type="range"
             min={0}
-            max={10}
+            max={max}
             step={0.1}
             value={sliderValue}
-            aria-label="Nota sobre 10"
+            aria-label={`Nota sobre ${formatGrade(max)}`}
             onChange={(e) => setGrade(formatGrade(parseFloat(e.target.value)))}
-            style={{ ["--fill" as string]: `${sliderValue * 10}%` }}
+            style={{ ["--fill" as string]: `${(sliderValue / max) * 100}%` }}
           />
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--text-muted)", margin: "4px 0 20px" }}>
             <span>0</span>
-            <span>10</span>
+            <span>{formatGrade(max)}</span>
           </div>
+          {auto ? (
+            <button
+              type="button"
+              onClick={() => setGrade(formatGrade(auto.score))}
+              title="Aplicar la nota automática"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                width: "100%",
+                textAlign: "left",
+                margin: "0 0 20px",
+                padding: "9px 12px",
+                borderRadius: "var(--radius-md)",
+                border: "none",
+                cursor: "pointer",
+                background: "var(--surface-soft)",
+                boxShadow: "var(--ring-hairline)",
+                color: "var(--text-body)",
+                fontSize: 12.5,
+              }}
+            >
+              <Icon name="clipboard-check" size={16} color="var(--info-500)" />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                Autocorrección: <strong style={{ color: "var(--text-strong)" }}>{auto.correct}/{auto.gradable}</strong> correctas ·{" "}
+                <strong style={{ color: "var(--text-strong)" }}>{formatGrade(auto.score)}</strong> pts
+                {auto.manual > 0 ? ` · ${auto.manual} a revisar` : ""}
+              </span>
+              <span style={{ fontWeight: 700, color: "var(--brand-primary)", whiteSpace: "nowrap" }}>Aplicar</span>
+            </button>
+          ) : null}
           <Textarea label="Comentario para el alumno" rows={5} placeholder="Buen trabajo, has explicado…" value={feedback} onChange={(e) => setFeedback(e.target.value)} />
         </div>
       </div>

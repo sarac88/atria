@@ -153,7 +153,7 @@ model Activity {
   instructions String       @default("")
   dueAt        String       @default("")
   dueDate      DateTime?
-  points       Int          @default(0)
+  points       Float        @default(0)
   format       String       @default("Archivo")
   allowLate    Boolean      @default(true)
   config       Json         @default("{}")
