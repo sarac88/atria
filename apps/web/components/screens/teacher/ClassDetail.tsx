@@ -25,6 +25,7 @@ import {
   useSubmissions,
 } from "@/lib/api/classwork";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
+import { activityTypeMeta } from "@/lib/activity-meta";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
 import type { Activity, BadgeColor, ClassInfo, SubmissionDto } from "@/lib/types";
 
@@ -47,6 +48,108 @@ function UnitActivities({ activities, onOpen }: { activities: Activity[]; onOpen
 }
 
 const statusMap: Record<string, BadgeColor> = { Entregado: "success", Pendiente: "warning", Atrasado: "error", Borrador: "default" };
+
+/** Horizontal chip strip to switch between activities in the Entregas tab. */
+function ActivityChipStrip({
+  activities,
+  value,
+  onChange,
+}: {
+  activities: Activity[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  if (!activities.length) return null;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 8,
+        overflowX: "auto",
+        padding: "4px 2px 12px",
+        scrollbarWidth: "thin",
+      }}
+    >
+      {activities.map((a) => {
+        const active = a.id === value;
+        const pending = Math.max(0, a.total - a.submitted);
+        const [icon, color] = activityTypeMeta(a.type);
+        return (
+          <button
+            key={a.id}
+            type="button"
+            onClick={() => onChange(a.id)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              flexShrink: 0,
+              maxWidth: 260,
+              padding: "8px 14px",
+              border: "none",
+              borderRadius: "var(--radius-md)",
+              cursor: "pointer",
+              background: active ? "var(--primary-100)" : "var(--surface-card)",
+              boxShadow: active ? "inset 0 0 0 1.5px var(--brand-primary)" : "var(--ring-hairline), var(--shadow-sm)",
+              transition: "background .15s ease, box-shadow .15s ease",
+            }}
+            onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = "var(--state-hover-tint)"; }}
+            onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? "var(--primary-100)" : "var(--surface-card)"; }}
+          >
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                flexShrink: 0,
+                borderRadius: "var(--radius-sm)",
+                background: `color-mix(in srgb, ${color} 14%, #fff)`,
+                color,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name={icon} size={16} />
+            </span>
+            <span
+              style={{
+                fontSize: 13.5,
+                fontWeight: active ? 700 : 600,
+                color: active ? "var(--brand-primary)" : "var(--text-strong)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {a.title}
+            </span>
+            {pending > 0 ? (
+              <span
+                style={{
+                  flexShrink: 0,
+                  minWidth: 20,
+                  height: 20,
+                  padding: "0 6px",
+                  borderRadius: 999,
+                  background: active ? "var(--brand-primary)" : "var(--warning-100)",
+                  color: active ? "#fff" : "var(--warning-700)",
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {pending}
+              </span>
+            ) : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 const TYPE_META: Record<string, [string, string]> = {
   Tarea: ["document-text", "var(--success-500)"],
@@ -571,22 +674,26 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         {tab === "resumen" ? <ClassOverview c={c} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "modulos" ? <ClassModules classId={c.id} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "entregas" ? (
-          <DataTable
-            title={`Entregas · ${selectedActivity?.title ?? "Actividad"}`}
-            rowKey="id"
-            columns={subCols}
-            rows={rows}
-            selectable={false}
-            toolbar={
-              <>
-                <div className="atria-selectwrap" style={{ width: 240 }}>
-                  <Select value={activityId} options={(activities ?? []).map((a) => ({ label: a.title, value: a.id }))} onChange={setActivityId} placeholder="Actividad" />
-                </div>
-                <Chip icon="clock">{pendientes} pendientes</Chip>
-                <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
-              </>
-            }
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <ActivityChipStrip
+              activities={activities ?? []}
+              value={activityId}
+              onChange={setActivityId}
+            />
+            <DataTable
+              title={`Entregas · ${selectedActivity?.title ?? "Actividad"}`}
+              rowKey="id"
+              columns={subCols}
+              rows={rows}
+              selectable={false}
+              toolbar={
+                <>
+                  <Chip icon="clock">{pendientes} pendientes</Chip>
+                  <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
+                </>
+              }
+            />
+          </div>
         ) : null}
         {tab === "calificaciones" ? <GradebookTable data={gradebook.data} /> : null}
         {tab === "alumnos" ? <ClassStudents classId={c.id} /> : null}
