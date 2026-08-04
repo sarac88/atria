@@ -207,8 +207,9 @@ export class ActivitiesService {
     const body = input.body.trim();
     if (!body) throw new BadRequestException("La intervención no puede estar vacía.");
 
+    // El mínimo de palabras solo aplica a la intervención inicial, no a las respuestas.
     const minWords = this.debateConfig(activity.config).minWords ?? 0;
-    if (user.role === "alumno" && minWords > 0 && body.split(/\s+/).length < minWords) {
+    if (user.role === "alumno" && !input.parentId && minWords > 0 && body.split(/\s+/).length < minWords) {
       throw new BadRequestException(`Tu intervención debe tener al menos ${minWords} palabras.`);
     }
 

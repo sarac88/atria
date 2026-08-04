@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Button, Icon, Badge, Textarea } from "@/components/ui";
 import { Modal, Eyebrow, ProgressBar } from "@/components/layout";
 import { QuizQuestions } from "@/components/activities/QuizQuestions";
-import { useMyGrades, useSubmitWork } from "@/lib/api/classwork";
+import { useDebateThread, useMyGrades, useSubmitWork } from "@/lib/api/classwork";
 import { resourceUrl } from "@/lib/api/client";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import { studentTaskBadge } from "@/lib/student-task";
@@ -115,6 +115,11 @@ export function ActivityDetailModal({
   const questions = activity.type === "Cuestionario" ? (activity.config?.questions ?? []) : [];
   const isQuiz = questions.length > 0;
   const isDebate = activity.type === "Debate";
+
+  // Para el alumno: sus propias intervenciones y respuestas, para mostrarlas en «Tu entrega».
+  const { data: debateThread } = useDebateThread(!isTeacher && isDebate ? activity.id : undefined);
+  const myRoots = (debateThread?.posts ?? []).filter((p) => p.mine);
+  const myReplies = (debateThread?.posts ?? []).flatMap((p) => p.replies.filter((r) => r.mine).map((r) => ({ reply: r, to: p.author })));
 
   const [showSubmit, setShowSubmit] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -296,6 +301,31 @@ export function ActivityDetailModal({
             <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 10 }}>Entregado el {submission.date}{submission.late ? " · tarde" : ""}.</div>
           )}
           {isQuiz ? <QuizQuestions questions={questions} answers={submission.answers ?? {}} showCorrect /> : null}
+          {isDebate ? (
+            myRoots.length === 0 && myReplies.length === 0 ? (
+              <p style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 12 }}>
+                Tu participación está en la pestaña Foro de la clase.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
+                <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+                  {myRoots.length} intervención{myRoots.length === 1 ? "" : "es"} · {myReplies.length} respuesta{myReplies.length === 1 ? "" : "s"} a compañeros
+                </div>
+                {myRoots.map((p) => (
+                  <div key={p.id} style={{ padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>Intervención · {p.date}</div>
+                    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{p.body}</p>
+                  </div>
+                ))}
+                {myReplies.map(({ reply, to }) => (
+                  <div key={reply.id} style={{ padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>En respuesta a {to} · {reply.date}</div>
+                    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{reply.body}</p>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : null}
           {submission.comment ? (
             <div style={{ marginTop: 14 }}>
               <Eyebrow>Tu comentario</Eyebrow>

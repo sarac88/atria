@@ -4,9 +4,23 @@ import { useState } from "react";
 import { Avatar, Badge, Button, Icon, Textarea } from "@/components/ui";
 import { Chip, Eyebrow } from "@/components/layout";
 import { useCreateDebatePost, useDebateThread, useDeleteDebatePost } from "@/lib/api/classwork";
+import { ApiError } from "@/lib/api/client";
 import type { Activity, DebatePostDto, Role } from "@/lib/types";
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
+
+/** Extrae el mensaje del backend (validación Zod o excepción) para mostrarlo tal cual. */
+function debatePostError(err: unknown): string {
+  const fallback = "No se pudo publicar. Inténtalo de nuevo.";
+  if (!(err instanceof ApiError)) return fallback;
+  try {
+    const parsed = JSON.parse(err.message) as { message?: string | string[] };
+    const msg = parsed.message;
+    return (Array.isArray(msg) ? msg.join(". ") : msg) || err.message || fallback;
+  } catch {
+    return err.message || fallback;
+  }
+}
 
 /** Composer shared by the root form and the inline reply forms. */
 function Composer({
@@ -37,8 +51,8 @@ function Composer({
     try {
       await onSubmit(body.trim());
       setBody("");
-    } catch {
-      setError("No se pudo publicar. Inténtalo de nuevo.");
+    } catch (err) {
+      setError(debatePostError(err));
     }
   };
 
