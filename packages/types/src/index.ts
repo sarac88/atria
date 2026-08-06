@@ -119,6 +119,7 @@ export interface ModuleItem {
 export interface Module {
   id: string;
   title: string;
+  description: string;
   done: boolean;
   items: ModuleItem[];
 }
@@ -355,8 +356,15 @@ export type UpdateActivityInput = z.infer<typeof updateActivitySchema>;
 
 export const createModuleSchema = z.object({
   title: z.string().min(1),
+  description: z.string().optional(),
 });
 export type CreateModuleInput = z.infer<typeof createModuleSchema>;
+
+export const updateModuleSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+});
+export type UpdateModuleInput = z.infer<typeof updateModuleSchema>;
 
 export const addResourceSchema = z.object({
   type: z.string().min(1),

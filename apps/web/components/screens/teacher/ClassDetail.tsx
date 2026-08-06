@@ -23,6 +23,7 @@ import {
   useModules,
   useRoster,
   useSubmissions,
+  useUpdateModule,
 } from "@/lib/api/classwork";
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
 import { activityTypeMeta } from "@/lib/activity-meta";
@@ -198,12 +199,98 @@ function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: st
   );
 }
 
+const UNIT_FIELD: React.CSSProperties = {
+  width: "100%",
+  border: "none",
+  borderRadius: "var(--radius-sm)",
+  boxShadow: "inset 0 0 0 1px var(--border-default)",
+  fontFamily: "var(--font-sans)",
+  color: "var(--text-strong)",
+  background: "#fff",
+};
+
+/** Botón discreto para abrir la edición de una unidad. */
+function UnitEditButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label="Editar unidad"
+      title="Editar unidad"
+      onClick={onClick}
+      style={{ width: 32, height: 32, flexShrink: 0, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "transparent", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s ease, color .15s ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; e.currentTarget.style.color = "var(--primary-600)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
+    >
+      <Icon name="pencil" size={16} />
+    </button>
+  );
+}
+
+/** Formulario en línea para renombrar la unidad y editar su descripción. */
+function UnitEditForm({
+  title,
+  description,
+  pending,
+  onSave,
+  onCancel,
+}: {
+  title: string;
+  description: string;
+  pending?: boolean;
+  onSave: (title: string, description: string) => void;
+  onCancel: () => void;
+}) {
+  const [val, setVal] = useState(title);
+  const [desc, setDesc] = useState(description);
+  const commit = () => {
+    const v = val.trim();
+    if (!v) return;
+    onSave(v, desc.trim());
+  };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+      <input
+        autoFocus
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") onCancel(); }}
+        placeholder="Nombre de la unidad"
+        aria-label="Nombre de la unidad"
+        style={{ ...UNIT_FIELD, height: 42, padding: "0 12px", fontSize: 16, fontWeight: 700 }}
+      />
+      <textarea
+        value={desc}
+        onChange={(e) => setDesc(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
+        placeholder="Descripción de la unidad (opcional)"
+        aria-label="Descripción de la unidad"
+        rows={3}
+        style={{ ...UNIT_FIELD, padding: "10px 12px", fontSize: 13.5, lineHeight: 1.6, resize: "vertical" }}
+      />
+      <div style={{ display: "flex", gap: 8 }}>
+        <Button size="small" variant="accent" disabled={!val.trim() || pending} onClick={commit}>Guardar</Button>
+        <Button size="small" variant="ghost" onClick={onCancel}>Cancelar</Button>
+      </div>
+    </div>
+  );
+}
+
+/** Descripción de la unidad, encima de Recursos y Actividades. */
+function UnitDescription({ text }: { text: string }) {
+  if (!text.trim()) return null;
+  return (
+    <p style={{ margin: "0 0 18px", fontSize: 13.5, lineHeight: 1.6, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{text}</p>
+  );
+}
+
 function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?: boolean; onGrade: (activityId: string) => void }) {
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
+  const updateModule = useUpdateModule(classId);
   const list = modules ?? [];
   const { units, actsOf } = buildUnits(list, activities ?? []);
+  const [editing, setEditing] = useState<string | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
@@ -250,13 +337,30 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
 
       {current ? (
         <div key={current.id} style={{ paddingLeft: 28 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <span style={{ width: 32, height: 32, borderRadius: "50%", background: current.done ? "var(--success-100)" : "var(--surface-soft)", color: current.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name={current.done ? "check" : "book-open"} size={18} />
-            </span>
-            <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{current.title}</h3>
-            {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
-          </div>
+          {editing === current.id ? (
+            <UnitEditForm
+              title={current.title}
+              description={current.description}
+              pending={updateModule.isPending}
+              onCancel={() => setEditing(null)}
+              onSave={(title, description) => {
+                updateModule.mutate({ id: current.id, title, description });
+                setEditing(null);
+              }}
+            />
+          ) : (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <span style={{ width: 32, height: 32, borderRadius: "50%", background: current.done ? "var(--success-100)" : "var(--surface-soft)", color: current.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <Icon name={current.done ? "check" : "book-open"} size={18} />
+                </span>
+                <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{current.title}</h3>
+                {current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+                {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
+              </div>
+              <UnitDescription text={current.description} />
+            </>
+          )}
           {current.id !== NONE_UNIT ? (
             <>
               <div style={SECTION_LABEL}>Recursos</div>
@@ -286,9 +390,11 @@ function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (act
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
+  const updateModule = useUpdateModule(classId);
   const list = modules ?? [];
   const { units, actsOf } = buildUnits(list, activities ?? []);
   const [open, setOpen] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
@@ -323,6 +429,29 @@ function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (act
             </button>
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
+                {!isNone ? (
+                  editing === m.id ? (
+                    <UnitEditForm
+                      title={m.title}
+                      description={m.description}
+                      pending={updateModule.isPending}
+                      onCancel={() => setEditing(null)}
+                      onSave={(title, description) => {
+                        updateModule.mutate({ id: m.id, title, description });
+                        setEditing(null);
+                      }}
+                    />
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {m.description.trim()
+                          ? <UnitDescription text={m.description} />
+                          : <p style={{ margin: "0 0 18px", fontSize: 13, color: "var(--text-muted)" }}>Sin descripción.</p>}
+                      </div>
+                      <UnitEditButton onClick={() => setEditing(m.id)} />
+                    </div>
+                  )
+                ) : null}
                 {!isNone ? (
                   <>
                     <div style={SECTION_LABEL}>Recursos</div>

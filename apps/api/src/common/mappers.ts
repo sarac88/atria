@@ -222,6 +222,7 @@ export function toModuleDto(m: ModuleWithResources): ModuleDto {
   return {
     id: m.id,
     title: m.title,
+    description: m.description,
     done: m.done,
     items: m.resources.map((r) => ({ id: r.id, type: r.type, label: r.label, meta: r.meta, state: r.state, url: r.url })),
   };

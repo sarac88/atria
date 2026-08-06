@@ -117,16 +117,17 @@ model Enrollment {
 }
 
 model Module {
-  id         String     @id @default(cuid())
-  classId    String
-  title      String
-  position   Int        @default(0)
-  done       Boolean    @default(false)
-  class      Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
-  resources  Resource[]
-  activities Activity[]
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id          String     @id @default(cuid())
+  classId     String
+  title       String
+  description String     @default("")
+  position    Int        @default(0)
+  done        Boolean    @default(false)
+  class       Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  resources   Resource[]
+  activities  Activity[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Resource {

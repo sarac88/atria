@@ -12,6 +12,7 @@ import type {
   StudentTaskDto,
   SubmissionDto,
   UpdateActivityInput,
+  UpdateModuleInput,
 } from "@atria/types";
 import { apiFetch } from "./client";
 
@@ -180,6 +181,17 @@ export function useCreateModule(classId: string) {
   return useMutation({
     mutationFn: (input: CreateModuleInput) =>
       apiFetch<Module>(`/classes/${classId}/modules`, { method: "POST", body: JSON.stringify(input) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useUpdateModule(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string } & UpdateModuleInput) => {
+      const { id, ...body } = v;
+      return apiFetch<Module>(`/modules/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+    },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
   });
 }

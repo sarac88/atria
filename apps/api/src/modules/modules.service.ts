@@ -1,7 +1,12 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { unlink } from "fs/promises";
 import { extname, join } from "path";
-import type { AddResourceInput, CreateModuleInput, Module as ModuleDto } from "@atria/types";
+import type {
+  AddResourceInput,
+  CreateModuleInput,
+  Module as ModuleDto,
+  UpdateModuleInput,
+} from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toModuleDto } from "../common/mappers";
@@ -32,10 +37,25 @@ export class ModulesService {
     await this.assertClassOwner(user, classId);
     const position = await this.prisma.module.count({ where: { classId } });
     const mod = await this.prisma.module.create({
-      data: { classId, title: input.title, position },
+      data: { classId, title: input.title, description: input.description ?? "", position },
       include: MODULE_INCLUDE,
     });
     return toModuleDto(mod);
+  }
+
+  /** Renombra la unidad y/o actualiza su descripción. */
+  async updateModule(user: AuthUser, moduleId: string, input: UpdateModuleInput): Promise<ModuleDto> {
+    const mod = await this.prisma.module.findUnique({ where: { id: moduleId }, select: { classId: true } });
+    if (!mod) throw new NotFoundException();
+    await this.assertClassOwner(user, mod.classId);
+    await this.prisma.module.update({
+      where: { id: moduleId },
+      data: {
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.description !== undefined ? { description: input.description } : {}),
+      },
+    });
+    return this.moduleDto(moduleId);
   }
 
   async addResource(user: AuthUser, moduleId: string, input: AddResourceInput): Promise<ModuleDto> {

@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFile,
   UseGuards,
@@ -14,8 +15,10 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import {
   addResourceSchema,
   createModuleSchema,
+  updateModuleSchema,
   type AddResourceInput,
   type CreateModuleInput,
+  type UpdateModuleInput,
 } from "@atria/types";
 import { CurrentUser, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard } from "../auth/guards";
@@ -41,6 +44,15 @@ export class ModulesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.modules.createModule(user, id, body);
+  }
+
+  @Patch("modules/:id")
+  updateModule(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateModuleSchema)) body: UpdateModuleInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.modules.updateModule(user, id, body);
   }
 
   @Post("modules/:id/resources")
