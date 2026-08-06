@@ -203,6 +203,7 @@
 :root {
   --font-sans: "Cabin", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-label: "Mulish", var(--font-sans);
+  --font-serif: Georgia, "Times New Roman", "Iowan Old Style", serif;
 
   --type-display-size: 56px;
   --type-display-line: 64px;

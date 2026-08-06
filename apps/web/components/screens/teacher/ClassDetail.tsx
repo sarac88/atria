@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DataTable, Badge, Button, Icon, Avatar, Select, type Column } from "@/components/ui";
+import { DataTable, Badge, Button, Icon, Avatar, Select, RichText, type Column } from "@/components/ui";
 import { Chip, Panel, EmptyState, ClassShell, ProgressBar } from "@/components/layout";
 import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
@@ -11,6 +11,7 @@ import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
+import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
 import {
@@ -258,28 +259,17 @@ function UnitEditForm({
         aria-label="Nombre de la unidad"
         style={{ ...UNIT_FIELD, height: 42, padding: "0 12px", fontSize: 16, fontWeight: 700 }}
       />
-      <textarea
+      <RichText
         value={desc}
-        onChange={(e) => setDesc(e.target.value)}
-        onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
+        onChange={setDesc}
         placeholder="Descripción de la unidad (opcional)"
-        aria-label="Descripción de la unidad"
-        rows={3}
-        style={{ ...UNIT_FIELD, padding: "10px 12px", fontSize: 13.5, lineHeight: 1.6, resize: "vertical" }}
+        minHeight={110}
       />
       <div style={{ display: "flex", gap: 8 }}>
         <Button size="small" variant="accent" disabled={!val.trim() || pending} onClick={commit}>Guardar</Button>
         <Button size="small" variant="ghost" onClick={onCancel}>Cancelar</Button>
       </div>
     </div>
-  );
-}
-
-/** Descripción de la unidad, encima de Recursos y Actividades. */
-function UnitDescription({ text }: { text: string }) {
-  if (!text.trim()) return null;
-  return (
-    <p style={{ margin: "0 0 18px", fontSize: 13.5, lineHeight: 1.6, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{text}</p>
   );
 }
 
@@ -354,8 +344,11 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
                 <span style={{ width: 32, height: 32, borderRadius: "50%", background: current.done ? "var(--success-100)" : "var(--surface-soft)", color: current.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name={current.done ? "check" : "book-open"} size={18} />
                 </span>
-                <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{current.title}</h3>
-                {current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+                  <h3 style={{ fontSize: 18, margin: 0 }}>{current.title}</h3>
+                  {current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+                </span>
+                <span style={{ flex: 1 }} />
                 {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
               </div>
               <UnitDescription text={current.description} />

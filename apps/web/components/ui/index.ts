@@ -21,6 +21,8 @@ export { Textarea } from "./Textarea";
 export type { TextareaProps } from "./Textarea";
 export { RichText } from "./RichText";
 export type { RichTextProps } from "./RichText";
+export { RichView } from "./RichView";
+export type { RichViewProps } from "./RichView";
 export { Select } from "./Select";
 export type { SelectProps, SelectOption } from "./Select";
 export { MultiSelect } from "./MultiSelect";

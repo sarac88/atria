@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, Icon, Badge, Textarea } from "@/components/ui";
+import { Button, Icon, Badge, Textarea, RichView } from "@/components/ui";
 import { Modal, Eyebrow, ProgressBar } from "@/components/layout";
 import { QuizQuestions } from "@/components/activities/QuizQuestions";
 import { useDebateThread, useMyGrades, useSubmitWork } from "@/lib/api/classwork";
@@ -10,7 +10,6 @@ import { activityTypeMeta } from "@/lib/activity-meta";
 import { studentTaskBadge } from "@/lib/student-task";
 import type { Activity, Role } from "@/lib/types";
 
-const HTML_RE = /<\/?[a-z][\s\S]*>/i;
 const MAX_BYTES = 50 * 1024 * 1024;
 const ACCEPT = ".pdf,.doc,.docx";
 const ALLOWED_EXT = ["pdf", "doc", "docx"];
@@ -19,61 +18,6 @@ function humanSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
   return kb < 1024 ? `${Math.round(kb)} KB` : `${(kb / 1024).toFixed(1)} MB`;
-}
-
-/** Renders rich-text HTML (from the activity editor), or plain text with preserved line breaks for legacy content. */
-function RichView({ html, lineHeight }: { html: string; lineHeight: number }) {
-  if (!HTML_RE.test(html)) {
-    return <p style={{ fontSize: 14, lineHeight, color: "var(--text-body)", margin: "8px 0 0", whiteSpace: "pre-wrap" }}>{html}</p>;
-  }
-  return (
-    <>
-      <div
-        className="atria-richview"
-        style={{ fontSize: 14, lineHeight, color: "var(--text-body)", marginTop: 8 }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-      <style jsx global>{`
-        .atria-richview > * {
-          margin: 0 0 8px;
-        }
-        .atria-richview > *:last-child {
-          margin-bottom: 0;
-        }
-        .atria-richview h3 {
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--text-strong);
-        }
-        .atria-richview ul,
-        .atria-richview ol {
-          padding-left: 22px;
-        }
-        .atria-richview ul {
-          list-style: disc;
-        }
-        .atria-richview ol {
-          list-style: decimal;
-        }
-        .atria-richview li {
-          margin: 2px 0;
-        }
-        .atria-richview li > p {
-          margin: 0;
-        }
-        .atria-richview a {
-          color: var(--primary-600);
-          text-decoration: underline;
-        }
-        .atria-richview img {
-          max-width: 100%;
-          height: auto;
-          border-radius: var(--radius-sm);
-          margin: 4px 0;
-        }
-      `}</style>
-    </>
-  );
 }
 
 function configSummary(a: Activity): string | null {

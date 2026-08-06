@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import { useEditor, EditorContent, Extension, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import TextStyle from "@tiptap/extension-text-style";
 
 export interface RichTextProps {
   label?: string;
@@ -16,6 +17,40 @@ export interface RichTextProps {
   minHeight?: number;
   style?: CSSProperties;
 }
+
+/** Familias tipográficas ofrecidas en la barra. */
+const FONT_FAMILIES = [
+  { key: "sans", label: "Sans", css: "var(--font-sans)" },
+  { key: "serif", label: "Serifa", css: "var(--font-serif)" },
+] as const;
+
+/** Tamaños de letra disponibles (px); BASE es el del editor sin marca de tamaño. */
+const FONT_SIZES = [12, 14, 16, 18, 22, 28];
+const BASE_FONT_SIZE = 14;
+
+/** Añade tamaño y familia de letra al mark textStyle. */
+const TextStyleAttrs = Extension.create({
+  name: "textStyleAttrs",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["textStyle"],
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (el) => el.style.fontSize || null,
+            renderHTML: (attrs) => (attrs.fontSize ? { style: `font-size: ${attrs.fontSize}` } : {}),
+          },
+          fontFamily: {
+            default: null,
+            parseHTML: (el) => el.style.fontFamily || null,
+            renderHTML: (attrs) => (attrs.fontFamily ? { style: `font-family: ${attrs.fontFamily}` } : {}),
+          },
+        },
+      },
+    ];
+  },
+});
 
 /** Returns true when the HTML has no visible text or media — used to emit "" instead of "<p></p>". */
 function isBlank(html: string): boolean {
@@ -45,6 +80,8 @@ const glyphs = {
   ordered: g(<><path d="M10 6h10" /><path d="M10 12h10" /><path d="M10 18h10" /><path d="M4 5.5 5.2 5v3.2" /><path d="M4 15h1.8l-1.8 2.4h1.8" /></>),
   link: g(<><path d="M9 15l6-6" /><path d="M11 6.5l1.2-1.2a3.5 3.5 0 0 1 5 5L16 11.5" /><path d="M13 17.5l-1.2 1.2a3.5 3.5 0 0 1-5-5L8 12.5" /></>),
   image: g(<><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.6" /><path d="m21 16-4.5-4.5L6 20" /></>),
+  bigger: g(<><path d="M3 18 8 6l5 12" /><path d="M4.8 14h6.4" /><path d="M18 10v8" /><path d="M14 14h8" /></>),
+  smaller: g(<><path d="M3 18 8 6l5 12" /><path d="M4.8 14h6.4" /><path d="M14 14h8" /></>),
 };
 
 function ToolButton({ active, onClick, title, children }: { active?: boolean; onClick: () => void; title: string; children: ReactNode }) {
@@ -91,7 +128,32 @@ function Toolbar({ editor }: { editor: Editor }) {
     if (url && url.trim()) editor.chain().focus().setImage({ src: url.trim() }).run();
   };
 
-  const sep = <span style={{ width: 1, height: 20, background: "var(--border-default)", margin: "0 4px" }} />;
+  // Tamaño de letra: pasos sobre FONT_SIZES a partir del tamaño del texto actual.
+  const currentSize = () => {
+    const raw = editor.getAttributes("textStyle").fontSize as string | undefined;
+    const px = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(px) ? px : BASE_FONT_SIZE;
+  };
+  const stepSize = (dir: 1 | -1) => {
+    const cur = currentSize();
+    const ix = FONT_SIZES.reduce((best, s, i) => (Math.abs(s - cur) < Math.abs(FONT_SIZES[best] - cur) ? i : best), 0);
+    const next = FONT_SIZES[Math.min(FONT_SIZES.length - 1, Math.max(0, ix + dir))];
+    if (next === cur) return;
+    const chain = editor.chain().focus();
+    if (next === BASE_FONT_SIZE) chain.setMark("textStyle", { fontSize: null }).removeEmptyTextStyle().run();
+    else chain.setMark("textStyle", { fontSize: `${next}px` }).run();
+  };
+  const size = currentSize();
+
+  // Familia: sans es el valor por defecto, así que se guarda quitando la marca.
+  const currentFamily = (editor.getAttributes("textStyle").fontFamily as string | undefined) ?? "";
+  const setFamily = (css: string) => {
+    const chain = editor.chain().focus();
+    if (css === FONT_FAMILIES[0].css) chain.setMark("textStyle", { fontFamily: null }).removeEmptyTextStyle().run();
+    else chain.setMark("textStyle", { fontFamily: css }).run();
+  };
+
+  const sep =<span style={{ width: 1, height: 20, background: "var(--border-default)", margin: "0 4px" }} />;
 
   return (
     <div
@@ -113,6 +175,51 @@ function Toolbar({ editor }: { editor: Editor }) {
       <ToolButton title="Encabezado" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
         {glyphs.h}
       </ToolButton>
+      {sep}
+      <ToolButton title="Reducir el tamaño de letra" onClick={() => stepSize(-1)}>
+        {glyphs.smaller}
+      </ToolButton>
+      <span
+        title="Tamaño de letra"
+        style={{ minWidth: 26, textAlign: "center", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}
+      >
+        {size}
+      </span>
+      <ToolButton title="Aumentar el tamaño de letra" onClick={() => stepSize(1)}>
+        {glyphs.bigger}
+      </ToolButton>
+      {sep}
+      {FONT_FAMILIES.map((f) => {
+        const active = f.key === "sans" ? !currentFamily : currentFamily === f.css;
+        return (
+          <button
+            key={f.key}
+            type="button"
+            title={`Tipografía ${f.label}`}
+            aria-label={`Tipografía ${f.label}`}
+            aria-pressed={active}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setFamily(f.css)}
+            style={{
+              height: 30,
+              padding: "0 10px",
+              display: "inline-flex",
+              alignItems: "center",
+              borderRadius: "var(--radius-sm)",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: f.css,
+              fontSize: 13,
+              fontWeight: active ? 700 : 500,
+              background: active ? "var(--primary-100)" : "transparent",
+              color: active ? "var(--primary-700)" : "var(--text-muted)",
+              transition: "background .12s ease, color .12s ease",
+            }}
+          >
+            {f.label}
+          </button>
+        );
+      })}
       {sep}
       <ToolButton title="Lista con viñetas" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}>
         {glyphs.bullet}
@@ -145,6 +252,8 @@ export function RichText({ label, value = "", onChange, placeholder = "Escribe a
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noopener noreferrer nofollow" } }),
       Image,
       Placeholder.configure({ placeholder }),
+      TextStyle,
+      TextStyleAttrs,
     ],
     content: value || "",
     editorProps: { attributes: { class: "atria-rte-content" } },
