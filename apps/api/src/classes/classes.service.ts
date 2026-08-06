@@ -183,16 +183,26 @@ export class ClassesService {
     const cls = await this.prisma.class.findUnique({ where: { id: classId }, select: { ownerId: true } });
     // Los borradores solo son visibles para el docente dueño (o admin); los alumnos no los ven.
     const canSeeDrafts = user.role === "admin" || cls?.ownerId === user.userId;
-    const [activities, total, submissions] = await Promise.all([
+    const [activities, total, submissions, ungraded] = await Promise.all([
       this.prisma.activity.findMany({
         where: { classId, ...(canSeeDrafts ? {} : { status: { not: "draft" } }) },
         orderBy: { createdAt: "asc" },
       }),
       this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } }),
       this.prisma.submission.groupBy({ by: ["activityId"], where: { activity: { classId } }, _count: true }),
+      this.prisma.submission.groupBy({
+        by: ["activityId"],
+        where: {
+          activity: { classId },
+          grade: { is: null },
+          status: { in: ["entregado", "atrasado"] },
+        },
+        _count: true,
+      }),
     ]);
     const counts = new Map(submissions.map((s) => [s.activityId, s._count]));
-    return activities.map((a) => toActivityDto(a, counts.get(a.id) ?? 0, total));
+    const ungradedOf = new Map(ungraded.map((s) => [s.activityId, s._count]));
+    return activities.map((a) => toActivityDto(a, counts.get(a.id) ?? 0, total, ungradedOf.get(a.id) ?? 0));
   }
 
   /** GET /classes/:id/gradebook — matriz alumnos × actividades. */

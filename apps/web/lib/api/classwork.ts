@@ -64,7 +64,10 @@ export function useGradeSubmission(activityId?: string, classId?: string) {
       }),
     onSuccess: () => {
       if (activityId) void qc.invalidateQueries({ queryKey: ["submissions", activityId] });
-      if (classId) void qc.invalidateQueries({ queryKey: ["gradebook", classId] });
+      if (classId) {
+        void qc.invalidateQueries({ queryKey: ["gradebook", classId] });
+        void qc.invalidateQueries({ queryKey: ["activities", classId] });
+      }
     },
   });
 }

@@ -73,7 +73,7 @@ function ActivityChipStrip({
     >
       {activities.map((a) => {
         const active = a.id === value;
-        const pending = Math.max(0, a.total - a.submitted);
+        const nuevas = a.ungraded ?? 0;
         const [icon, color] = activityTypeMeta(a.type);
         return (
           <button
@@ -124,7 +124,7 @@ function ActivityChipStrip({
             >
               {a.title}
             </span>
-            {pending > 0 ? (
+            {nuevas > 0 ? (
               <span
                 style={{
                   flexShrink: 0,
@@ -141,7 +141,7 @@ function ActivityChipStrip({
                   justifyContent: "center",
                 }}
               >
-                {pending}
+                {nuevas}
               </span>
             ) : null}
           </button>
@@ -625,7 +625,7 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
   const gradeMut = useGradeSubmission(activityId || undefined, c.id);
 
   const rows = subs ?? [];
-  const pendientes = rows.filter((r) => r.status !== "Entregado").length;
+  const porRevisar = rows.filter((r) => !r.id.startsWith("pending-") && r.grade === "—").length;
   const selectedActivity = (activities ?? []).find((a) => a.id === activityId);
 
   const debates = (activities ?? []).filter((a) => a.type === "Debate");
@@ -688,7 +688,7 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
               selectable={false}
               toolbar={
                 <>
-                  <Chip icon="clock">{pendientes} pendientes</Chip>
+                  <Chip icon="document-add">{porRevisar} por revisar</Chip>
                   <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
                 </>
               }

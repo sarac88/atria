@@ -307,11 +307,14 @@ export class ActivitiesService {
     }
 
     const activity = await this.prisma.activity.update({ where: { id: activityId }, data });
-    const [total, submitted] = await Promise.all([
+    const [total, submitted, ungraded] = await Promise.all([
       this.prisma.enrollment.count({ where: { classId: activity.classId, roleInClass: "student" } }),
       this.prisma.submission.count({ where: { activityId } }),
+      this.prisma.submission.count({
+        where: { activityId, grade: { is: null }, status: { in: ["entregado", "atrasado"] } },
+      }),
     ]);
-    return toActivityDto(activity, submitted, total);
+    return toActivityDto(activity, submitted, total, ungraded);
   }
 
   /** DELETE /activities/:id — elimina una actividad (docente dueño o admin). */

@@ -74,7 +74,7 @@ const ACTIVITY_LABEL: Record<ActivityType, string> = {
   debate: "Debate",
 };
 
-export function toActivityDto(a: Activity, submitted: number, total: number): ActivityDto {
+export function toActivityDto(a: Activity, submitted: number, total: number, ungraded = 0): ActivityDto {
   const rawConfig = a.config && typeof a.config === "object" && !Array.isArray(a.config) ? (a.config as ActivityDto["config"]) : undefined;
   return {
     id: a.id,
@@ -85,6 +85,7 @@ export function toActivityDto(a: Activity, submitted: number, total: number): Ac
     points: a.points,
     submitted,
     total,
+    ungraded,
     status: STATUS[a.status],
     desc: a.instructions,
     moduleId: a.moduleId ?? undefined,

@@ -54,6 +54,8 @@ export interface Activity {
   points: number;
   submitted: number;
   total: number;
+  /** Entregas realizadas que aún no tienen nota (docente). */
+  ungraded: number;
   status: StatusTuple;
   desc: string;
   moduleId?: string;
