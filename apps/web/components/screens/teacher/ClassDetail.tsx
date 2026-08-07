@@ -12,7 +12,7 @@ import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { UnitDescription } from "@/components/modules/UnitDescription";
-import { ActivityPill } from "@/components/activities/ActivityPill";
+import { ActivityPill, AddActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
 import {
   useActivities,
@@ -35,18 +35,15 @@ import type { Activity, BadgeColor, ClassInfo, Module, SubmissionDto } from "@/l
 
 const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
 
-/** "Actividades" section for a unit — simple clickable rows, empty note if none. */
-function UnitActivities({ activities, onOpen }: { activities: Activity[]; onOpen: (a: Activity) => void }) {
+/** "Actividades" section for a unit — simple clickable rows, ghost add pill at the end. */
+function UnitActivities({ activities, onOpen, onAdd }: { activities: Activity[]; onOpen: (a: Activity) => void; onAdd?: () => void }) {
   return (
     <div style={{ marginTop: 22 }}>
       <div style={SECTION_LABEL}>Actividades</div>
-      {activities.length ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {activities.map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => onOpen(a)} />)}
-        </div>
-      ) : (
-        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>No hay actividades en esta unidad.</div>
-      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {activities.map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => onOpen(a)} />)}
+        {onAdd ? <AddActivityPill onClick={onAdd} /> : null}
+      </div>
     </div>
   );
 }
@@ -328,7 +325,8 @@ function UnitEditForm({
   );
 }
 
-function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?: boolean; onGrade: (activityId: string) => void }) {
+function ModulesRailLayout({ klass, flat, onGrade }: { klass: ClassInfo; flat?: boolean; onGrade: (activityId: string) => void }) {
+  const classId = klass.id;
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
@@ -339,6 +337,7 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
   const [editing, setEditing] = useState<string | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
+  const [creatingIn, setCreatingIn] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<{ id: string; title: string } | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
@@ -411,13 +410,25 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
               </div>
             </>
           ) : null}
-          <UnitActivities activities={actsOf(current.id)} onOpen={setDetail} />
+          <UnitActivities
+            activities={actsOf(current.id)}
+            onOpen={setDetail}
+            onAdd={() => setCreatingIn(current.id === NONE_UNIT ? "" : current.id)}
+          />
         </div>
       ) : (
         <div style={{ paddingLeft: 28, color: "var(--text-muted)", fontSize: 14 }}>Crea la primera unidad para empezar.</div>
       )}
     </div>
     {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
+    {creatingIn !== null ? (
+      <CreateActivityModal
+        klass={klass}
+        defaultModuleId={creatingIn || undefined}
+        onClose={() => setCreatingIn(null)}
+        onDone={() => setCreatingIn(null)}
+      />
+    ) : null}
     {deleting ? (
       <ConfirmDialog
         title="Eliminar unidad"
@@ -434,7 +445,8 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
   );
 }
 
-function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (activityId: string) => void }) {
+function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (activityId: string) => void }) {
+  const classId = klass.id;
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
@@ -444,6 +456,7 @@ function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (act
   const [open, setOpen] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
+  const [creatingIn, setCreatingIn] = useState<string | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
     if (!open && units.length) setOpen(units[0].id);
@@ -511,7 +524,11 @@ function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (act
                     />
                   </>
                 ) : null}
-                <UnitActivities activities={actsOf(m.id)} onOpen={setDetail} />
+                <UnitActivities
+                  activities={actsOf(m.id)}
+                  onOpen={setDetail}
+                  onAdd={() => setCreatingIn(m.id === NONE_UNIT ? "" : m.id)}
+                />
               </div>
             ) : null}
           </div>
@@ -520,15 +537,23 @@ function ModulesAccordion({ classId, onGrade }: { classId: string; onGrade: (act
       {units.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
       <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
       {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
+      {creatingIn !== null ? (
+        <CreateActivityModal
+          klass={klass}
+          defaultModuleId={creatingIn || undefined}
+          onClose={() => setCreatingIn(null)}
+          onDone={() => setCreatingIn(null)}
+        />
+      ) : null}
       {detail ? <ActivityDetailModal activity={detail} role="docente" onClose={() => setDetail(null)} onGrade={(id) => { setDetail(null); onGrade(id); }} /> : null}
     </div>
   );
 }
 
-function ClassModules({ classId, layout, onGrade }: { classId: string; layout: ModLayout; onGrade: (activityId: string) => void }) {
-  if (layout === "plano") return <ModulesRailLayout classId={classId} flat onGrade={onGrade} />;
-  if (layout === "acordeon") return <ModulesAccordion classId={classId} onGrade={onGrade} />;
-  return <ModulesRailLayout classId={classId} onGrade={onGrade} />;
+function ClassModules({ klass, layout, onGrade }: { klass: ClassInfo; layout: ModLayout; onGrade: (activityId: string) => void }) {
+  if (layout === "plano") return <ModulesRailLayout klass={klass} flat onGrade={onGrade} />;
+  if (layout === "acordeon") return <ModulesAccordion klass={klass} onGrade={onGrade} />;
+  return <ModulesRailLayout klass={klass} onGrade={onGrade} />;
 }
 
 function ClassStudents({ classId }: { classId: string }) {
@@ -834,7 +859,6 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
           <>
             <HeaderAction icon="pencil" label="Editar clase" onClick={() => onEdit(c)} />
             <HeaderAction icon="trash" label="Eliminar clase" danger onClick={() => onDelete(c)} />
-            <Button variant="accent" iconLeft={<Icon name="plus" />} onClick={() => onNewActivity(c)}>Nueva actividad</Button>
           </>
         }
         tab={tab}
@@ -849,7 +873,7 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         ]}
       >
         {tab === "resumen" ? <ClassOverview c={c} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
-        {tab === "modulos" ? <ClassModules classId={c.id} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
+        {tab === "modulos" ? <ClassModules klass={c} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "entregas" ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <ActivityChipStrip

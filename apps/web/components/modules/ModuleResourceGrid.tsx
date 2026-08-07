@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Icon } from "@/components/ui";
 import { ResourceCard } from "./ResourceCard";
+import { AddResourceCard } from "./AddResourceCard";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ResourceViewerModal } from "@/components/modals/ResourceViewerModal";
 import { useDeleteResource } from "@/lib/api/classwork";
@@ -27,7 +27,7 @@ export function ModuleResourceGrid({
 
   return (
     <>
-      {items.length ? (
+      {items.length || onAdd ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
           {items.map((it) => (
             <ResourceCard
@@ -39,13 +39,8 @@ export function ModuleResourceGrid({
               extra={renderExtra?.(it)}
             />
           ))}
+          {onAdd ? <AddResourceCard onClick={onAdd} /> : null}
         </div>
-      ) : null}
-
-      {onAdd ? (
-        <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: items.length ? 12 : 0 }} onClick={onAdd}>
-          Añadir recurso
-        </Button>
       ) : null}
 
       {viewing ? <ResourceViewerModal item={viewing} onClose={() => setViewing(null)} /> : null}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Icon, Badge } from "@/components/ui";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import type { Activity, BadgeColor } from "@/lib/types";
@@ -59,6 +60,67 @@ export function ActivityPill({
       {pill ? <Badge color={pill.color}>{pill.label}</Badge> : null}
       <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: "var(--surface-sunken)", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         <Icon name="chevron-right" size={16} />
+      </span>
+    </button>
+  );
+}
+
+/** Ghost pill matching ActivityPill dimensions for "Nueva actividad". */
+export function AddActivityPill({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  const fg = hovered ? "var(--primary-600)" : "var(--text-muted)";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        width: "100%",
+        textAlign: "left",
+        cursor: "pointer",
+        background: hovered ? "var(--state-hover-tint)" : "transparent",
+        border: "2px dashed var(--border-strong)",
+        /* left padding keeps the icon aligned with ActivityPill's (10px colour bar + 18px) */
+        padding: "12px 18px 12px 26px",
+        borderRadius: "var(--radius-sm)",
+        transition: "background .18s ease, transform .18s ease, border-color .18s ease",
+        transform: hovered ? "translateY(-1px)" : "none",
+        ...(hovered ? { borderColor: "var(--brand-primary)" } : {}),
+      }}
+    >
+      <span
+        style={{
+          width: 44,
+          height: 44,
+          flexShrink: 0,
+          borderRadius: "var(--radius-md)",
+          background: hovered ? "color-mix(in srgb, var(--brand-primary) 14%, #fff)" : "var(--surface-sunken)",
+          color: fg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "background .18s ease, color .18s ease",
+        }}
+      >
+        <Icon name="plus" size={22} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span
+          style={{
+            display: "block",
+            fontSize: 15,
+            fontWeight: 700,
+            color: fg,
+            transition: "color .18s ease",
+          }}
+        >
+          Nueva actividad
+        </span>
       </span>
     </button>
   );

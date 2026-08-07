@@ -377,7 +377,7 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
   );
 }
 
-export function CreateActivityModal({ klass, activity, onClose, onDone }: { klass?: ClassInfo | null; activity?: Activity | null; onClose: () => void; onDone: () => void }) {
+export function CreateActivityModal({ klass, activity, defaultModuleId, onClose, onDone }: { klass?: ClassInfo | null; activity?: Activity | null; defaultModuleId?: string; onClose: () => void; onDone: () => void }) {
   const editing = !!activity;
   const classId = klass?.id ?? activity?.classId ?? "";
   const { data: modules } = useModules(classId);
@@ -389,7 +389,7 @@ export function CreateActivityModal({ klass, activity, onClose, onDone }: { klas
   const [ty, setTy] = useState(() => (activity ? typeIndexFromLabel(activity.type) : 0));
   const [fmt, setFmt] = useState(0);
   const [title, setTitle] = useState(activity?.title ?? "");
-  const [moduleId, setModuleId] = useState(activity?.moduleId ?? "");
+  const [moduleId, setModuleId] = useState(activity?.moduleId ?? defaultModuleId ?? "");
   const [instructions, setInstructions] = useState(activity?.desc ?? "");
   const [questions, setQuestions] = useState<QuizQuestion[]>(() => activity?.config?.questions ?? []);
   const [timeLimit, setTimeLimit] = useState(() => (activity?.config?.quiz?.timeLimitMin ? String(activity.config.quiz.timeLimitMin) : ""));
