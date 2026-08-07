@@ -196,6 +196,17 @@ export function useUpdateModule(classId: string) {
   });
 }
 
+export function useDeleteModule(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (moduleId: string) => apiFetch<{ id: string }>(`/modules/${moduleId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["modules", classId] });
+      void qc.invalidateQueries({ queryKey: ["activities", classId] });
+    },
+  });
+}
+
 export function useAddResource(classId: string) {
   const qc = useQueryClient();
   return useMutation({

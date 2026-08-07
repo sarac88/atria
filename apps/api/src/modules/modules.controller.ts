@@ -55,6 +55,11 @@ export class ModulesController {
     return this.modules.updateModule(user, id, body);
   }
 
+  @Delete("modules/:id")
+  deleteModule(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.modules.deleteModule(user, id);
+  }
+
   @Post("modules/:id/resources")
   addResource(
     @Param("id") id: string,

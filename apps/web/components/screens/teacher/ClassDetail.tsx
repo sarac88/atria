@@ -19,6 +19,7 @@ import {
   useCreateModule,
   useDebateThread,
   useDeleteActivity,
+  useDeleteModule,
   useGradebook,
   useGradeSubmission,
   useModules,
@@ -30,7 +31,7 @@ import { useSettings, type ModLayout } from "@/components/settings/SettingsConte
 import { activityTypeMeta } from "@/lib/activity-meta";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
-import type { Activity, BadgeColor, ClassInfo, SubmissionDto } from "@/lib/types";
+import type { Activity, BadgeColor, ClassInfo, Module, SubmissionDto } from "@/lib/types";
 
 const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
 
@@ -228,6 +229,58 @@ function UnitEditButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+/** Fila del carril de unidades: selecciona la unidad y, al pasar por encima, ofrece borrarla. */
+function UnitRailItem({
+  unit,
+  active,
+  onSelect,
+  onDelete,
+}: {
+  unit: Module;
+  active: boolean;
+  onSelect: () => void;
+  onDelete?: () => void;
+}) {
+  const [hover, setHover] = useState(false);
+  const [lead, sub] = modParts(unit.title);
+  return (
+    <div
+      style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 6px 0 0", borderRadius: "var(--radius-md)", background: active ? "var(--primary-100)" : hover ? "var(--state-hover-tint)" : "transparent", transition: "background .15s ease" }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onFocus={() => setHover(true)}
+      onBlur={() => setHover(false)}
+    >
+      <button
+        type="button"
+        onClick={onSelect}
+        style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", border: "none", cursor: "pointer", flex: 1, minWidth: 0, padding: "10px 0 10px 14px", background: "transparent" }}
+      >
+        <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: unit.done ? "var(--success-100)" : "var(--surface-soft)", color: unit.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon name={unit.done ? "check" : "book-open"} size={16} />
+        </span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: active ? "var(--brand-primary)" : "var(--text-strong)" }}>{lead}</span>
+          {sub ? <span style={{ display: "block", fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{sub}</span> : null}
+        </span>
+      </button>
+      {onDelete ? (
+        <button
+          type="button"
+          aria-label={`Eliminar unidad ${unit.title}`}
+          title="Eliminar unidad"
+          onClick={onDelete}
+          style={{ width: 28, height: 28, flexShrink: 0, border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", background: "transparent", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", opacity: hover ? 1 : 0, pointerEvents: hover ? "auto" : "none", transition: "opacity .15s ease, color .15s ease" }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--status-error)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
+        >
+          <Icon name="trash" size={16} />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 /** Formulario en línea para renombrar la unidad y editar su descripción. */
 function UnitEditForm({
   title,
@@ -280,11 +333,13 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
   const { data: activities } = useActivities(classId);
   const createModule = useCreateModule(classId);
   const updateModule = useUpdateModule(classId);
+  const deleteModule = useDeleteModule(classId);
   const list = modules ?? [];
   const { units, actsOf } = buildUnits(list, activities ?? []);
   const [editing, setEditing] = useState<string | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState<{ id: string; title: string } | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
     if ((!sel || !units.some((m) => m.id === sel)) && units.length) setSel(units[0].id);
@@ -300,28 +355,15 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
       <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0, borderColor: "rgb(237, 236, 236)" }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {units.map((m) => {
-            const active = m.id === (current?.id ?? "");
-            const [lead, sub] = modParts(m.title);
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setSel(m.id)}
-                style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", border: "none", cursor: "pointer", width: "100%", padding: "10px 14px", borderRadius: "var(--radius-md)", background: active ? "var(--primary-100)" : "transparent", transition: "background .15s ease" }}
-                onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = "var(--state-hover-tint)"; }}
-                onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = "transparent"; }}
-              >
-                <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: m.done ? "var(--success-100)" : "var(--surface-soft)", color: m.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon name={m.done ? "check" : "book-open"} size={16} />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: active ? "var(--brand-primary)" : "var(--text-strong)" }}>{lead}</span>
-                  {sub ? <span style={{ display: "block", fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{sub}</span> : null}
-                </span>
-              </button>
-            );
-          })}
+          {units.map((m) => (
+            <UnitRailItem
+              key={m.id}
+              unit={m}
+              active={m.id === (current?.id ?? "")}
+              onSelect={() => setSel(m.id)}
+              onDelete={m.id !== NONE_UNIT ? () => setDeleting({ id: m.id, title: m.title }) : undefined}
+            />
+          ))}
           {units.length === 0 ? <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px" }}>Aún no hay unidades.</div> : null}
         </div>
         <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
@@ -376,6 +418,17 @@ function ModulesRailLayout({ classId, flat, onGrade }: { classId: string; flat?:
       )}
     </div>
     {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
+    {deleting ? (
+      <ConfirmDialog
+        title="Eliminar unidad"
+        message={<>¿Seguro que quieres eliminar «{deleting.title}»? Se borrarán sus recursos. Las actividades de la unidad no se borran: pasarán a «Sin unidad».</>}
+        onClose={() => setDeleting(null)}
+        onConfirm={async () => {
+          await deleteModule.mutateAsync(deleting.id);
+          setDeleting(null);
+        }}
+      />
+    ) : null}
     {detail ? <ActivityDetailModal activity={detail} role="docente" onClose={() => setDetail(null)} onGrade={(id) => { setDetail(null); onGrade(id); }} /> : null}
     </>
   );

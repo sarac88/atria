@@ -58,6 +58,28 @@ export class ModulesService {
     return this.moduleDto(moduleId);
   }
 
+  /**
+   * Borra la unidad. Los recursos caen por cascada (limpiamos sus ficheros a mano)
+   * y las actividades se quedan sin unidad, no se borran.
+   */
+  async deleteModule(user: AuthUser, moduleId: string): Promise<{ id: string }> {
+    const mod = await this.prisma.module.findUnique({
+      where: { id: moduleId },
+      select: { classId: true, resources: { select: { fileId: true, file: { select: { key: true } } } } },
+    });
+    if (!mod) throw new NotFoundException();
+    await this.assertClassOwner(user, mod.classId);
+
+    const files = mod.resources.flatMap((r) => (r.fileId ? [{ id: r.fileId, key: r.file?.key }] : []));
+    await this.prisma.module.delete({ where: { id: moduleId } });
+    for (const f of files) {
+      await this.prisma.file.delete({ where: { id: f.id } }).catch(() => undefined);
+      if (f.key) await unlink(join(UPLOADS_DIR, f.key)).catch(() => undefined);
+    }
+
+    return { id: moduleId };
+  }
+
   async addResource(user: AuthUser, moduleId: string, input: AddResourceInput): Promise<ModuleDto> {
     const mod = await this.prisma.module.findUnique({ where: { id: moduleId }, select: { classId: true } });
     if (!mod) throw new NotFoundException();
