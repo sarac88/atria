@@ -27,21 +27,23 @@ export function ModuleResourceGrid({
 
   return (
     <>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
-        {items.map((it) => (
-          <ResourceCard
-            key={it.id}
-            item={it}
-            canDelete={canDelete}
-            onView={setViewing}
-            onDelete={setDeleting}
-            extra={renderExtra?.(it)}
-          />
-        ))}
-      </div>
+      {items.length ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+          {items.map((it) => (
+            <ResourceCard
+              key={it.id}
+              item={it}
+              canDelete={canDelete}
+              onView={setViewing}
+              onDelete={setDeleting}
+              extra={renderExtra?.(it)}
+            />
+          ))}
+        </div>
+      ) : null}
 
       {onAdd ? (
-        <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 12 }} onClick={onAdd}>
+        <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: items.length ? 12 : 0 }} onClick={onAdd}>
           Añadir recurso
         </Button>
       ) : null}
