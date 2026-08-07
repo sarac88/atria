@@ -25,7 +25,7 @@ export function RichView({ html, lineHeight = 1.6, style = {} }: RichViewProps) 
       />
       <style jsx global>{`
         .atria-richview > * {
-          margin: 0 0 8px;
+          margin: 0 0 var(--atria-rich-gap, 8px);
         }
         .atria-richview > *:last-child {
           margin-bottom: 0;

@@ -311,7 +311,7 @@ export function RichText({ label, value = "", onChange, placeholder = "Escribe a
           color: var(--text-strong);
         }
         .atria-rte-content > * {
-          margin: 0 0 8px;
+          margin: 0 0 var(--atria-rich-gap, 8px);
         }
         .atria-rte-content > *:last-child {
           margin-bottom: 0;

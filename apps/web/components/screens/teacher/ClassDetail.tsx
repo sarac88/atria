@@ -29,6 +29,7 @@ import {
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
+import { stripEmptyParagraphs } from "@/lib/rich-text";
 import type { Activity, BadgeColor, ClassInfo, SubmissionDto } from "@/lib/types";
 
 const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
@@ -242,11 +243,11 @@ function UnitEditForm({
   onCancel: () => void;
 }) {
   const [val, setVal] = useState(title);
-  const [desc, setDesc] = useState(description);
+  const [desc, setDesc] = useState(() => stripEmptyParagraphs(description));
   const commit = () => {
     const v = val.trim();
     if (!v) return;
-    onSave(v, desc.trim());
+    onSave(v, stripEmptyParagraphs(desc).trim());
   };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
@@ -264,6 +265,7 @@ function UnitEditForm({
         onChange={setDesc}
         placeholder="Descripción de la unidad (opcional)"
         minHeight={110}
+        style={{ ["--atria-rich-gap" as string]: "16px" }}
       />
       <div style={{ display: "flex", gap: 8 }}>
         <Button size="small" variant="accent" disabled={!val.trim() || pending} onClick={commit}>Guardar</Button>

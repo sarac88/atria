@@ -356,6 +356,8 @@ a { color: var(--text-link); }
   --info-100: #10293a;   --info-600: #5cc7e0;
   --success-100: #14301f; --success-600: #5fce86;
   --warning-200: #3a2912; --warning-600: #ffab6e;
+  --yellow-100: #2e2711;  --yellow-200: #3b3116;
+  --yellow-300: #4a3c15;  --yellow-700: #f0c96a;
   --error-100: #3a1620;  --error-600: #ff8088;
 }
 [data-theme="dark"] textarea { background: var(--surface-card) !important; color: var(--text-strong) !important; }

@@ -33,9 +33,9 @@ export function ActivityPill({
         cursor: "pointer",
         background: "var(--surface-card)",
         border: "none",
-        borderLeft: `4px solid ${color}`,
+        borderLeft: `10px solid ${color}`,
         padding: "14px 18px",
-        borderRadius: "var(--radius-lg)",
+        borderRadius: "var(--radius-sm)",
         boxShadow: "var(--ring-hairline), var(--shadow-sm)",
         transition: "box-shadow .18s ease, transform .18s ease",
       }}
