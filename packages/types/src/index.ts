@@ -33,6 +33,8 @@ export interface ClassInfo {
   pending: number;
   nextSession: string;
   desc: string;
+  /** Portada del curso: ruta servida por la API, o "" si no tiene. */
+  coverUrl: string;
 }
 
 export interface Student {

@@ -63,6 +63,7 @@ export function toClassInfo(c: Class, studentsCount?: number): ClassInfo {
     pending: c.pending,
     nextSession: c.nextSession,
     desc: c.desc,
+    coverUrl: c.coverUrl,
   };
 }
 

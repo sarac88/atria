@@ -34,6 +34,32 @@ export function useUpdateClass(id: string) {
   });
 }
 
+export function useUploadClassCover(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return apiFetch<ClassInfo>(`/classes/${id}/cover`, { method: "POST", body: form });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["classes"] });
+      void qc.invalidateQueries({ queryKey: ["classes", id] });
+    },
+  });
+}
+
+export function useClearClassCover(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiFetch<ClassInfo>(`/classes/${id}/cover`, { method: "DELETE" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["classes"] });
+      void qc.invalidateQueries({ queryKey: ["classes", id] });
+    },
+  });
+}
+
 export function useDeleteClass() {
   const qc = useQueryClient();
   return useMutation({

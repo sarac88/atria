@@ -6,6 +6,7 @@ export const ICONS: Record<string, string> = {
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V9.5"/>',
   "book-open": '<path d="M12 6.5C12 5.5 10.5 4.5 7.5 4.5S3 5.5 3 5.5v13s1.5-1 4.5-1 4.5 1 4.5 1m0-12.5v12.5m0-12.5C12 5.5 13.5 4.5 16.5 4.5S21 5.5 21 5.5v13s-1.5-1-4.5-1-4.5 1-4.5 1"/>',
   "academic-cap": '<path d="M12 4 2.5 8.5 12 13l9.5-4.5L12 4Z"/><path d="M6 10.5V15c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4.5"/><path d="M21.5 8.5v5"/>',
+  photo: '<rect x="3" y="4.5" width="18" height="15" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m3.5 17 4.5-4.5 3 3 4-4 5.5 5.5"/>',
   "document-add": '<path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M13 3v6h6"/><path d="M12 12v5m-2.5-2.5h5"/>',
   "document-text": '<path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M13 3v6h6"/><path d="M9 13h6M9 16.5h6"/>',
   "clipboard-check": '<path d="M9 4.5h6m-6 0a1.5 1.5 0 0 0 0 3h6a1.5 1.5 0 0 0 0-3m-6 0H7a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2h-2"/><path d="m9 14 2 2 4-4"/>',

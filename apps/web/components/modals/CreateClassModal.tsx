@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Textarea, Button, Icon, Switch } from "@/components/ui";
+import { Input, RichText, Button, Icon, Switch } from "@/components/ui";
 import { Modal } from "@/components/layout";
 import { useCreateClass, useUpdateClass } from "@/lib/api/classes";
 import type { ClassInfo } from "@/lib/types";
@@ -104,7 +104,13 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
             })}
           </div>
         </div>
-        <Textarea label="Descripción" rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Breve descripción del temario y objetivos." />
+        <RichText
+          label="Descripción"
+          minHeight={130}
+          value={desc}
+          onChange={setDesc}
+          placeholder="Breve descripción del temario y objetivos."
+        />
         <div>
           <label style={{ fontSize: 14, fontWeight: 500, color: "var(--text-strong)", display: "block", marginBottom: 8 }}>Color e icono</label>
           <div style={{ display: "flex", gap: 10 }}>

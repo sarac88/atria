@@ -90,6 +90,7 @@ model Class {
   progress      Float          @default(0)
   nextSession   String         @default("Sin programar")
   desc          String         @default("")
+  coverUrl      String         @default("")
   studentsCount Int            @default(0)
   openActivities Int           @default(0)
   pending       Int            @default(0)

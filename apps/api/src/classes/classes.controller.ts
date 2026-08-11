@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { createActivitySchema, createClassSchema, updateClassSchema, type CreateActivityInput, type CreateClassInput, type UpdateClassInput } from "@atria/types";
 import { CurrentUser, Roles, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard, RolesGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
+import { imageUploadOptions } from "../common/uploads";
 import { ClassesService } from "./classes.service";
 
 @Controller("classes")
@@ -69,6 +71,26 @@ export class ClassesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.classes.update(user, id, body);
+  }
+
+  @Post(":id/cover")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  @UseInterceptors(FileInterceptor("file", imageUploadOptions))
+  setCover(
+    @Param("id") id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthUser,
+  ) {
+    if (!file) throw new BadRequestException("No se ha recibido ninguna imagen.");
+    return this.classes.setCover(user, id, file);
+  }
+
+  @Delete(":id/cover")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  clearCover(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.classes.clearCover(user, id);
   }
 
   @Delete(":id")

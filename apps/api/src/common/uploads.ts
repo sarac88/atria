@@ -34,6 +34,25 @@ export const resourceUploadOptions = {
   },
 };
 
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+/** Config de Multer para imágenes (portada de curso). */
+export const imageUploadOptions = {
+  storage: diskStorage({
+    destination: UPLOADS_DIR,
+    filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname).toLowerCase()}`),
+  }),
+  limits: { fileSize: MAX_IMAGE_BYTES },
+  fileFilter: (_req: unknown, file: { originalname: string; mimetype: string }, cb: (err: Error | null, ok: boolean) => void) => {
+    const ext = extname(file.originalname).toLowerCase();
+    if (IMAGE_EXT.has(ext) && IMAGE_MIME.has(file.mimetype)) return cb(null, true);
+    return cb(new BadRequestException("Solo se admiten imágenes JPG, PNG, WEBP o GIF."), false);
+  },
+};
+
 /** Tamaño legible (p. ej. "1.2 MB") para el texto meta del recurso. */
 export function humanSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

@@ -10,6 +10,7 @@ import { AddResourceModal } from "@/components/modals/AddResourceModal";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
+import { ClassAbout } from "@/components/classes/ClassAbout";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill, AddActivityPill } from "@/components/activities/ActivityPill";
@@ -703,6 +704,8 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+      <ClassAbout c={c} canEdit />
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
         {details.map((x) => (
           <div key={x.label} style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)", padding: 16, display: "flex", alignItems: "center", gap: 14 }}>
@@ -717,7 +720,9 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 22, alignItems: "stretch" }} className="atria-2col">
+      {/* alignItems start: con muchas actividades, el panel de progreso se estiraba
+          y dejaba un hueco enorme bajo el donut. Ahora se queda arriba y acompaña. */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 22, alignItems: "start" }} className="atria-2col">
         <Panel title="Actividades">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {(activities ?? []).map((a) => (
@@ -733,11 +738,10 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
           </div>
         </Panel>
 
-        <Panel title="Progreso de la clase">
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 20, height: "100%" }}>
+        <Panel title="Progreso de la clase" style={{ position: "sticky", top: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 20 }}>
             <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>2 de 3 unidades completadas. Próxima sesión {c.nextSession}.</p>
             <Donut value={c.progress} size={200} stroke={18} color={c.color} sub="del temario" />
-            <p style={{ fontSize: 13.5, color: "var(--text-body)", margin: 0, lineHeight: 1.5 }}>{c.desc}</p>
           </div>
         </Panel>
       </div>

@@ -1,9 +1,12 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { unlink } from "fs/promises";
+import { join } from "path";
 import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, StudentTaskDto, SubmissionDto, UpdateClassInput } from "@atria/types";
 import type { Class, Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toActivityDto, toClassInfo, toSubmissionDto } from "../common/mappers";
+import { UPLOADS_DIR, uploadUrl } from "../common/uploads";
 
 const SUBMISSION_INCLUDE = {
   student: { select: { id: true, name: true } },
@@ -92,6 +95,37 @@ export class ClassesService {
       },
     });
     const students = await this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } });
+    return toClassInfo(cls, students);
+  }
+
+  /** POST /classes/:id/cover — guarda la portada y descarta la anterior. */
+  async setCover(user: AuthUser, classId: string, file: Express.Multer.File): Promise<ClassInfo> {
+    const prev = await this.assertOwner(user, classId);
+    const cls = await this.prisma.class.update({
+      where: { id: classId },
+      data: { coverUrl: uploadUrl(file.filename) },
+    });
+    await this.removeCoverFile(prev.coverUrl);
+    return this.withStudents(cls);
+  }
+
+  /** DELETE /classes/:id/cover — quita la portada. */
+  async clearCover(user: AuthUser, classId: string): Promise<ClassInfo> {
+    const prev = await this.assertOwner(user, classId);
+    const cls = await this.prisma.class.update({ where: { id: classId }, data: { coverUrl: "" } });
+    await this.removeCoverFile(prev.coverUrl);
+    return this.withStudents(cls);
+  }
+
+  /** Las portadas no pasan por la tabla File: se borran del disco a mano. */
+  private async removeCoverFile(coverUrl: string): Promise<void> {
+    const key = coverUrl.startsWith("/uploads/") ? coverUrl.slice("/uploads/".length) : "";
+    if (!key) return;
+    await unlink(join(UPLOADS_DIR, key)).catch(() => undefined);
+  }
+
+  private async withStudents(cls: Class): Promise<ClassInfo> {
+    const students = await this.prisma.enrollment.count({ where: { classId: cls.id, roleInClass: "student" } });
     return toClassInfo(cls, students);
   }
 
