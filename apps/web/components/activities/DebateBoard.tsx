@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Avatar, Badge, Button, Icon, Textarea } from "@/components/ui";
+import { Avatar, Badge, Button, Icon, RichView, Textarea } from "@/components/ui";
 import { Chip, Eyebrow } from "@/components/layout";
 import { useCreateDebatePost, useDebateThread, useDeleteDebatePost } from "@/lib/api/classwork";
 import { ApiError } from "@/lib/api/client";
@@ -213,7 +213,11 @@ export function DebateBoard({ activity, role }: { activity: Activity; role: Role
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ padding: "20px 24px", borderRadius: "var(--radius-xl)", background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)" }}>
         <Eyebrow>Pregunta de apertura</Eyebrow>
-        <h3 style={{ fontSize: 18, margin: "8px 0 0", lineHeight: 1.4 }}>{openingQuestion || activity.title}</h3>
+        <RichView
+          html={openingQuestion || activity.title}
+          lineHeight={1.4}
+          style={{ fontSize: 18, color: "var(--text-strong)", fontWeight: 400 }}
+        />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
           {minWords > 0 ? <Chip icon="pencil">Mínimo {minWords} palabras</Chip> : null}
           {minReplies > 0 ? <Chip icon="chat">Responde a {minReplies} compañero{minReplies === 1 ? "" : "s"}</Chip> : null}

@@ -50,8 +50,8 @@ function UnitActivities({ activities, onOpen, onAdd }: { activities: Activity[];
 
 const statusMap: Record<string, BadgeColor> = { Entregado: "success", Pendiente: "warning", Atrasado: "error", Borrador: "default" };
 
-/** Horizontal chip strip to switch between activities in the Entregas tab. */
-function ActivityChipStrip({
+/** Card-style activity tabs above the Entregas table. Icons follow activity type. */
+function ActivityTabs({
   activities,
   value,
   onChange,
@@ -64,87 +64,88 @@ function ActivityChipStrip({
 
   return (
     <div
+      role="tablist"
+      aria-label="Actividades"
       style={{
         display: "flex",
-        gap: 8,
+        gap: 6,
         overflowX: "auto",
-        padding: "4px 2px 12px",
+        padding: "10px 10px 0",
+        background: "var(--gray-100)",
         scrollbarWidth: "thin",
       }}
     >
       {activities.map((a) => {
         const active = a.id === value;
-        const nuevas = a.ungraded ?? 0;
         const [icon, color] = activityTypeMeta(a.type);
+        const count = a.ungraded > 0 ? a.ungraded : a.submitted;
         return (
           <button
             key={a.id}
             type="button"
+            role="tab"
+            aria-selected={active}
             onClick={() => onChange(a.id)}
             style={{
-              display: "inline-flex",
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              gap: 8,
-              flexShrink: 0,
-              maxWidth: 260,
-              padding: "8px 14px",
+              gap: 10,
+              flex: "0 0 148px",
+              width: 148,
+              padding: "16px 14px 14px",
               border: "none",
-              borderRadius: "var(--radius-md)",
+              borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
               cursor: "pointer",
-              background: active ? "var(--primary-100)" : "var(--surface-card)",
-              boxShadow: active ? "inset 0 0 0 1.5px var(--brand-primary)" : "var(--ring-hairline), var(--shadow-sm)",
-              transition: "background .15s ease, box-shadow .15s ease",
+              background: active ? "var(--surface-card)" : "var(--gray-200)",
+              boxShadow: "none",
+              zIndex: active ? 1 : 0,
+              transition: "background .15s ease, color .15s ease",
             }}
-            onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = "var(--state-hover-tint)"; }}
-            onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? "var(--primary-100)" : "var(--surface-card)"; }}
           >
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                flexShrink: 0,
-                borderRadius: "var(--radius-sm)",
-                background: `color-mix(in srgb, ${color} 14%, #fff)`,
-                color,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon name={icon} size={16} />
-            </span>
-            <span
-              style={{
-                fontSize: 13.5,
-                fontWeight: active ? 700 : 600,
-                color: active ? "var(--brand-primary)" : "var(--text-strong)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {a.title}
-            </span>
-            {nuevas > 0 ? (
+            {count > 0 ? (
               <span
                 style={{
-                  flexShrink: 0,
-                  minWidth: 20,
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  minWidth: 22,
                   height: 20,
                   padding: "0 6px",
                   borderRadius: 999,
-                  background: active ? "var(--brand-primary)" : "var(--warning-100)",
-                  color: active ? "#fff" : "var(--warning-700)",
-                  fontSize: 11.5,
+                  background: a.ungraded > 0 ? "var(--warning-600)" : "var(--gray-600)",
+                  color: "#fff",
+                  fontSize: 11,
                   fontWeight: 700,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  lineHeight: 1,
                 }}
               >
-                {nuevas}
+                {count}
               </span>
             ) : null}
+            <span style={{ color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name={icon} size={22} />
+            </span>
+            <span
+              style={{
+                width: "100%",
+                fontSize: 12.5,
+                fontWeight: active ? 700 : 600,
+                color: active ? "var(--text-strong)" : "var(--text-muted)",
+                textAlign: "center",
+                lineHeight: 1.35,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {a.title}
+            </span>
           </button>
         );
       })}
@@ -875,18 +876,26 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         {tab === "resumen" ? <ClassOverview c={c} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "modulos" ? <ClassModules klass={c} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "entregas" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <ActivityChipStrip
+          <div
+            style={{
+              borderRadius: "var(--radius-xl)",
+              overflow: "hidden",
+              background: "var(--surface-card)",
+              boxShadow: "var(--ring-hairline), var(--shadow-md)",
+            }}
+          >
+            <ActivityTabs
               activities={activities ?? []}
               value={activityId}
               onChange={setActivityId}
             />
             <DataTable
-              title={`Entregas · ${selectedActivity?.title ?? "Actividad"}`}
+              title={selectedActivity?.title ?? "Entregas"}
               rowKey="id"
               columns={subCols}
               rows={rows}
               selectable={false}
+              style={{ boxShadow: "none", borderRadius: 0 }}
               toolbar={
                 <>
                   <Chip icon="document-add">{porRevisar} por revisar</Chip>
