@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ResourceCard } from "./ResourceCard";
 import { AddResourceCard } from "./AddResourceCard";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
+import { EditResourceModal } from "@/components/modals/EditResourceModal";
 import { ResourceViewerModal } from "@/components/modals/ResourceViewerModal";
 import { useDeleteResource } from "@/lib/api/classwork";
 import type { ModuleItem } from "@/lib/types";
@@ -23,6 +24,7 @@ export function ModuleResourceGrid({
 }) {
   const deleteResource = useDeleteResource(classId);
   const [viewing, setViewing] = useState<ModuleItem | null>(null);
+  const [editing, setEditing] = useState<ModuleItem | null>(null);
   const [deleting, setDeleting] = useState<ModuleItem | null>(null);
 
   return (
@@ -35,6 +37,7 @@ export function ModuleResourceGrid({
               item={it}
               canDelete={canDelete}
               onView={setViewing}
+              onEdit={setEditing}
               onDelete={setDeleting}
               extra={renderExtra?.(it)}
             />
@@ -44,6 +47,8 @@ export function ModuleResourceGrid({
       ) : null}
 
       {viewing ? <ResourceViewerModal item={viewing} onClose={() => setViewing(null)} /> : null}
+
+      {editing ? <EditResourceModal classId={classId} item={editing} onClose={() => setEditing(null)} /> : null}
 
       {deleting ? (
         <ConfirmDialog

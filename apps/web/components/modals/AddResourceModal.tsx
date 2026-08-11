@@ -52,6 +52,7 @@ export function AddResourceModal({
   const [sel, setSel] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -59,6 +60,8 @@ export function AddResourceModal({
   const active = SOURCES[sel];
   const busy = addResource.isPending || uploadResource.isPending;
   const canSubmit = sel === 0 ? !!file : url.trim().length > 0;
+  /** Used when the teacher leaves the title empty: the file name, or the source's generic name. */
+  const fallbackTitle = sel === 0 ? file?.name.replace(/\.[^.]+$/, "") ?? "" : active.title;
 
   const pickFile = (f: File | null) => {
     if (!f) return;
@@ -78,9 +81,10 @@ export function AddResourceModal({
   const submit = async () => {
     setError(null);
     try {
+      const label = title.trim() || fallbackTitle;
       if (sel === 0) {
         if (!file) return;
-        await uploadResource.mutateAsync({ moduleId, file });
+        await uploadResource.mutateAsync({ moduleId, file, label });
       } else {
         const value = url.trim();
         if (!value) return;
@@ -88,7 +92,7 @@ export function AddResourceModal({
           setError("Introduce una URL válida (empieza por http:// o https://).");
           return;
         }
-        await addResource.mutateAsync({ moduleId, type: active.resType, label: active.title, meta: value, url: value });
+        await addResource.mutateAsync({ moduleId, type: active.resType, label, meta: "", url: value });
       }
       onDone();
     } catch {
@@ -175,6 +179,17 @@ export function AddResourceModal({
                 />
               </div>
             )}
+
+            <label style={{ display: "block", marginTop: 16 }}>
+              <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--text-strong)", marginBottom: 6 }}>Título</span>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && canSubmit && !busy) submit(); }}
+                placeholder={fallbackTitle || "Nombre del recurso"}
+                style={{ width: "100%", height: 46, padding: "0 14px", border: "none", outline: "none", borderRadius: "var(--radius-lg)", background: "var(--gray-100)", boxShadow: "inset 0 0 0 2px var(--border-default)", fontSize: 14.5, color: "var(--text-strong)", fontFamily: "var(--font-sans)" }}
+              />
+            </label>
           </div>
 
           {error ? <div style={{ marginTop: 14, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}

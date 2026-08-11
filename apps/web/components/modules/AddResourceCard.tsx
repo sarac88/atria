@@ -14,7 +14,12 @@ export function AddResourceCard({ onClick }: { onClick: () => void }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: "block",
+        // Flex column: los <button> centran su contenido en vertical, y al estirarse
+        // en la rejilla el bloque gris se despegaba de la parte de arriba.
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        justifyContent: "flex-start",
         width: "100%",
         padding: 0,
         textAlign: "left",
@@ -32,6 +37,7 @@ export function AddResourceCard({ onClick }: { onClick: () => void }) {
         style={{
           aspectRatio: "16 / 9",
           width: "100%",
+          flexShrink: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

@@ -13,6 +13,7 @@ import type {
   SubmissionDto,
   UpdateActivityInput,
   UpdateModuleInput,
+  UpdateResourceInput,
 } from "@atria/types";
 import { apiFetch } from "./client";
 
@@ -228,6 +229,29 @@ export function useUploadResource(classId: string) {
       if (v.label) form.append("label", v.label);
       return apiFetch<Module>(`/modules/${v.moduleId}/resources/upload`, { method: "POST", body: form });
     },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+/** Portada del enlace para la miniatura. La API cachea, así que no caduca en sesión. */
+export function useLinkPreview(url: string | null) {
+  return useQuery({
+    queryKey: ["link-preview", url],
+    enabled: !!url,
+    staleTime: Infinity,
+    retry: false,
+    queryFn: () => apiFetch<{ image: string | null }>(`/link-preview?url=${encodeURIComponent(url ?? "")}`),
+  });
+}
+
+export function useUpdateResource(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { resourceId: string } & UpdateResourceInput) =>
+      apiFetch<Module>(`/resources/${v.resourceId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ label: v.label, url: v.url }),
+      }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
   });
 }

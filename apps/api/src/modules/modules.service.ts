@@ -6,6 +6,7 @@ import type {
   CreateModuleInput,
   Module as ModuleDto,
   UpdateModuleInput,
+  UpdateResourceInput,
 } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
@@ -116,6 +117,29 @@ export class ModulesService {
       },
     });
     return this.moduleDto(moduleId);
+  }
+
+  /**
+   * Renombra el recurso y, en los enlaces, permite corregir la URL.
+   * En los ficheros subidos la URL la manda el fichero, así que se ignora.
+   */
+  async updateResource(user: AuthUser, resourceId: string, input: UpdateResourceInput): Promise<ModuleDto> {
+    const resource = await this.prisma.resource.findUnique({
+      where: { id: resourceId },
+      select: { moduleId: true, fileId: true, module: { select: { classId: true } } },
+    });
+    if (!resource) throw new NotFoundException();
+    await this.assertClassOwner(user, resource.module.classId);
+
+    const url = resource.fileId ? undefined : input.url;
+    await this.prisma.resource.update({
+      where: { id: resourceId },
+      data: {
+        ...(input.label !== undefined ? { label: input.label } : {}),
+        ...(url !== undefined ? { url } : {}),
+      },
+    });
+    return this.moduleDto(resource.moduleId);
   }
 
   async deleteResource(user: AuthUser, resourceId: string): Promise<ModuleDto> {

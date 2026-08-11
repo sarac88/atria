@@ -374,6 +374,12 @@ export const addResourceSchema = z.object({
 });
 export type AddResourceInput = z.infer<typeof addResourceSchema>;
 
+export const updateResourceSchema = z.object({
+  label: z.string().min(1).optional(),
+  url: z.string().optional(),
+});
+export type UpdateResourceInput = z.infer<typeof updateResourceSchema>;
+
 export const gradeSchema = z.object({
   score: z.number().min(0).max(10),
   feedback: z.string().optional().default(""),

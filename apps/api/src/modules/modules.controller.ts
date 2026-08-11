@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -16,20 +17,26 @@ import {
   addResourceSchema,
   createModuleSchema,
   updateModuleSchema,
+  updateResourceSchema,
   type AddResourceInput,
   type CreateModuleInput,
   type UpdateModuleInput,
+  type UpdateResourceInput,
 } from "@atria/types";
 import { CurrentUser, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
 import { resourceUploadOptions } from "../common/uploads";
 import { ModulesService } from "./modules.service";
+import { LinkPreviewService } from "./link-preview.service";
 
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class ModulesController {
-  constructor(private readonly modules: ModulesService) {}
+  constructor(
+    private readonly modules: ModulesService,
+    private readonly linkPreviews: LinkPreviewService,
+  ) {}
 
   @Get("classes/:id/modules")
   @UseGuards(ClassMembershipGuard)
@@ -60,6 +67,12 @@ export class ModulesController {
     return this.modules.deleteModule(user, id);
   }
 
+  /** Portada (og:image) de un enlace, para la miniatura de la card. */
+  @Get("link-preview")
+  linkPreview(@Query("url") url: string) {
+    return this.linkPreviews.image(url ?? "");
+  }
+
   @Post("modules/:id/resources")
   addResource(
     @Param("id") id: string,
@@ -79,6 +92,15 @@ export class ModulesController {
   ) {
     if (!file) throw new BadRequestException("No se ha recibido ningún fichero.");
     return this.modules.uploadResource(user, id, file, label);
+  }
+
+  @Patch("resources/:id")
+  updateResource(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateResourceSchema)) body: UpdateResourceInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.modules.updateResource(user, id, body);
   }
 
   @Delete("resources/:id")
