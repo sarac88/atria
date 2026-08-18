@@ -5,6 +5,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
 import { ClassesModule } from "./classes/classes.module";
+import { InvitationsModule } from "./invitations/invitations.module";
 import { ModulesModule } from "./modules/modules.module";
 import { ActivitiesModule } from "./activities/activities.module";
 import { SubmissionsModule } from "./submissions/submissions.module";
@@ -20,6 +21,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     AuthModule,
     UsersModule,
     ClassesModule,
+    InvitationsModule,
     ModulesModule,
     ActivitiesModule,
     SubmissionsModule,

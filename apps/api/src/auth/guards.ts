@@ -13,6 +13,18 @@ import { ROLES_KEY, type AuthUser } from "./decorators";
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {}
 
+/**
+ * Resuelve la sesión si hay cookie válida, pero deja pasar a los anónimos.
+ * Lo usan las rutas por token (invitaciones), que sirven tanto a un alumno ya
+ * identificado como a alguien que todavía no tiene cuenta.
+ */
+@Injectable()
+export class OptionalJwtAuthGuard extends AuthGuard("jwt") {
+  handleRequest<T>(_err: unknown, user: T): T | undefined {
+    return user || undefined;
+  }
+}
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}

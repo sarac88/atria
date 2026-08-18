@@ -20,6 +20,22 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Texto que se puede mostrar al usuario a partir de un error de la API. Nest
+ * responde con un cuerpo JSON cuyo `message` es una cadena o, cuando falla la
+ * validación Zod, la lista de problemas.
+ */
+export function errorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof ApiError)) return fallback;
+  try {
+    const body = JSON.parse(error.message) as { message?: string | string[] };
+    const message = Array.isArray(body.message) ? body.message[0] : body.message;
+    return message || fallback;
+  } catch {
+    return error.message || fallback;
+  }
+}
+
 function raw(path: string, opts?: RequestInit): Promise<Response> {
   // For FormData (file uploads) let the browser set the multipart boundary.
   const isForm = typeof FormData !== "undefined" && opts?.body instanceof FormData;

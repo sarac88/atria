@@ -11,6 +11,7 @@ const TYPE_META: Record<NotificationType, { icon: string; tint: string; fg: stri
   submission: { icon: "document-add", tint: "var(--info-100)", fg: "var(--info-600)" },
   grade: { icon: "star", tint: "var(--success-100)", fg: "var(--success-600)" },
   deadline: { icon: "clock", tint: "var(--warning-200)", fg: "var(--warning-600)" },
+  invite: { icon: "envelope", tint: "var(--yellow-200)", fg: "var(--yellow-700)" },
   system: { icon: "bell", tint: "var(--primary-100)", fg: "var(--primary-600)" },
 };
 

@@ -174,6 +174,50 @@ export interface ClassDetailDto extends ClassInfo {
   roster: Student[];
 }
 
+/** Estado de una invitación tal como lo ve el docente. `expired` se deriva de expiresAt. */
+export type InvitationStatus = "pending" | "accepted" | "expired";
+
+/** Una invitación a la clase, con el enlace listo para compartir. */
+export interface ClassInvitationDto {
+  id: string;
+  email: string;
+  status: InvitationStatus;
+  /** Enlace de aceptación absoluto, para copiar y enviar al alumno. */
+  url: string;
+  /** true si ya existe una cuenta con ese correo (recibe además aviso en la app). */
+  hasAccount: boolean;
+  /** Cuándo salió el correo con el enlace, o null si hay que compartirlo a mano. */
+  emailSentAt: string | null;
+  expiresAt: string;
+  createdAt: string;
+}
+
+/** Respuesta de POST /classes/:id/invitations. */
+export interface InviteStudentsResultDto {
+  invitations: ClassInvitationDto[];
+  /** Correos que no se han invitado, con el motivo para mostrarlo en la UI. */
+  skipped: { email: string; reason: string }[];
+}
+
+/** Datos públicos de GET /invitations/:token, para la pantalla de aceptación. */
+export interface InvitationPreviewDto {
+  status: InvitationStatus;
+  email: string;
+  className: string;
+  classSubject: string;
+  teacherName: string;
+  /** true si el invitado todavía no tiene cuenta y debe crearla al aceptar. */
+  needsAccount: boolean;
+  expiresAt: string;
+}
+
+/** Respuesta de POST /invitations/:token/accept. */
+export interface AcceptInvitationResultDto {
+  classId: string;
+  className: string;
+  user: UserDto;
+}
+
 /** A submission row for the teacher's Entregas table and the student's own view. */
 export interface SubmissionDto {
   id: string;
@@ -256,7 +300,7 @@ export interface ConversationDto {
   channel: boolean;
 }
 
-export type NotificationType = "submission" | "grade" | "deadline" | "system";
+export type NotificationType = "submission" | "grade" | "deadline" | "invite" | "system";
 
 /** An event notification for the bell feed. */
 export interface NotificationDto {
@@ -408,3 +452,24 @@ export const sendMessageSchema = z.object({
   body: z.string().min(1),
 });
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+/** Mínimo de caracteres para la contraseña que crea un alumno al aceptar la invitación. */
+export const PASSWORD_MIN_LENGTH = 8;
+
+export const inviteStudentsSchema = z.object({
+  emails: z
+    .array(z.string().email("Alguno de los correos no es válido."))
+    .min(1, "Añade al menos un correo.")
+    .max(50, "Puedes invitar a 50 alumnos como máximo de una vez."),
+});
+export type InviteStudentsInput = z.infer<typeof inviteStudentsSchema>;
+
+/** Nombre y contraseña sólo son necesarios cuando el invitado aún no tiene cuenta. */
+export const acceptInvitationSchema = z.object({
+  name: z.string().min(1, "Escribe tu nombre.").optional(),
+  password: z
+    .string()
+    .min(PASSWORD_MIN_LENGTH, `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres.`)
+    .optional(),
+});
+export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>;

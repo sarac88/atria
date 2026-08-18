@@ -10,7 +10,9 @@ import { AddResourceModal } from "@/components/modals/AddResourceModal";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
+import { InviteStudentsModal } from "@/components/modals/InviteStudentsModal";
 import { ClassAbout } from "@/components/classes/ClassAbout";
+import { ClassInvitations } from "@/components/classes/ClassInvitations";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill, AddActivityPill } from "@/components/activities/ActivityPill";
@@ -558,8 +560,10 @@ function ClassModules({ klass, layout, onGrade }: { klass: ClassInfo; layout: Mo
   return <ModulesRailLayout klass={klass} onGrade={onGrade} />;
 }
 
-function ClassStudents({ classId }: { classId: string }) {
+function ClassStudents({ klass }: { klass: ClassInfo }) {
+  const classId = klass.id;
   const { data: roster } = useRoster(classId);
+  const [inviting, setInviting] = useState(false);
   const rows = (roster ?? []).map((s) => ({ ...s, avgStr: s.avg.toFixed(1) }));
   const cols: Column<(typeof rows)[number]>[] = [
     { key: "name", label: "Alumno", render: (v) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={v as string} size="sm" /><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
@@ -567,7 +571,33 @@ function ClassStudents({ classId }: { classId: string }) {
     { key: "progress", label: "Progreso", render: (v) => <div style={{ width: 120 }}><ProgressBar value={v as number} showLabel /></div> },
     { key: "avgStr", label: "Media", render: (v) => <span style={{ fontWeight: 700, color: "var(--text-strong)" }}>{v as string}</span> },
   ];
-  return <DataTable title={`Alumnos · ${rows.length}`} rowKey="id" columns={cols} rows={rows} selectable={false} toolbar={<Button size="small" variant="outline" iconLeft={<Icon name="plus" size={16} />}>Invitar</Button>} />;
+  const inviteButton = (
+    <Button size="small" variant="outline" onClick={() => setInviting(true)} iconLeft={<Icon name="plus" size={16} />}>
+      Invitar
+    </Button>
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {rows.length === 0 ? (
+        <EmptyState
+          illo="learning"
+          title="Todavía no hay alumnos en la clase"
+          text="Invítalos por correo: recibirán un enlace para unirse y aparecerán aquí en cuanto lo acepten. Puedes invitar a varios a la vez."
+          action={
+            <Button variant="accent" onClick={() => setInviting(true)} iconLeft={<Icon name="plus" size={16} />}>
+              Invitar alumnos
+            </Button>
+          }
+        />
+      ) : (
+        <DataTable title={`Alumnos · ${rows.length}`} rowKey="id" columns={cols} rows={rows} selectable={false} toolbar={inviteButton} />
+      )}
+      <ClassInvitations classId={classId} />
+      {inviting ? (
+        <InviteStudentsModal classId={classId} className={klass.name} onClose={() => setInviting(false)} />
+      ) : null}
+    </div>
+  );
 }
 
 function OverviewActivityCard({
@@ -910,7 +940,7 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
           </div>
         ) : null}
         {tab === "calificaciones" ? <GradebookTable data={gradebook.data} /> : null}
-        {tab === "alumnos" ? <ClassStudents classId={c.id} /> : null}
+        {tab === "alumnos" ? <ClassStudents klass={c} /> : null}
         {tab === "foro" ? (
           debates.length ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>

@@ -28,6 +28,11 @@ enum EnrollmentRole {
   student
 }
 
+enum InvitationStatus {
+  pending
+  accepted
+}
+
 enum ActivityType {
   tarea
   cuestionario
@@ -52,6 +57,7 @@ model User {
   hashedRefreshToken String?
   ownedClasses       Class[]                   @relation("ClassOwner")
   enrollments        Enrollment[]
+  invitationsSent    ClassInvitation[]         @relation("InvitedBy")
   submissions        Submission[]
   messages           Message[]
   gradesGiven        Grade[]                   @relation("GradedBy")
@@ -97,6 +103,7 @@ model Class {
   ownerId       String
   owner         User           @relation("ClassOwner", fields: [ownerId], references: [id])
   enrollments   Enrollment[]
+  invitations   ClassInvitation[]
   modules       Module[]
   activities    Activity[]
   conversations Conversation[]
@@ -115,6 +122,30 @@ model Enrollment {
   updatedAt   DateTime       @updatedAt
 
   @@unique([userId, classId])
+}
+
+/// Invitación de un docente a un correo para matricularse en su clase. El token
+/// viaja en el enlace que el docente comparte; una invitación aceptada deja de
+/// ser utilizable y su matrícula pasa a Enrollment. Revocar borra la fila, de
+/// modo que volver a invitar al mismo correo reutiliza la clave [classId, email].
+model ClassInvitation {
+  id          String           @id @default(cuid())
+  classId     String
+  email       String
+  token       String           @unique
+  status      InvitationStatus @default(pending)
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  /// Último envío correcto por correo, o null si sólo se compartió el enlace a mano.
+  emailSentAt DateTime?
+  class       Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  invitedBy   User             @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([classId, email])
+  @@index([email])
 }
 
 model Module {

@@ -41,6 +41,8 @@ export const ICONS: Record<string, string> = {
   logout: '<path d="M14 7V5.5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20h7a1.5 1.5 0 0 0 1.5-1.5V17"/><path d="M9 12h11m-4-4 4 4-4 4"/>',
   filter: '<path d="M4 6h16l-6 7v5l-4 2v-7L4 6Z"/>',
   grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+  envelope: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
+  clipboard: '<path d="M9 4.5h6m-6 0a1.5 1.5 0 0 0 0 3h6a1.5 1.5 0 0 0 0-3m-6 0H7a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2h-2"/>',
 };
 
 export const ICON_NAMES = Object.keys(ICONS);

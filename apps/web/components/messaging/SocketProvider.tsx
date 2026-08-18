@@ -8,7 +8,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
-import type { MessageDto, UserDto } from "@atria/types";
+import type { MessageDto, NotificationDto, UserDto } from "@atria/types";
 import { getMe } from "@/lib/api/auth";
 import { formatTime } from "@/lib/time";
 
@@ -64,8 +64,14 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       void qc.invalidateQueries({ queryKey: ["conversations"] });
     });
 
-    socket.on("notification.new", () => {
+    socket.on("notification.new", (raw: NotificationDto) => {
       void qc.invalidateQueries({ queryKey: ["notifications"] });
+      // Aceptar una invitación cambia el alumnado y la lista de invitaciones del docente.
+      if (raw?.type === "invite") {
+        void qc.invalidateQueries({ queryKey: ["roster"] });
+        void qc.invalidateQueries({ queryKey: ["invitations"] });
+        void qc.invalidateQueries({ queryKey: ["classes"] });
+      }
     });
 
     return () => {

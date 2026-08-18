@@ -1,6 +1,8 @@
 // Atria design system — public surface for screens.
 export { Button } from "./Button";
 export type { ButtonProps } from "./Button";
+export { CopyButton } from "./CopyButton";
+export type { CopyButtonProps } from "./CopyButton";
 export { IconButton } from "./IconButton";
 export type { IconButtonProps } from "./IconButton";
 export { Avatar } from "./Avatar";

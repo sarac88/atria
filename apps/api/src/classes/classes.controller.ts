@@ -1,16 +1,20 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { createActivitySchema, createClassSchema, updateClassSchema, type CreateActivityInput, type CreateClassInput, type UpdateClassInput } from "@atria/types";
+import { createActivitySchema, createClassSchema, inviteStudentsSchema, updateClassSchema, type CreateActivityInput, type CreateClassInput, type InviteStudentsInput, type UpdateClassInput } from "@atria/types";
 import { CurrentUser, Roles, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard, RolesGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
 import { imageUploadOptions } from "../common/uploads";
+import { InvitationsService } from "../invitations/invitations.service";
 import { ClassesService } from "./classes.service";
 
 @Controller("classes")
 @UseGuards(JwtAuthGuard)
 export class ClassesController {
-  constructor(private readonly classes: ClassesService) {}
+  constructor(
+    private readonly classes: ClassesService,
+    private readonly invitations: InvitationsService,
+  ) {}
 
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
@@ -98,6 +102,46 @@ export class ClassesController {
   @Roles("docente", "admin")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.classes.remove(user, id);
+  }
+
+  @Get(":id/invitations")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  listInvitations(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.invitations.list(user, id);
+  }
+
+  @Post(":id/invitations")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  invite(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(inviteStudentsSchema)) body: InviteStudentsInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.invitations.invite(user, id, body);
+  }
+
+  @Post(":id/invitations/:invitationId/resend")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  resendInvitation(
+    @Param("id") id: string,
+    @Param("invitationId") invitationId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.invitations.resend(user, id, invitationId);
+  }
+
+  @Delete(":id/invitations/:invitationId")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  revokeInvitation(
+    @Param("id") id: string,
+    @Param("invitationId") invitationId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.invitations.revoke(user, id, invitationId);
   }
 
   @Post(":id/activities")

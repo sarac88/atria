@@ -6,7 +6,7 @@ import type { LoginInput, UserDto } from "@atria/types";
 import { PrismaService } from "../prisma/prisma.service";
 import { toUserDto } from "../common/mappers";
 
-interface IssuedTokens {
+export interface IssuedTokens {
   accessToken: string;
   refreshToken: string;
   user: UserDto;
@@ -24,7 +24,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException("Credenciales inválidas");
     const ok = await argon2.verify(user.passwordHash, input.password);
     if (!ok) throw new UnauthorizedException("Credenciales inválidas");
-    return this.issue(user);
+    return this.issueSession(user);
   }
 
   async refresh(token?: string): Promise<IssuedTokens> {
@@ -39,7 +39,7 @@ export class AuthService {
     if (!user || !user.hashedRefreshToken) throw new UnauthorizedException();
     const ok = await argon2.verify(user.hashedRefreshToken, token);
     if (!ok) throw new UnauthorizedException();
-    return this.issue(user);
+    return this.issueSession(user);
   }
 
   async logout(token?: string): Promise<void> {
@@ -57,7 +57,8 @@ export class AuthService {
     }
   }
 
-  private async issue(user: User): Promise<IssuedTokens> {
+  /** Emite el par de tokens de un usuario ya verificado (login, refresh o alta por invitación). */
+  async issueSession(user: User): Promise<IssuedTokens> {
     const accessToken = await this.jwt.signAsync(
       { sub: user.id, role: user.role, email: user.email },
       { secret: process.env.JWT_ACCESS_SECRET, expiresIn: process.env.JWT_ACCESS_TTL ?? "15m" },
