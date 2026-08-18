@@ -14,6 +14,7 @@ import { InviteStudentsModal } from "@/components/modals/InviteStudentsModal";
 import { ClassAbout } from "@/components/classes/ClassAbout";
 import { ClassInvitations } from "@/components/classes/ClassInvitations";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
+import { ModuleSessions } from "@/components/modules/ModuleSessions";
 import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill, AddActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
@@ -90,14 +91,13 @@ function ActivityTabs({
             aria-selected={active}
             onClick={() => onChange(a.id)}
             style={{
-              position: "relative",
               display: "flex",
-              flexDirection: "column",
+              flexDirection: "row",
               alignItems: "center",
               gap: 10,
-              flex: "0 0 148px",
-              width: 148,
-              padding: "16px 14px 14px",
+              flex: "0 0 210px",
+              width: 210,
+              padding: "12px 14px",
               border: "none",
               borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
               cursor: "pointer",
@@ -105,14 +105,33 @@ function ActivityTabs({
               boxShadow: "none",
               zIndex: active ? 1 : 0,
               transition: "background .15s ease, color .15s ease",
+              textAlign: "left",
             }}
           >
+            <span style={{ color, display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 auto" }}>
+              <Icon name={icon} size={22} />
+            </span>
+            <span
+              style={{
+                flex: 1,
+                minWidth: 0,
+                fontSize: 12.5,
+                fontWeight: active ? 700 : 600,
+                color: active ? "var(--text-strong)" : "var(--text-muted)",
+                textAlign: "left",
+                lineHeight: 1.35,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {a.title}
+            </span>
             {count > 0 ? (
               <span
                 style={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
+                  flex: "0 0 auto",
                   minWidth: 22,
                   height: 20,
                   padding: "0 6px",
@@ -130,25 +149,6 @@ function ActivityTabs({
                 {count}
               </span>
             ) : null}
-            <span style={{ color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name={icon} size={22} />
-            </span>
-            <span
-              style={{
-                width: "100%",
-                fontSize: 12.5,
-                fontWeight: active ? 700 : 600,
-                color: active ? "var(--text-strong)" : "var(--text-muted)",
-                textAlign: "center",
-                lineHeight: 1.35,
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {a.title}
-            </span>
           </button>
         );
       })}
@@ -403,6 +403,16 @@ function ModulesRailLayout({ klass, flat, onGrade }: { klass: ClassInfo; flat?: 
           )}
           {current.id !== NONE_UNIT ? (
             <>
+              <div style={SECTION_LABEL}>Sesión online</div>
+              <div style={{ marginBottom: 22 }}>
+                <ModuleSessions
+                  classId={classId}
+                  moduleId={current.id}
+                  moduleTitle={current.title}
+                  sessions={current.sessions}
+                  canManage
+                />
+              </div>
               <div style={SECTION_LABEL}>Recursos</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <ModuleResourceGrid
@@ -516,6 +526,18 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
                       <UnitEditButton onClick={() => setEditing(m.id)} />
                     </div>
                   )
+                ) : null}
+                {!isNone ? (
+                  <>
+                    <div style={SECTION_LABEL}>Sesión online</div>
+                    <ModuleSessions
+                      classId={classId}
+                      moduleId={m.id}
+                      moduleTitle={m.title}
+                      sessions={m.sessions}
+                      canManage
+                    />
+                  </>
                 ) : null}
                 {!isNone ? (
                   <>

@@ -43,6 +43,8 @@ export const ICONS: Record<string, string> = {
   grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
   envelope: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
   clipboard: '<path d="M9 4.5h6m-6 0a1.5 1.5 0 0 0 0 3h6a1.5 1.5 0 0 0 0-3m-6 0H7a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2h-2"/>',
+  "video-camera": '<rect x="2.5" y="6" width="12" height="12" rx="2"/><path d="m14.5 10.5 5-2.5v8l-5-2.5v-3Z"/>',
+  "external-link": '<path d="M14 4.5h5.5V10"/><path d="m19 5-8 8"/><path d="M18 14.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18V7.5A1.5 1.5 0 0 1 6 6h3.5"/>',
 };
 
 export const ICON_NAMES = Object.keys(ICONS);

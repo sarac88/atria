@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Activity,
+  AddOnlineSessionInput,
   AddResourceInput,
   CreateActivityInput,
   CreateModuleInput,
@@ -13,6 +14,7 @@ import type {
   SubmissionDto,
   UpdateActivityInput,
   UpdateModuleInput,
+  UpdateOnlineSessionInput,
   UpdateResourceInput,
 } from "@atria/types";
 import { apiFetch } from "./client";
@@ -261,6 +263,36 @@ export function useDeleteResource(classId: string) {
   return useMutation({
     mutationFn: (resourceId: string) =>
       apiFetch<Module>(`/resources/${resourceId}`, { method: "DELETE" }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useAddOnlineSession(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { moduleId: string } & AddOnlineSessionInput) => {
+      const { moduleId, ...body } = v;
+      return apiFetch<Module>(`/modules/${moduleId}/sessions`, { method: "POST", body: JSON.stringify(body) });
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useUpdateOnlineSession(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { sessionId: string } & UpdateOnlineSessionInput) => {
+      const { sessionId, ...body } = v;
+      return apiFetch<Module>(`/sessions/${sessionId}`, { method: "PATCH", body: JSON.stringify(body) });
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useDeleteOnlineSession(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sessionId: string) => apiFetch<Module>(`/sessions/${sessionId}`, { method: "DELETE" }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
   });
 }

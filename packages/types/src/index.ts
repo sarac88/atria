@@ -118,12 +118,50 @@ export interface ModuleItem {
   url: string;
 }
 
+/** Plataforma de videollamada de una sesión online, deducida de la URL. */
+export type MeetingProvider = "zoom" | "meet" | "teams" | "other";
+
+/** Nombre visible de cada plataforma, para etiquetas y textos de ayuda. */
+export const MEETING_PROVIDER_LABEL: Record<MeetingProvider, string> = {
+  zoom: "Zoom",
+  meet: "Google Meet",
+  teams: "Microsoft Teams",
+  other: "Videollamada",
+};
+
+const MEETING_HOSTS: [MeetingProvider, RegExp][] = [
+  ["zoom", /(^|\.)zoom\.(us|com)$/i],
+  ["meet", /(^|\.)meet\.google\.com$/i],
+  ["teams", /(^|\.)teams\.(microsoft|live)\.com$/i],
+];
+
+/** Deduce la plataforma a partir del enlace; "other" para cualquier otra sala. */
+export function detectMeetingProvider(url: string): MeetingProvider {
+  try {
+    const { hostname } = new URL(url);
+    return MEETING_HOSTS.find(([, host]) => host.test(hostname))?.[0] ?? "other";
+  } catch {
+    return "other";
+  }
+}
+
+/** Enlace de videollamada de una unidad. */
+export interface OnlineSessionDto {
+  id: string;
+  provider: MeetingProvider;
+  label: string;
+  url: string;
+  /** Fecha y hora ISO, o null si es una sala permanente sin horario. */
+  startsAt: string | null;
+}
+
 export interface Module {
   id: string;
   title: string;
   description: string;
   done: boolean;
   items: ModuleItem[];
+  sessions: OnlineSessionDto[];
 }
 
 export interface Thread {
@@ -425,6 +463,23 @@ export const updateResourceSchema = z.object({
   url: z.string().optional(),
 });
 export type UpdateResourceInput = z.infer<typeof updateResourceSchema>;
+
+/** Sólo enlaces http(s): son los que el navegador puede abrir en una pestaña nueva. */
+const meetingUrlSchema = z
+  .string()
+  .url("Introduce un enlace válido.")
+  .refine((v) => /^https?:\/\//i.test(v), "El enlace debe empezar por http:// o https://.");
+
+export const addOnlineSessionSchema = z.object({
+  label: z.string().min(1, "Ponle un nombre a la sesión.").max(120),
+  url: meetingUrlSchema,
+  /** null (o ausente) = sala permanente sin horario. */
+  startsAt: z.string().datetime().nullable().optional(),
+});
+export type AddOnlineSessionInput = z.infer<typeof addOnlineSessionSchema>;
+
+export const updateOnlineSessionSchema = addOnlineSessionSchema.partial();
+export type UpdateOnlineSessionInput = z.infer<typeof updateOnlineSessionSchema>;
 
 export const gradeSchema = z.object({
   score: z.number().min(0).max(10),

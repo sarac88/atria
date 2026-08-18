@@ -11,6 +11,7 @@ import type {
   Message,
   Module,
   Notification,
+  OnlineSession,
   Resource,
   Submission,
   SubmissionStatus,
@@ -21,10 +22,12 @@ import type {
   ClassInfo,
   DebatePostDto,
   ConversationDto,
+  MeetingProvider,
   MessageDto,
   Module as ModuleDto,
   NotificationDto,
   NotificationType,
+  OnlineSessionDto,
   Role,
   StatusTuple,
   SubmissionDto,
@@ -217,7 +220,17 @@ export function toNotificationDto(n: Notification): NotificationDto {
   };
 }
 
-type ModuleWithResources = Module & { resources: Resource[] };
+type ModuleWithResources = Module & { resources: Resource[]; sessions: OnlineSession[] };
+
+export function toOnlineSessionDto(s: OnlineSession): OnlineSessionDto {
+  return {
+    id: s.id,
+    provider: s.provider as MeetingProvider,
+    label: s.label,
+    url: s.url,
+    startsAt: s.startsAt?.toISOString() ?? null,
+  };
+}
 
 export function toModuleDto(m: ModuleWithResources): ModuleDto {
   return {
@@ -226,5 +239,6 @@ export function toModuleDto(m: ModuleWithResources): ModuleDto {
     description: m.description,
     done: m.done,
     items: m.resources.map((r) => ({ id: r.id, type: r.type, label: r.label, meta: r.meta, state: r.state, url: r.url })),
+    sessions: m.sessions.map(toOnlineSessionDto),
   };
 }

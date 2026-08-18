@@ -6,6 +6,7 @@ import { Chip, EmptyState, ClassShell, Panel } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
 import { StudentTaskList } from "@/components/student/StudentTaskList";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
+import { ModuleSessions } from "@/components/modules/ModuleSessions";
 import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
@@ -119,6 +120,14 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
                 {curMod.id !== NONE_UNIT ? <Chip>{curMod.items.length} recursos</Chip> : null}
               </div>
               <UnitDescription text={curMod.description} />
+              {curMod.id !== NONE_UNIT && curMod.sessions.length ? (
+                <>
+                  <div style={SECTION_LABEL}>Sesión online</div>
+                  <div style={{ marginBottom: 22 }}>
+                    <ModuleSessions classId={c.id} moduleId={curMod.id} sessions={curMod.sessions} />
+                  </div>
+                </>
+              ) : null}
               {curMod.id !== NONE_UNIT ? (
                 <>
                   <div style={SECTION_LABEL}>Recursos</div>

@@ -36,3 +36,42 @@ export const BRAND_RESOURCE: Record<string, { color: string; glyph: (size: numbe
   vimeo: { color: "#1AB7EA", glyph: (s) => <VimeoGlyph size={s} /> },
   web: { color: "var(--brand-accent)", glyph: (s) => <GlobeGlyph size={s} /> },
 };
+
+// ---- Videollamadas ---------------------------------------------------------
+
+export function ZoomGlyph({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x={2} y={6.5} width={12.5} height={11} rx={2.6} fill="currentColor" />
+      <path d="M15.6 11.2l5-3.1a.6.6 0 0 1 .9.5v6.8a.6.6 0 0 1-.9.5l-5-3.1v-1.6Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function MeetGlyph({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 8a2 2 0 0 1 2-2h6.5v12H5a2 2 0 0 1-2-2V8Z" fill="currentColor" opacity={0.55} />
+      <path d="M11.5 6h2.9l3.1 3.4v5.2L14.4 18h-2.9V6Z" fill="currentColor" />
+      <path d="M18.6 9.6l2.5-1.8a.6.6 0 0 1 1 .5v7.4a.6.6 0 0 1-1 .5l-2.5-1.8V9.6Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function TeamsGlyph({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x={2.5} y={5.5} width={11.5} height={13} rx={2.4} fill="currentColor" />
+      <path d="M5.6 9h5.3M8.25 9v6" stroke="var(--surface-card)" strokeWidth={1.6} strokeLinecap="round" />
+      <circle cx={18} cy={7.6} r={2.6} fill="currentColor" opacity={0.6} />
+      <path d="M15.4 12h4.4a1.7 1.7 0 0 1 1.7 1.7v2.1a3.4 3.4 0 0 1-3.4 3.4h-.6a3.4 3.4 0 0 1-2.1-.8V12Z" fill="currentColor" opacity={0.6} />
+    </svg>
+  );
+}
+
+/** Videocall glyph + brand tint per `MeetingProvider`. */
+export const MEETING_BRAND: Record<string, { color: string; glyph: (size: number) => ReactNode }> = {
+  zoom: { color: "#2D8CFF", glyph: (s) => <ZoomGlyph size={s} /> },
+  meet: { color: "#00897B", glyph: (s) => <MeetGlyph size={s} /> },
+  teams: { color: "#5059C9", glyph: (s) => <TeamsGlyph size={s} /> },
+};

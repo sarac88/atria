@@ -14,13 +14,17 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import {
+  addOnlineSessionSchema,
   addResourceSchema,
   createModuleSchema,
   updateModuleSchema,
+  updateOnlineSessionSchema,
   updateResourceSchema,
+  type AddOnlineSessionInput,
   type AddResourceInput,
   type CreateModuleInput,
   type UpdateModuleInput,
+  type UpdateOnlineSessionInput,
   type UpdateResourceInput,
 } from "@atria/types";
 import { CurrentUser, type AuthUser } from "../auth/decorators";
@@ -106,5 +110,28 @@ export class ModulesController {
   @Delete("resources/:id")
   deleteResource(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.modules.deleteResource(user, id);
+  }
+
+  @Post("modules/:id/sessions")
+  addSession(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(addOnlineSessionSchema)) body: AddOnlineSessionInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.modules.addSession(user, id, body);
+  }
+
+  @Patch("sessions/:id")
+  updateSession(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateOnlineSessionSchema)) body: UpdateOnlineSessionInput,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.modules.updateSession(user, id, body);
+  }
+
+  @Delete("sessions/:id")
+  deleteSession(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.modules.deleteSession(user, id);
   }
 }

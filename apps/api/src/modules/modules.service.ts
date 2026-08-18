@@ -1,19 +1,27 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { unlink } from "fs/promises";
 import { extname, join } from "path";
-import type {
-  AddResourceInput,
-  CreateModuleInput,
-  Module as ModuleDto,
-  UpdateModuleInput,
-  UpdateResourceInput,
+import {
+  detectMeetingProvider,
+  type AddOnlineSessionInput,
+  type AddResourceInput,
+  type CreateModuleInput,
+  type Module as ModuleDto,
+  type UpdateModuleInput,
+  type UpdateOnlineSessionInput,
+  type UpdateResourceInput,
 } from "@atria/types";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { toModuleDto } from "../common/mappers";
 import { humanSize, UPLOADS_DIR, uploadUrl } from "../common/uploads";
 
-const MODULE_INCLUDE = { resources: { orderBy: { createdAt: "asc" as const } } };
+const MODULE_INCLUDE = {
+  resources: { orderBy: { createdAt: "asc" as const } },
+  // Postgres deja los NULL al final en ASC: primero las sesiones con horario y
+  // luego las salas permanentes.
+  sessions: { orderBy: [{ startsAt: "asc" as const }, { createdAt: "asc" as const }] },
+};
 
 @Injectable()
 export class ModulesService {
@@ -162,6 +170,52 @@ export class ModulesService {
     }
 
     return this.moduleDto(moduleId);
+  }
+
+  async addSession(user: AuthUser, moduleId: string, input: AddOnlineSessionInput): Promise<ModuleDto> {
+    const mod = await this.prisma.module.findUnique({ where: { id: moduleId }, select: { classId: true } });
+    if (!mod) throw new NotFoundException();
+    await this.assertClassOwner(user, mod.classId);
+    await this.prisma.onlineSession.create({
+      data: {
+        moduleId,
+        label: input.label,
+        url: input.url,
+        provider: detectMeetingProvider(input.url),
+        startsAt: input.startsAt ? new Date(input.startsAt) : null,
+      },
+    });
+    return this.moduleDto(moduleId);
+  }
+
+  /** Al cambiar la URL se recalcula la plataforma, que es derivada. */
+  async updateSession(user: AuthUser, sessionId: string, input: UpdateOnlineSessionInput): Promise<ModuleDto> {
+    const session = await this.prisma.onlineSession.findUnique({
+      where: { id: sessionId },
+      select: { moduleId: true, module: { select: { classId: true } } },
+    });
+    if (!session) throw new NotFoundException();
+    await this.assertClassOwner(user, session.module.classId);
+    await this.prisma.onlineSession.update({
+      where: { id: sessionId },
+      data: {
+        ...(input.label !== undefined ? { label: input.label } : {}),
+        ...(input.url !== undefined ? { url: input.url, provider: detectMeetingProvider(input.url) } : {}),
+        ...(input.startsAt !== undefined ? { startsAt: input.startsAt ? new Date(input.startsAt) : null } : {}),
+      },
+    });
+    return this.moduleDto(session.moduleId);
+  }
+
+  async deleteSession(user: AuthUser, sessionId: string): Promise<ModuleDto> {
+    const session = await this.prisma.onlineSession.findUnique({
+      where: { id: sessionId },
+      select: { moduleId: true, module: { select: { classId: true } } },
+    });
+    if (!session) throw new NotFoundException();
+    await this.assertClassOwner(user, session.module.classId);
+    await this.prisma.onlineSession.delete({ where: { id: sessionId } });
+    return this.moduleDto(session.moduleId);
   }
 
   private async moduleDto(moduleId: string): Promise<ModuleDto> {

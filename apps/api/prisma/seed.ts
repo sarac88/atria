@@ -29,22 +29,35 @@ const CLASSES: SeedClass[] = [
   { id: "quimica", name: "Química Orgánica", code: "QUI-212", room: "Aula 119", subject: "Ciencias", students: 22, color: "var(--warning-500)", icon: "book-open", status: ClassStatus.draft, progress: 0.0, openActivities: 0, pending: 0, nextSession: "Sin programar", desc: "Borrador en preparación para el próximo curso." },
 ];
 
+/** Dentro de dos días a las 17:00, para que las sesiones del seed queden a futuro. */
+const inDays = (days: number, hour: number): Date => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(hour, 0, 0, 0);
+  return d;
+};
+
 const MODULES = [
   { id: "m1", title: "Unidad 1 · Límites y continuidad", position: 0, done: true, items: [
     { type: "document-text", label: "Apuntes: definición de límite", meta: "PDF · 12 págs", state: "Visto" },
     { type: "play", label: "Vídeo: límites laterales", meta: "Vídeo · 14 min", state: "Visto" },
     { type: "clipboard-check", label: "Cuestionario 1", meta: "5 preguntas", state: "Completado" },
+  ], sessions: [
+    { provider: "meet", label: "Tutoría de dudas", url: "https://meet.google.com/abc-defg-hij", startsAt: inDays(2, 17) },
   ] },
   { id: "m2", title: "Unidad 2 · Derivadas", position: 1, done: false, items: [
     { type: "document-text", label: "Apuntes: reglas de derivación", meta: "PDF · 18 págs", state: "Nuevo" },
     { type: "document-add", label: "Ensayo de derivadas", meta: "Entrega · 10 pts", state: "Abierto" },
     { type: "play", label: "Vídeo: regla de la cadena", meta: "Vídeo · 11 min", state: "" },
+  ], sessions: [
+    { provider: "zoom", label: "Clase en directo: regla de la cadena", url: "https://zoom.us/j/9876543210", startsAt: inDays(4, 11) },
+    { provider: "meet", label: "Sala permanente de la unidad", url: "https://meet.google.com/klm-nopq-rst", startsAt: null },
   ] },
   { id: "m3", title: "Unidad 3 · Integrales", position: 2, done: false, items: [
     { type: "document-text", label: "Apuntes: integral definida", meta: "PDF · 15 págs", state: "" },
     { type: "clipboard-check", label: "Cuestionario 4 — Integrales", meta: "10 preguntas", state: "Abierto" },
     { type: "folder", label: "Material complementario", meta: "3 archivos", state: "" },
-  ] },
+  ], sessions: [] },
 ];
 
 const ACTIVITIES = [
@@ -82,6 +95,7 @@ async function main() {
   await prisma.grade.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.resource.deleteMany();
+  await prisma.onlineSession.deleteMany();
   await prisma.module.deleteMany();
   await prisma.activity.deleteMany();
   await prisma.message.deleteMany();
@@ -125,6 +139,7 @@ async function main() {
       data: {
         id: m.id, classId: "calc2", title: m.title, position: m.position, done: m.done,
         resources: { create: m.items.map((it) => ({ type: it.type, label: it.label, meta: it.meta, state: it.state })) },
+        sessions: { create: m.sessions },
       },
     });
   }
