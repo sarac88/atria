@@ -9,7 +9,6 @@ import { StudentClass } from "@/components/screens/student/StudentClass";
 import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { CreateClassModal } from "@/components/modals/CreateClassModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
-import { SubmitModal } from "@/components/modals/SubmitModal";
 import type { ClassInfo } from "@/lib/types";
 
 export default function ClassDetailPage() {
@@ -32,7 +31,6 @@ function ClassDetailPageInner() {
   const [activityOpen, setActivityOpen] = useState<ClassInfo | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [submitActivityId, setSubmitActivityId] = useState<string | null>(null);
 
   const onBack = () => router.push("/clases");
   const onProfile = () => router.push("/perfil");
@@ -48,7 +46,7 @@ function ClassDetailPageInner() {
   return (
     <div style={{ height: "100vh" }}>
       {role === "alumno" ? (
-        <StudentClass klass={klass} onBack={onBack} onProfile={onProfile} onLogout={onLogout} onSubmit={(aid) => setSubmitActivityId(aid)} />
+        <StudentClass klass={klass} onBack={onBack} onProfile={onProfile} onLogout={onLogout} />
       ) : (
         <ClassDetail
           klass={klass}
@@ -75,7 +73,6 @@ function ClassDetailPageInner() {
           onClose={() => setDeleteOpen(false)}
         />
       )}
-      {submitActivityId && <SubmitModal activityId={submitActivityId} classId={klass.id} onClose={() => setSubmitActivityId(null)} onDone={() => setSubmitActivityId(null)} />}
     </div>
   );
 }

@@ -1,40 +1,72 @@
 "use client";
 
-import { DataTable, Avatar, Badge, Button, IconButton, Icon, Select, type Column } from "@/components/ui";
-import { Page, PageHead, Chip } from "@/components/layout";
-import { students } from "@/lib/data";
+import { useMemo, useState } from "react";
+import { DataTable, Avatar, Badge, Select, type Column } from "@/components/ui";
+import { Page, PageHead, Chip, EmptyState } from "@/components/layout";
+import { useAdminUsers } from "@/lib/api/users";
+import { roleLabel } from "@/lib/session";
+import type { AdminUserDto, Role } from "@/lib/types";
 
-const roleSeq = ["Alumno", "Docente", "Alumno", "Alumno", "Docente", "Alumno", "Alumno", "Docente"];
+const FILTERS: { label: string; value: string }[] = [
+  { label: "Todos los roles", value: "" },
+  { label: "Alumnos", value: "alumno" },
+  { label: "Docentes", value: "docente" },
+  { label: "Administración", value: "admin" },
+];
+
+const ROLE_COLOR: Record<Role, "info" | "draft" | "warning"> = {
+  docente: "info",
+  alumno: "draft",
+  admin: "warning",
+};
 
 export function UserManagement() {
-  const rows = students.slice(0, 8).map((s, i) => ({ ...s, role: roleSeq[i], status: i % 4 === 3 ? "Inactivo" : "Activo" }));
-  const cols: Column<(typeof rows)[number]>[] = [
-    { key: "name", label: "Usuario", render: (v) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={v as string} size="sm" /><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
+  const { data, isLoading } = useAdminUsers();
+  const [filter, setFilter] = useState("");
+
+  const all = useMemo(() => data ?? [], [data]);
+  const rows = useMemo(() => (filter ? all.filter((u) => u.role === filter) : all), [all, filter]);
+
+  const counts = useMemo(() => {
+    const students = all.filter((u) => u.role === "alumno").length;
+    const teachers = all.filter((u) => u.role === "docente").length;
+    return { students, teachers };
+  }, [all]);
+
+  const cols: Column<AdminUserDto>[] = [
+    { key: "name", label: "Usuario", render: (v, r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={r.name} size="sm" /><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
     { key: "email", label: "Correo", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{v as string}</span> },
-    { key: "role", label: "Rol", render: (v) => <Badge color={v === "Docente" ? "info" : "draft"}>{v as string}</Badge> },
-    { key: "status", label: "Estado", render: (v) => <Badge color={v === "Activo" ? "success" : "default"}>{v as string}</Badge> },
-    {
-      key: "actions", label: "", sortable: false, align: "right", render: () => (
-        <span style={{ display: "inline-flex", gap: 4, justifyContent: "flex-end" }}>
-          <IconButton size="small" variant="ghost" label="Editar" icon={<Icon name="pencil" size={18} />} />
-          <IconButton size="small" variant="danger" label="Eliminar" icon={<Icon name="trash" size={18} />} />
-        </span>
-      ),
-    },
+    { key: "role", label: "Rol", render: (v) => { const r = v as Role; return <Badge color={ROLE_COLOR[r] ?? "draft"}>{roleLabel(r)}</Badge>; } },
+    { key: "classes", label: "Clases", align: "right", render: (v) => <span style={{ fontWeight: 700 }}>{v as number}</span> },
+    { key: "joined", label: "Alta", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{v as string}</span> },
   ];
+
+  const subtitle = isLoading
+    ? "Cargando usuarios…"
+    : `${counts.students} ${counts.students === 1 ? "alumno" : "alumnos"} · ${counts.teachers} ${counts.teachers === 1 ? "docente" : "docentes"}`;
+
   return (
     <Page>
       <PageHead
         title="Usuarios"
-        subtitle="196 alumnos · 24 docentes"
+        subtitle={subtitle}
         actions={
-          <>
-            <div style={{ width: 160 }}><Select placeholder="Todos los roles" options={["Todos", "Alumnos", "Docentes"]} /></div>
-            <Button variant="accent" iconLeft={<Icon name="plus" />}>Añadir</Button>
-          </>
+          <div style={{ width: 190 }}>
+            <Select value={filter} onChange={setFilter} options={FILTERS} />
+          </div>
         }
       />
-      <DataTable rowKey="id" columns={cols} rows={rows} toolbar={<Chip icon="users">{rows.length} mostrados</Chip>} />
+      {rows.length ? (
+        <DataTable
+          rowKey="id"
+          columns={cols}
+          rows={rows}
+          selectable={false}
+          toolbar={<Chip icon="users">{rows.length} mostrados</Chip>}
+        />
+      ) : !isLoading ? (
+        <EmptyState illo="learning" title="No hay usuarios que mostrar" text="Prueba a cambiar el filtro de rol." />
+      ) : null}
     </Page>
   );
 }

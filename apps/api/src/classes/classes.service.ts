@@ -2,11 +2,14 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { unlink } from "fs/promises";
 import { join } from "path";
 import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, StudentTaskDto, SubmissionDto, UpdateClassInput } from "@atria/types";
-import type { Class, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
-import { toActivityDto, toClassInfo, toSubmissionDto } from "../common/mappers";
+import { toActivityDto, toClassInfo, toSubmissionDto, type ClassCounters, type ClassWithOwner } from "../common/mappers";
 import { UPLOADS_DIR, uploadUrl } from "../common/uploads";
+
+/** El nombre del docente viaja en ClassInfo.teacher, así que toda lectura de clase carga al dueño. */
+const CLASS_OWNER_INCLUDE = { owner: { select: { name: true } } } as const;
 
 const SUBMISSION_INCLUDE = {
   student: { select: { id: true, name: true } },
@@ -20,30 +23,32 @@ export class ClassesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(user: AuthUser): Promise<ClassInfo[]> {
-    let classes: Class[];
+    let classes: ClassWithOwner[];
     if (user.role === "admin") {
-      classes = await this.prisma.class.findMany({ orderBy: { createdAt: "asc" } });
+      classes = await this.prisma.class.findMany({ include: CLASS_OWNER_INCLUDE, orderBy: { createdAt: "asc" } });
     } else if (user.role === "docente") {
       classes = await this.prisma.class.findMany({
         where: { ownerId: user.userId },
+        include: CLASS_OWNER_INCLUDE,
         orderBy: { createdAt: "asc" },
       });
     } else {
       // alumno → clases en las que está matriculado
       classes = await this.prisma.class.findMany({
         where: { enrollments: { some: { userId: user.userId } } },
+        include: CLASS_OWNER_INCLUDE,
         orderBy: { createdAt: "asc" },
       });
     }
-    const counts = await this.studentCounts(classes.map((c) => c.id));
-    return classes.map((c) => toClassInfo(c, counts.get(c.id) ?? 0));
+    const ids = classes.map((c) => c.id);
+    const [counts, counters] = await Promise.all([this.studentCounts(ids), this.classCounters(ids)]);
+    return classes.map((c) => toClassInfo(c, counts.get(c.id) ?? 0, counters.get(c.id)));
   }
 
   async findOne(id: string): Promise<ClassInfo> {
-    const cls = await this.prisma.class.findUnique({ where: { id } });
+    const cls = await this.prisma.class.findUnique({ where: { id }, include: CLASS_OWNER_INCLUDE });
     if (!cls) throw new NotFoundException();
-    const students = await this.prisma.enrollment.count({ where: { classId: id, roleInClass: "student" } });
-    return toClassInfo(cls, students);
+    return this.withStudents(cls);
   }
 
   /** Recuento real de alumnos (matrículas con rol student) por clase. */
@@ -55,6 +60,47 @@ export class ClassesService {
       _count: true,
     });
     return new Map(grouped.map((g) => [g.classId, g._count]));
+  }
+
+  /**
+   * Actividades abiertas (publicadas) y entregas por revisar de cada clase. Se
+   * calculan en cada lectura: las columnas homónimas de Class venían de la
+   * semilla y nadie las mantenía al día.
+   */
+  private async classCounters(classIds: string[]): Promise<Map<string, ClassCounters>> {
+    if (classIds.length === 0) return new Map();
+    const [open, ungraded] = await Promise.all([
+      this.prisma.activity.groupBy({
+        by: ["classId"],
+        where: { classId: { in: classIds }, status: { not: "draft" } },
+        _count: true,
+      }),
+      this.prisma.submission.groupBy({
+        by: ["activityId"],
+        where: { activity: { classId: { in: classIds } }, grade: { is: null } },
+        _count: true,
+      }),
+    ]);
+    // groupBy sobre submission agrupa por actividad, así que hay que remapear a su clase.
+    const activityClass = new Map(
+      (
+        await this.prisma.activity.findMany({
+          where: { id: { in: ungraded.map((u) => u.activityId) } },
+          select: { id: true, classId: true },
+        })
+      ).map((a) => [a.id, a.classId]),
+    );
+    const result = new Map<string, ClassCounters>(classIds.map((id) => [id, { openActivities: 0, pending: 0 }]));
+    for (const o of open) {
+      const entry = result.get(o.classId);
+      if (entry) entry.openActivities = o._count;
+    }
+    for (const u of ungraded) {
+      const classId = activityClass.get(u.activityId);
+      const entry = classId ? result.get(classId) : undefined;
+      if (entry) entry.pending += u._count;
+    }
+    return result;
   }
 
   async create(ownerId: string, input: CreateClassInput): Promise<ClassInfo> {
@@ -71,6 +117,7 @@ export class ClassesService {
         ownerId,
         enrollments: { create: { userId: ownerId, roleInClass: "teacher" } },
       },
+      include: CLASS_OWNER_INCLUDE,
     });
     return toClassInfo(cls, 0);
   }
@@ -93,9 +140,9 @@ export class ClassesService {
         ...rest,
         ...(publish === undefined ? {} : { status: publish ? "live" : "draft" }),
       },
+      include: CLASS_OWNER_INCLUDE,
     });
-    const students = await this.prisma.enrollment.count({ where: { classId, roleInClass: "student" } });
-    return toClassInfo(cls, students);
+    return this.withStudents(cls);
   }
 
   /** POST /classes/:id/cover — guarda la portada y descarta la anterior. */
@@ -104,6 +151,7 @@ export class ClassesService {
     const cls = await this.prisma.class.update({
       where: { id: classId },
       data: { coverUrl: uploadUrl(file.filename) },
+      include: CLASS_OWNER_INCLUDE,
     });
     await this.removeCoverFile(prev.coverUrl);
     return this.withStudents(cls);
@@ -112,7 +160,7 @@ export class ClassesService {
   /** DELETE /classes/:id/cover — quita la portada. */
   async clearCover(user: AuthUser, classId: string): Promise<ClassInfo> {
     const prev = await this.assertOwner(user, classId);
-    const cls = await this.prisma.class.update({ where: { id: classId }, data: { coverUrl: "" } });
+    const cls = await this.prisma.class.update({ where: { id: classId }, data: { coverUrl: "" }, include: CLASS_OWNER_INCLUDE });
     await this.removeCoverFile(prev.coverUrl);
     return this.withStudents(cls);
   }
@@ -124,9 +172,12 @@ export class ClassesService {
     await unlink(join(UPLOADS_DIR, key)).catch(() => undefined);
   }
 
-  private async withStudents(cls: Class): Promise<ClassInfo> {
-    const students = await this.prisma.enrollment.count({ where: { classId: cls.id, roleInClass: "student" } });
-    return toClassInfo(cls, students);
+  private async withStudents(cls: ClassWithOwner): Promise<ClassInfo> {
+    const [students, counters] = await Promise.all([
+      this.prisma.enrollment.count({ where: { classId: cls.id, roleInClass: "student" } }),
+      this.classCounters([cls.id]),
+    ]);
+    return toClassInfo(cls, students, counters.get(cls.id));
   }
 
   /** DELETE /classes/:id — borra la clase y su contenido (docente dueño o admin). */
@@ -164,7 +215,7 @@ export class ClassesService {
     }
     return enrolled.map((e) => {
       const a = agg.get(e.user.id) ?? { count: 0, grades: [] };
-      const avg = a.grades.length ? Math.round((a.grades.reduce((x, y) => x + y, 0) / a.grades.length) * 10) / 10 : 0;
+      const avg = a.grades.length ? Math.round((a.grades.reduce((x, y) => x + y, 0) / a.grades.length) * 10) / 10 : null;
       return {
         id: e.user.id,
         name: e.user.name,
@@ -172,7 +223,6 @@ export class ClassesService {
         avg,
         progress: activityCount ? a.count / activityCount : 0,
         submitted: a.count,
-        attendance: 0,
       };
     });
   }

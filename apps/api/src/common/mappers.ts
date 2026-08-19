@@ -51,7 +51,16 @@ const STATUS: Record<ClassStatus, StatusTuple> = {
   draft: ["Borrador", "default"],
 };
 
-export function toClassInfo(c: Class, studentsCount?: number): ClassInfo {
+/** Clase con el docente dueño cargado (ver CLASS_OWNER_INCLUDE en ClassesService). */
+export type ClassWithOwner = Class & { owner?: { name: string } | null };
+
+/** Contadores que se calculan por consulta en vez de leerse de columnas obsoletas. */
+export interface ClassCounters {
+  openActivities: number;
+  pending: number;
+}
+
+export function toClassInfo(c: ClassWithOwner, studentsCount?: number, counters?: ClassCounters): ClassInfo {
   return {
     id: c.id,
     name: c.name,
@@ -61,12 +70,14 @@ export function toClassInfo(c: Class, studentsCount?: number): ClassInfo {
     color: c.color,
     icon: c.icon,
     status: STATUS[c.status],
+    state: c.status,
     progress: c.progress,
-    openActivities: c.openActivities,
-    pending: c.pending,
+    openActivities: counters?.openActivities ?? 0,
+    pending: counters?.pending ?? 0,
     nextSession: c.nextSession,
     desc: c.desc,
     coverUrl: c.coverUrl,
+    teacher: c.owner?.name ?? "",
   };
 }
 
@@ -104,7 +115,7 @@ const SUBMISSION_STATUS: Record<SubmissionStatus, SubmissionDto["status"]> = {
   atrasado: "Atrasado",
 };
 
-function formatDate(d: Date | null): string {
+export function formatDate(d: Date | null): string {
   if (!d) return "—";
   const p = (n: number) => String(n).padStart(2, "0");
   return `${p(d.getDate())} / ${p(d.getMonth() + 1)} / ${d.getFullYear()}`;

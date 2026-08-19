@@ -13,6 +13,6 @@ export {
 } from "./primitives";
 export { Illustration } from "./Illustration";
 export type { IllustrationProps } from "./Illustration";
-export { Shell, PROFILE } from "./Shell";
+export { Shell } from "./Shell";
 export { ClassShell } from "./ClassShell";
 export type { ClassShellProps } from "./ClassShell";

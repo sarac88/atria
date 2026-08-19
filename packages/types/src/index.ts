@@ -19,6 +19,9 @@ export type BadgeColor =
 /** [label, colourKey] pair used across cards and tables. */
 export type StatusTuple = [string, BadgeColor];
 
+/** Estado de publicación de una clase, tal cual lo guarda la base de datos. */
+export type ClassState = "live" | "scheduled" | "draft";
+
 export interface ClassInfo {
   id: string;
   name: string;
@@ -28,6 +31,8 @@ export interface ClassInfo {
   color: string;
   icon: string;
   status: StatusTuple;
+  /** Estado sin traducir, para filtrar sin depender de la etiqueta visible. */
+  state: ClassState;
   progress: number;
   openActivities: number;
   pending: number;
@@ -35,16 +40,18 @@ export interface ClassInfo {
   desc: string;
   /** Portada del curso: ruta servida por la API, o "" si no tiene. */
   coverUrl: string;
+  /** Nombre del docente dueño de la clase, o "" si no se cargó la relación. */
+  teacher: string;
 }
 
 export interface Student {
   id: string;
   name: string;
   email: string;
-  avg: number;
+  /** Media de las entregas calificadas, o null si todavía no tiene ninguna nota. */
+  avg: number | null;
   progress: number;
   submitted: number;
-  attendance: number;
 }
 
 export interface Activity {
@@ -186,15 +193,6 @@ export interface CalendarEvent {
   color: string;
 }
 
-export interface FeedItem {
-  icon: string;
-  who: string;
-  what: string;
-  when: string;
-  tint: string;
-  fg: string;
-}
-
 // ---- API DTOs --------------------------------------------------------------
 
 export interface UserDto {
@@ -203,6 +201,16 @@ export interface UserDto {
   email: string;
   role: Role;
   avatarUrl: string | null;
+}
+
+/** Fila de la tabla de usuarios del panel de administración (GET /users). */
+export interface AdminUserDto extends UserDto {
+  /** Alta formateada "dd / mm / yyyy". */
+  joined: string;
+  /** Alta en ISO, para ordenar y agrupar por mes. */
+  createdAt: string;
+  /** Clases en las que participa (matriculado o como docente). */
+  classes: number;
 }
 
 /** Detailed class payload for GET /classes/:id. */
@@ -307,6 +315,22 @@ export interface DebateThreadDto {
 export interface StudentTaskDto extends Activity {
   className: string;
   mySubmission: SubmissionDto | null;
+}
+
+/** Categorías de evento que el calendario sabe pintar. */
+export type CalendarKind = "entrega" | "examen" | "sesion";
+
+/** Un evento con fecha para GET /calendar. */
+export interface CalendarEventDto {
+  id: string;
+  kind: CalendarKind;
+  title: string;
+  classId: string;
+  className: string;
+  /** Fecha local en formato YYYY-MM-DD. */
+  date: string;
+  /** Hora "HH:MM" cuando el evento la tiene (sesiones), o "" si es de día completo. */
+  time: string;
 }
 
 export interface GradebookColumn {

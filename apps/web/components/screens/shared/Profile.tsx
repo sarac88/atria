@@ -4,13 +4,8 @@ import { useState } from "react";
 import { Avatar, Input, Select, Switch, Button, Icon, HorizontalTabs, Badge } from "@/components/ui";
 import { Page, PageHead, Panel } from "@/components/layout";
 import { useSettings } from "@/components/settings/SettingsContext";
-import type { Role } from "@/lib/types";
-
-const ME: Record<Role, [string, string, string]> = {
-  docente: ["Elena Ruiz", "Docente", "elena.ruiz@atria.edu"],
-  alumno: ["Marc Soler", "Alumno", "marc.soler@atria.edu"],
-  admin: ["Dirección", "Administración", "direccion@atria.edu"],
-};
+import { resourceUrl } from "@/lib/api/client";
+import { displayName, firstName, lastName, roleLabel } from "@/lib/session";
 
 const notifs: [string, string, boolean][] = [
   ["Nuevas entregas", "Recibe un aviso cuando un alumno entrega una tarea.", true],
@@ -20,20 +15,21 @@ const notifs: [string, string, boolean][] = [
 ];
 
 export function Profile() {
-  const { role } = useSettings();
+  const { role, user } = useSettings();
   const [tab, setTab] = useState("perfil");
-  const me = ME[role] || ME.docente;
+  const name = displayName(user);
+  const avatar = user?.avatarUrl ? resourceUrl(user.avatarUrl) : undefined;
   return (
     <Page width={900}>
       <PageHead title="Perfil y ajustes" subtitle="Gestiona tu cuenta y preferencias" />
       <div style={{ display: "flex", alignItems: "center", gap: 18, padding: "22px 24px", background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)", marginBottom: 22 }}>
-        <Avatar name={me[0]} size="lg" />
+        <Avatar name={name} src={avatar} size="lg" />
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h3 style={{ fontSize: 22, margin: 0 }}>{me[0]}</h3>
-            <Badge color="info">{me[1]}</Badge>
+            <h3 style={{ fontSize: 22, margin: 0 }}>{name}</h3>
+            <Badge color="info">{roleLabel(role)}</Badge>
           </div>
-          <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 4 }}>{me[2]}</div>
+          <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 4 }}>{user?.email ?? ""}</div>
         </div>
         <Button variant="outline" iconLeft={<Icon name="pencil" size={16} />}>Editar foto</Button>
       </div>
@@ -42,10 +38,11 @@ export function Profile() {
       </div>
       {tab === "perfil" ? (
         <Panel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-            <Input label="Nombre" defaultValue={me[0].split(" ")[0]} />
-            <Input label="Apellidos" defaultValue={me[0].split(" ").slice(1).join(" ")} />
-            <Input label="Correo electrónico" defaultValue={me[2]} />
+          {/* `key` remonta los campos no controlados cuando llega la respuesta de /users/me. */}
+          <div key={user?.id ?? "loading"} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            <Input label="Nombre" defaultValue={firstName(user)} />
+            <Input label="Apellidos" defaultValue={lastName(user)} />
+            <Input label="Correo electrónico" defaultValue={user?.email ?? ""} />
             <Input label="Teléfono" placeholder="+34 600 000 000" />
             <Select label="Idioma" defaultValue="es" options={[{ label: "Español (España)", value: "es" }, { label: "English", value: "en" }, { label: "Català", value: "ca" }]} />
             <Select label="Zona horaria" defaultValue="mad" options={[{ label: "Madrid (GMT+1)", value: "mad" }, { label: "Canarias (GMT)", value: "can" }]} />

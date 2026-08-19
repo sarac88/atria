@@ -29,14 +29,12 @@ export interface StudentClassProps {
   onBack: () => void;
   onProfile: () => void;
   onLogout: () => void;
-  onSubmit: (activityId: string) => void;
 }
 
-export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: StudentClassProps) {
+export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClassProps) {
   const { role } = useSettings();
   const c = klass;
   const { data: activities } = useActivities(c.id);
-  const firstActivityId = activities?.[0]?.id;
   const { data: modulesData } = useModules(c.id);
   const { data: mySubs } = useMyGrades(c.id);
   const modules = modulesData ?? [];
@@ -74,7 +72,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
       onBack={onBack}
       onProfile={onProfile}
       onLogout={onLogout}
-      meta={`${c.code} · Prof. Elena Ruiz`}
+      meta={c.teacher ? `${c.code} · ${c.teacher}` : c.code}
       rightExtra={progress}
       tab={tab}
       onTab={setTab}
@@ -131,17 +129,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
               {curMod.id !== NONE_UNIT ? (
                 <>
                   <div style={SECTION_LABEL}>Recursos</div>
-                  <ModuleResourceGrid
-                    classId={c.id}
-                    items={curMod.items}
-                    renderExtra={(it) =>
-                      it.label.includes("Ensayo") ? (
-                        <Button size="small" variant="accent" disabled={!firstActivityId} onClick={(e) => { e.stopPropagation(); firstActivityId && onSubmit(firstActivityId); }}>
-                          Entregar
-                        </Button>
-                      ) : null
-                    }
-                  />
+                  <ModuleResourceGrid classId={c.id} items={curMod.items} />
                 </>
               ) : null}
               <div style={{ marginTop: 22 }}>
@@ -158,7 +146,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout, onSubmit }: S
           ) : null}
         </div>
       ) : tab === "notas" ? (
-        <StudentGradesTable classId={c.id} />
+        <StudentGradesTable rows={mySubs ?? []} />
       ) : tab === "tareas" ? (
         classTasks.length ? (
           <Panel pad={0}>

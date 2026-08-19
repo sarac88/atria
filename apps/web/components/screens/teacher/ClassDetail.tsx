@@ -586,7 +586,7 @@ function ClassStudents({ klass }: { klass: ClassInfo }) {
   const classId = klass.id;
   const { data: roster } = useRoster(classId);
   const [inviting, setInviting] = useState(false);
-  const rows = (roster ?? []).map((s) => ({ ...s, avgStr: s.avg.toFixed(1) }));
+  const rows = (roster ?? []).map((s) => ({ ...s, avgStr: s.avg == null ? "—" : s.avg.toFixed(1) }));
   const cols: Column<(typeof rows)[number]>[] = [
     { key: "name", label: "Alumno", render: (v) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><Avatar name={v as string} size="sm" /><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
     { key: "email", label: "Correo", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{v as string}</span> },

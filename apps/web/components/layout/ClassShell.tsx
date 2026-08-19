@@ -5,8 +5,10 @@
 
 import type { ReactNode } from "react";
 import { Icon, Avatar, Badge } from "@/components/ui";
-import { PROFILE } from "./Shell";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
+import { useSettings } from "@/components/settings/SettingsContext";
+import { resourceUrl } from "@/lib/api/client";
+import { displayName } from "@/lib/session";
 import type { BadgeColor, ClassInfo, Role } from "@/lib/types";
 
 interface ClassTab {
@@ -58,7 +60,9 @@ export function ClassShell({
   rightExtra,
   children,
 }: ClassShellProps) {
-  const me = PROFILE[role] || PROFILE.docente;
+  const { user } = useSettings();
+  const meName = displayName(user);
+  const meAvatar = user?.avatarUrl ? resourceUrl(user.avatarUrl) : undefined;
   const c = klass || {};
   const crumb = backLabel || (role === "alumno" ? "Mis cursos" : "Mis clases");
   const decoKey = (c.id || c.name || "").split("").reduce((a, ch) => a + ch.charCodeAt(0), 0);
@@ -88,7 +92,7 @@ export function ClassShell({
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
             <NotificationsBell tone="onDark" />
             <button onClick={onProfile} aria-label="Perfil" style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "inline-flex", borderRadius: "50%" }}>
-              <Avatar name={me.greeting} />
+              <Avatar name={meName} src={meAvatar} />
             </button>
             {onLogout ? (
               <button onClick={onLogout} aria-label="Salir" style={{ border: "none", background: "transparent", color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "inline-flex" }}>

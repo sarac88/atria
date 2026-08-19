@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { Avatar, Badge, Button, Icon } from "@/components/ui";
+import { Avatar, Badge } from "@/components/ui";
 import type { GradebookDto } from "@/lib/types";
 
 const thS: CSSProperties = { padding: "10px 16px", textAlign: "left", whiteSpace: "nowrap", fontSize: 13, fontWeight: 700, color: "var(--text-strong)", height: 35, lineHeight: 1.3, boxSizing: "border-box" };
@@ -11,14 +11,15 @@ const gColor = (g: number | null) => (g == null ? "var(--text-muted)" : g >= 9 ?
 const gBg = (g: number | null) => (g == null ? "transparent" : g >= 9 ? "var(--success-100)" : g >= 5 ? "transparent" : "var(--error-100)");
 
 /** Grade matrix — driven by GET /classes/:id/gradebook. */
-export function GradebookTable({ data }: { data?: GradebookDto }) {
+export function GradebookTable({ data, courseName = "" }: { data?: GradebookDto; courseName?: string }) {
   const columns = data?.columns ?? [];
   const rows = data?.rows ?? [];
   return (
     <div style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)", overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 24px", height: 55, boxSizing: "border-box" }}>
-        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 18, color: "var(--text-strong)" }}>Libro de calificaciones · Cálculo II</span>
-        <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
+        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 18, color: "var(--text-strong)" }}>
+          {courseName ? `Libro de calificaciones · ${courseName}` : "Libro de calificaciones"}
+        </span>
       </div>
       <div style={{ overflowX: "auto", margin: "4px 24px 24px", border: "1px solid var(--border-default)", borderRadius: 3 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-sans)" }}>

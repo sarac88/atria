@@ -10,6 +10,8 @@ import { useSettings } from "@/components/settings/SettingsContext";
 import { Messages } from "@/components/screens/shared/Messages";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { useConversations } from "@/lib/api/messaging";
+import { resourceUrl } from "@/lib/api/client";
+import { displayName, roleLabel } from "@/lib/session";
 import type { Role } from "@/lib/types";
 
 interface NavItem {
@@ -45,12 +47,6 @@ const NAV: Record<Role, NavItem[]> = {
   ],
 };
 
-export const PROFILE: Record<Role, { name: string; role: string; greeting: string }> = {
-  docente: { name: "Elena Ruiz", role: "Docente", greeting: "Prof. Elena Ruiz" },
-  alumno: { name: "Marc Soler", role: "Alumno", greeting: "Marc Soler" },
-  admin: { name: "Dirección", role: "Administración", greeting: "Centro Atria" },
-};
-
 /** Returns active nav key + page title for a path, given the role. */
 function resolveActive(pathname: string, role: Role): { active: string; title: string } {
   const nav = NAV[role];
@@ -68,7 +64,7 @@ function resolveActive(pathname: string, role: Role): { active: string; title: s
 export function Shell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { role, logout } = useSettings();
+  const { role, user, logout } = useSettings();
   const [open, setOpen] = useState(false); // mobile drawer
   const [collapsed, setCollapsed] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false); // fullscreen overlay
@@ -94,7 +90,8 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const mini = collapsed && !open;
   const nav = NAV[role] || NAV.docente;
-  const me = PROFILE[role] || PROFILE.docente;
+  const meName = displayName(user);
+  const meAvatar = user?.avatarUrl ? resourceUrl(user.avatarUrl) : undefined;
   const { active, title } = resolveActive(pathname, role);
   const { data: conversations } = useConversations();
   const unreadMessages = (conversations ?? []).reduce((n, c) => n + c.unread, 0);
@@ -178,11 +175,11 @@ export function Shell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: mini ? "center" : "flex-start", gap: 10, padding: "12px 4px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-          <Avatar name={me.greeting} size="sm" />
+          <Avatar name={meName} src={meAvatar} size="sm" />
           {mini ? null : (
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{me.name}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{me.role}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meName}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{roleLabel(role)}</div>
             </div>
           )}
           {mini ? null : (
@@ -221,7 +218,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
             <NotificationsBell />
             <button onClick={() => router.push("/perfil")} aria-label="Perfil" style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "inline-flex", borderRadius: "50%" }}>
-              <Avatar name={me.greeting} />
+              <Avatar name={meName} src={meAvatar} />
             </button>
           </div>
         </header>

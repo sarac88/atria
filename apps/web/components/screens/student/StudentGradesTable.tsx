@@ -1,14 +1,23 @@
 "use client";
 
 import { DataTable, Badge, type Column } from "@/components/ui";
-import { useMyGrades } from "@/lib/api/classwork";
 import type { SubmissionDto } from "@/lib/types";
 
-export function StudentGradesTable({ classId = "calc2" }: { classId?: string }) {
-  const { data } = useMyGrades(classId);
-  const rows = data ?? [];
-  const cols: Column<SubmissionDto>[] = [
+/** Una entrega propia; `className` solo se usa en la vista global de "Mis notas". */
+export type GradeRow = SubmissionDto & { className?: string };
+
+export function StudentGradesTable({
+  rows,
+  showClass = false,
+  title = "Mis notas",
+}: {
+  rows: GradeRow[];
+  showClass?: boolean;
+  title?: string;
+}) {
+  const cols: Column<GradeRow>[] = [
     { key: "activity", label: "Actividad", render: (v) => <span style={{ fontWeight: 600, color: "var(--text-strong)" }}>{v as string}</span> },
+    ...(showClass ? [{ key: "className", label: "Curso" } as Column<GradeRow>] : []),
     { key: "date", label: "Fecha" },
     { key: "feedback", label: "Comentario", render: (v) => <span style={{ color: "var(--text-muted)", fontSize: 13 }}>{(v as string) || "—"}</span> },
     {
@@ -21,5 +30,5 @@ export function StudentGradesTable({ classId = "calc2" }: { classId?: string }) 
       },
     },
   ];
-  return <DataTable title="Mis notas" rowKey="id" columns={cols} rows={rows} selectable={false} />;
+  return <DataTable title={title} rowKey="id" columns={cols} rows={rows} selectable={false} />;
 }

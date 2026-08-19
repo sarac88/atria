@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
-import { CurrentUser, type AuthUser } from "../auth/decorators";
-import { JwtAuthGuard } from "../auth/guards";
+import { CurrentUser, Roles, type AuthUser } from "../auth/decorators";
+import { JwtAuthGuard, RolesGuard } from "../auth/guards";
 import { UsersService } from "./users.service";
 
 @Controller("users")
@@ -11,5 +11,12 @@ export class UsersController {
   @Get("me")
   me(@CurrentUser() user: AuthUser) {
     return this.users.getMe(user.userId);
+  }
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles("admin")
+  list() {
+    return this.users.listAll();
   }
 }
