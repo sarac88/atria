@@ -13,6 +13,8 @@ import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { InviteStudentsModal } from "@/components/modals/InviteStudentsModal";
 import { ClassAbout } from "@/components/classes/ClassAbout";
 import { ClassInvitations } from "@/components/classes/ClassInvitations";
+import { ClassChatPanel } from "@/components/classes/ClassChatPanel";
+import { ClassRosterPanel, ClassUnitProgressPanel } from "@/components/classes/ClassSidePanels";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ModuleSessions } from "@/components/modules/ModuleSessions";
 import { UnitDescription } from "@/components/modules/UnitDescription";
@@ -329,7 +331,7 @@ function UnitEditForm({
   );
 }
 
-function ModulesRailLayout({ klass, flat, onGrade }: { klass: ClassInfo; flat?: boolean; onGrade: (activityId: string) => void }) {
+function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; flat?: boolean; aside?: React.ReactNode; onGrade: (activityId: string) => void }) {
   const classId = klass.id;
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
@@ -354,7 +356,7 @@ function ModulesRailLayout({ klass, flat, onGrade }: { klass: ClassInfo; flat?: 
 
   return (
     <>
-    <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: "256px 1fr", gap: 0, alignItems: "start", ...chrome }}>
+    <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: aside ? "256px minmax(0, 1fr) 320px" : "256px 1fr", gap: 0, alignItems: "start", ...chrome }}>
       <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0, borderColor: "rgb(237, 236, 236)" }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -373,7 +375,7 @@ function ModulesRailLayout({ klass, flat, onGrade }: { klass: ClassInfo; flat?: 
       </div>
 
       {current ? (
-        <div key={current.id} style={{ paddingLeft: 28 }}>
+        <div key={current.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
           {editing === current.id ? (
             <UnitEditForm
               title={current.title}
@@ -431,8 +433,12 @@ function ModulesRailLayout({ klass, flat, onGrade }: { klass: ClassInfo; flat?: 
           />
         </div>
       ) : (
-        <div style={{ paddingLeft: 28, color: "var(--text-muted)", fontSize: 14 }}>Crea la primera unidad para empezar.</div>
+        <div className="atria-modmain" style={{ paddingLeft: 28, color: "var(--text-muted)", fontSize: 14 }}>Crea la primera unidad para empezar.</div>
       )}
+
+      {aside ? (
+        <div className="atria-modaside" style={{ paddingLeft: 28, borderLeft: "1px solid rgb(237, 236, 236)", position: "sticky", top: 0 }}>{aside}</div>
+      ) : null}
     </div>
     {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
     {creatingIn !== null ? (
@@ -576,10 +582,20 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
   );
 }
 
-function ClassModules({ klass, layout, onGrade }: { klass: ClassInfo; layout: ModLayout; onGrade: (activityId: string) => void }) {
-  if (layout === "plano") return <ModulesRailLayout klass={klass} flat onGrade={onGrade} />;
-  if (layout === "acordeon") return <ModulesAccordion klass={klass} onGrade={onGrade} />;
-  return <ModulesRailLayout klass={klass} onGrade={onGrade} />;
+function ClassModules({ klass, layout, aside, onGrade }: { klass: ClassInfo; layout: ModLayout; aside?: React.ReactNode; onGrade: (activityId: string) => void }) {
+  if (layout === "plano") return <ModulesRailLayout klass={klass} flat aside={aside} onGrade={onGrade} />;
+  // El acordeón no tiene un bloque blanco único donde meter la columna: va al lado.
+  if (layout === "acordeon") {
+    return (
+      <div className="atria-modsplit" style={{ display: "grid", gridTemplateColumns: aside ? "minmax(0, 1fr) 320px" : "1fr", gap: 40, alignItems: "start" }}>
+        <div style={{ minWidth: 0 }}><ModulesAccordion klass={klass} onGrade={onGrade} /></div>
+        {aside ? (
+          <div className="atria-modaside" style={{ paddingLeft: 28, borderLeft: "1px solid rgb(237, 236, 236)", position: "sticky", top: 0 }}>{aside}</div>
+        ) : null}
+      </div>
+    );
+  }
+  return <ModulesRailLayout klass={klass} aside={aside} onGrade={onGrade} />;
 }
 
 function ClassStudents({ klass }: { klass: ClassInfo }) {
@@ -930,7 +946,20 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         ]}
       >
         {tab === "resumen" ? <ClassOverview c={c} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
-        {tab === "modulos" ? <ClassModules klass={c} layout={modLayout} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
+        {tab === "modulos" ? (
+          <ClassModules
+            klass={c}
+            layout={modLayout}
+            onGrade={(id) => { setActivityId(id); setTab("entregas"); }}
+            aside={
+              <>
+                <ClassChatPanel classId={c.id} />
+                <ClassRosterPanel classId={c.id} />
+                <ClassUnitProgressPanel classId={c.id} onReview={() => setTab("entregas")} />
+              </>
+            }
+          />
+        ) : null}
         {tab === "entregas" ? (
           <div
             style={{

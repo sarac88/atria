@@ -366,8 +366,42 @@ a { color: var(--text-link); }
 [data-theme="dark"] input { color: var(--text-strong); }
 [data-theme="dark"] ::placeholder { color: var(--text-muted) !important; opacity: 1; }
 
+/* Columna lateral de Módulos (chat, alumnos, entregas): cada panel se agrupa
+   con un recuadro, sin hairline entre secciones. */
+.atria-modaside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.atria-modaside > * {
+  min-width: 0;
+  padding: 16px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+/* Aire extra entre el temario y el separador vertical de la columna. */
+.atria-modules > .atria-modmain {
+  padding-right: 28px;
+}
+
 /* ---- Responsive ---------------------------------------------------------- */
 .atria-burger { display: none; }
+/* La columna lateral baja bajo el temario antes que el resto de la interfaz: el
+   carril de unidades ya se come 256px y el contenido se quedaría sin sitio. */
+@media (max-width: 1180px) {
+  .atria-modules { grid-template-columns: 256px minmax(0, 1fr) !important; }
+  .atria-modsplit { grid-template-columns: 1fr !important; }
+  .atria-modules > .atria-modmain { padding-right: 0; }
+  .atria-modaside {
+    grid-column: 1 / -1;
+    margin-top: 24px;
+    padding-top: 24px;
+    padding-left: 0 !important;
+    border-left: none !important;
+    border-top: 1px solid rgb(237, 236, 236);
+    position: static !important;
+  }
+}
 @media (max-width: 980px) {
   .atria-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 50; transform: translateX(-100%); transition: transform .2s ease; }
   .atria-sidebar[data-open="1"] { transform: none; box-shadow: var(--shadow-2xl); }

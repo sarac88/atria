@@ -62,6 +62,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         return [...old, dto];
       });
       void qc.invalidateQueries({ queryKey: ["conversations"] });
+      // El panel de módulos muestra su propia insignia de no leídos.
+      void qc.invalidateQueries({ queryKey: ["classChat"] });
     });
 
     socket.on("notification.new", (raw: NotificationDto) => {

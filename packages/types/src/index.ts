@@ -362,6 +362,30 @@ export interface ConversationDto {
   channel: boolean;
 }
 
+/**
+ * Un hilo del chat de la clase. Siempre es 1:1: el docente tiene un hilo por
+ * alumno y el alumno solo tiene el del docente, así que los alumnos no pueden
+ * escribirse entre ellos.
+ */
+export interface ClassChatThreadDto {
+  /** El interlocutor: el alumno (vista docente) o el docente (vista alumno). */
+  userId: string;
+  name: string;
+  role: string;
+  /** null mientras nadie haya escrito: la conversación nace con el primer mensaje. */
+  conversationId: string | null;
+  last: string;
+  time: string;
+  unread: number;
+}
+
+/** GET /conversations/class/:classId — hilos visibles para quien pregunta. */
+export interface ClassChatDto {
+  threads: ClassChatThreadDto[];
+  /** Suma de no leídos, para la insignia del panel. */
+  unread: number;
+}
+
 export type NotificationType = "submission" | "grade" | "deadline" | "invite" | "system";
 
 /** An event notification for the bell feed. */
@@ -531,6 +555,12 @@ export const sendMessageSchema = z.object({
   body: z.string().min(1),
 });
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+export const openClassThreadSchema = z.object({
+  /** Alumno con quien abre el hilo el docente; el alumno lo omite y va a su docente. */
+  withUserId: z.string().min(1).optional(),
+});
+export type OpenClassThreadInput = z.infer<typeof openClassThreadSchema>;
 
 /** Mínimo de caracteres para la contraseña que crea un alumno al aceptar la invitación. */
 export const PASSWORD_MIN_LENGTH = 8;

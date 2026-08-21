@@ -11,6 +11,8 @@ import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
+import { ClassChatPanel } from "@/components/classes/ClassChatPanel";
+import { StudentUnitProgressPanel } from "@/components/classes/ClassSidePanels";
 import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
@@ -79,7 +81,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
       tabs={[{ label: "Contenido", value: "contenido" }, { label: "Tareas", value: "tareas" }, { label: "Notas", value: "notas" }, { label: "Foro", value: "foro" }]}
     >
       {tab === "contenido" ? (
-        <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: "256px 1fr", gap: 0, alignItems: "start", background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" }}>
+        <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: "256px minmax(0, 1fr) 320px", gap: 0, alignItems: "start", background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" }}>
           <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -109,7 +111,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
           </div>
 
           {curMod ? (
-            <div key={curMod.id} style={{ paddingLeft: 28 }}>
+            <div key={curMod.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                 <span style={{ width: 32, height: 32, borderRadius: "50%", background: curMod.done ? "var(--success-100)" : "var(--surface-soft)", color: curMod.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name={curMod.done ? "check" : "book-open"} size={18} />
@@ -143,7 +145,16 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
                 )}
               </div>
             </div>
-          ) : null}
+          ) : (
+            // Hueco vacío: sin él la columna del chat ocuparía la del temario.
+            <div />
+          )}
+
+          {/* El recuento de alumnos se queda fuera: es información del docente. */}
+          <div className="atria-modaside" style={{ paddingLeft: 28, borderLeft: "1px solid rgb(237, 236, 236)", position: "sticky", top: 0 }}>
+            <ClassChatPanel classId={c.id} />
+            <StudentUnitProgressPanel classId={c.id} onReview={() => setTab("tareas")} />
+          </div>
         </div>
       ) : tab === "notas" ? (
         <StudentGradesTable rows={mySubs ?? []} />

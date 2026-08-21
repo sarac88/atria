@@ -155,7 +155,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 /** Relative time label used in the messages list and bubbles. */
-function formatTime(d: Date): string {
+export function formatTime(d: Date): string {
   const now = new Date();
   if (d.toDateString() === now.toDateString()) return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const yesterday = new Date(now);
@@ -184,7 +184,7 @@ export function toDebatePostDto(p: DebatePostWithAuthor, viewerId: string, repli
   };
 }
 
-const ROLE_LABEL: Record<string, string> = { docente: "Docente", alumno: "Alumno", admin: "Administración" };
+export const ROLE_LABEL: Record<string, string> = { docente: "Docente", alumno: "Alumno", admin: "Administración" };
 
 type ConversationWithRelations = Conversation & {
   participants: (ConversationParticipant & { user: Pick<User, "id" | "name" | "role"> })[];

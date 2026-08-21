@@ -33,9 +33,8 @@ export function UnitDescription({ text }: { text: string }) {
     <div
       style={{
         width: "100%",
-        maxWidth: 700,
         ["--atria-rich-gap" as string]: "16px",
-        margin: "0 auto 20px",
+        margin: "0 0 20px",
         padding: "26px 30px",
         borderRadius: "var(--radius-md)",
         background: "var(--yellow-100)",

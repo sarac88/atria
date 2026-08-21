@@ -64,11 +64,6 @@ export class MessagingGateway implements OnGatewayConnection {
     }
     client.data.userId = userId;
     client.join(`user:${userId}`);
-    const parts = await this.prisma.conversationParticipant.findMany({
-      where: { userId },
-      select: { conversationId: true },
-    });
-    for (const p of parts) client.join(`conversation:${p.conversationId}`);
   }
 
   @SubscribeMessage("message.send")
@@ -93,13 +88,21 @@ export class MessagingGateway implements OnGatewayConnection {
       data: { lastReadAt: new Date() },
     });
 
-    // Broadcast a recipient-agnostic payload; each client derives from/me itself.
-    this.server.to(`conversation:${conversationId}`).emit("message.new", {
+    // Se reparte por la sala personal de cada participante, no por una sala de
+    // conversación: el chat de la clase crea el hilo con el primer mensaje y
+    // los sockets ya conectados nunca habrían entrado en esa sala.
+    const parts = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId },
+      select: { userId: true },
+    });
+    // Payload agnóstico del destinatario; cada cliente deduce si es suyo.
+    const event = {
       id: msg.id,
       conversationId,
       senderId: userId,
       body,
       createdAt: msg.createdAt.toISOString(),
-    });
+    };
+    for (const p of parts) this.server.to(`user:${p.userId}`).emit("message.new", event);
   }
 }
