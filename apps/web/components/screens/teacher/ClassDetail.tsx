@@ -683,11 +683,11 @@ function OverviewActivityCard({
 }) {
   const [hovered, setHovered] = useState(false);
   const [tIcon, tColor] = typeMeta(activity.type);
+  // La unidad sale como etiqueta junto al estado, no en la línea de metadatos.
   const meta = [
     activity.type,
     activity.points ? `${activity.points} pts` : "",
     activity.due ? `vence ${activity.due}` : "",
-    moduleLabel,
   ].filter(Boolean).join(" · ");
 
   return (
@@ -771,6 +771,13 @@ function OverviewActivityCard({
           </button>
         </div>
         <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{activity.submitted}/{activity.total}</span>
+        <Badge
+          color={moduleLabel ? "draft" : "default"}
+          style={{ fontSize: 12.5, padding: "4px 10px", maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", display: "block" }}
+          title={moduleLabel || "Sin unidad"}
+        >
+          {moduleLabel || "Sin unidad"}
+        </Badge>
         <Badge type="solid" color={activity.status[1]}>{activity.status[0]}</Badge>
       </div>
     </div>
@@ -785,12 +792,10 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
   const [editing, setEditing] = useState<Activity | null>(null);
   const [deleting, setDeleting] = useState<Activity | null>(null);
 
+  /** Nombre corto de la unidad; vacío si la actividad no cuelga de ninguna. */
   const moduleLabelOf = (moduleId?: string) => {
-    if (!moduleId) return "Sin módulo";
-    const mod = (modules ?? []).find((m) => m.id === moduleId);
-    if (!mod) return "Sin módulo";
-    const [lead] = modParts(mod.title);
-    return lead;
+    const mod = moduleId ? (modules ?? []).find((m) => m.id === moduleId) : undefined;
+    return mod ? modParts(mod.title)[0] : "";
   };
 
   const details = [
@@ -966,7 +971,9 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         onTab={setTab}
         tabs={[
           { label: "Resumen", value: "resumen" },
-          { label: "Módulos", value: "modulos" },
+          // El valor sigue siendo "modulos" (URL y notificaciones); solo cambia el
+          // rótulo, para llamarlo igual que en la vista del alumno.
+          { label: "Contenido", value: "modulos" },
           { label: "Entregas", value: "entregas" },
           { label: "Calificaciones", value: "calificaciones" },
           { label: "Alumnos", value: "alumnos" },
