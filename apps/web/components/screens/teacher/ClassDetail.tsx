@@ -11,7 +11,7 @@ import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { CreateActivityModal } from "@/components/modals/CreateActivityModal";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { InviteStudentsModal } from "@/components/modals/InviteStudentsModal";
-import { ClassAbout } from "@/components/classes/ClassAbout";
+import { ABOUT_UNIT, AboutRailItem, ClassAbout, RAIL_DIVIDER } from "@/components/classes/ClassAbout";
 import { ClassInvitations } from "@/components/classes/ClassInvitations";
 import { ClassChatPanel } from "@/components/classes/ClassChatPanel";
 import { ClassRosterPanel, ClassUnitProgressPanel } from "@/components/classes/ClassSidePanels";
@@ -341,15 +341,18 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
   const list = modules ?? [];
   const { units, actsOf } = buildUnits(list, activities ?? []);
   const [editing, setEditing] = useState<string | null>(null);
-  const [sel, setSel] = useState<string | null>(null);
+  // El carril abre por «Sobre el curso»: es la portada del temario.
+  const [sel, setSel] = useState<string>(ABOUT_UNIT);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
   const [creatingIn, setCreatingIn] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<{ id: string; title: string } | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
-    if ((!sel || !units.some((m) => m.id === sel)) && units.length) setSel(units[0].id);
+    // Si la unidad seleccionada desaparece (se borró), vuelve al principio.
+    if (sel !== ABOUT_UNIT && !units.some((m) => m.id === sel)) setSel(units.length ? units[0].id : ABOUT_UNIT);
   }, [units, sel]);
-  const current = units.find((m) => m.id === sel) || units[0];
+  const showAbout = sel === ABOUT_UNIT;
+  const current = showAbout ? undefined : units.find((m) => m.id === sel) || units[0];
   const chrome = flat
     ? { background: "#fff", boxShadow: "none", borderRadius: 0, padding: "8px 0" }
     : { background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" };
@@ -358,6 +361,8 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
     <>
     <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: aside ? "256px minmax(0, 1fr) 320px" : "256px 1fr", gap: 0, alignItems: "start", ...chrome }}>
       <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0, borderColor: "rgb(237, 236, 236)" }}>
+        <AboutRailItem active={showAbout} onSelect={() => setSel(ABOUT_UNIT)} />
+        <div style={RAIL_DIVIDER} />
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {units.map((m) => (
@@ -374,7 +379,11 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
         <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
       </div>
 
-      {current ? (
+      {showAbout ? (
+        <div className="atria-modmain" style={{ paddingLeft: 28 }}>
+          <ClassAbout c={klass} canEdit embedded />
+        </div>
+      ) : current ? (
         <div key={current.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
           {editing === current.id ? (
             <UnitEditForm
@@ -473,16 +482,37 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
   const updateModule = useUpdateModule(classId);
   const list = modules ?? [];
   const { units, actsOf } = buildUnits(list, activities ?? []);
-  const [open, setOpen] = useState<string | null>(null);
+  // Abre por «Sobre el curso», igual que el carril.
+  const [open, setOpen] = useState<string | null>(ABOUT_UNIT);
   const [editing, setEditing] = useState<string | null>(null);
   const [addTo, setAddTo] = useState<{ id: string; title: string } | null>(null);
   const [creatingIn, setCreatingIn] = useState<string | null>(null);
   const [detail, setDetail] = useState<Activity | null>(null);
-  useEffect(() => {
-    if (!open && units.length) setOpen(units[0].id);
-  }, [units, open]);
+  const aboutOpen = open === ABOUT_UNIT;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", overflow: "hidden" }}>
+        <button
+          type="button"
+          onClick={() => setOpen(aboutOpen ? null : ABOUT_UNIT)}
+          style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", textAlign: "left", border: "none", cursor: "pointer", background: "transparent", padding: "16px 20px", transition: "background .15s ease" }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+        >
+          <span style={{ width: 36, height: 36, flexShrink: 0, borderRadius: "50%", background: "var(--yellow-200)", color: "var(--yellow-700)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="home" size={18} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>Sobre el curso</span>
+          <span style={{ color: "var(--text-muted)", display: "inline-flex", transition: "transform .15s ease", transform: aboutOpen ? "rotate(180deg)" : "none" }}>
+            <Icon name="chevron-down" size={20} />
+          </span>
+        </button>
+        {aboutOpen ? (
+          <div style={{ padding: "16px 20px 18px", borderTop: "1px solid var(--border-subtle)" }}>
+            <ClassAbout c={klass} canEdit embedded />
+          </div>
+        ) : null}
+      </div>
       {units.map((m) => {
         const expanded = m.id === open;
         const isNone = m.id === NONE_UNIT;
@@ -772,8 +802,6 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-      <ClassAbout c={c} canEdit />
-
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
         {details.map((x) => (
           <div key={x.label} style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)", padding: 16, display: "flex", alignItems: "center", gap: 14 }}>

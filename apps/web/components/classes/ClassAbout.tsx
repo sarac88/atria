@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button, Icon, RichView } from "@/components/ui";
 import { Chip } from "@/components/layout";
 import { CreateClassModal } from "@/components/modals/CreateClassModal";
@@ -9,86 +9,52 @@ import { resourceUrl } from "@/lib/api/client";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
 import type { ClassInfo } from "@/lib/types";
 
-/** Altura visible de la descripción antes de pedir «Ver más». */
-const COLLAPSED_HEIGHT = 132;
-/** Alto de la portada: fijo, no depende de lo larga que sea la descripción. */
-const COVER_HEIGHT = 220;
 const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 
-/** Descripción plegable: si no cabe, se recorta con degradado y un botón para desplegar. */
-function ClassDescription({ html }: { html: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const [overflows, setOverflows] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+/** Identificador del apartado «Sobre el curso» dentro del carril de Módulos. */
+export const ABOUT_UNIT = "__about__";
 
-  // El alto real depende del ancho y de la fuente cargada: lo medimos en vivo.
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-    const check = () => setOverflows(el.scrollHeight > COLLAPSED_HEIGHT + 8);
-    check();
-    const ro = new ResizeObserver(check);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [html]);
-
-  const clipped = overflows && !expanded;
-
+/** Entrada «Sobre el curso» del carril de unidades, encima del listado. */
+export function AboutRailItem({ active, onSelect }: { active: boolean; onSelect: () => void }) {
+  const [hover, setHover] = useState(false);
   return (
-    <div style={{ marginTop: 6 }}>
-      <div style={{ position: "relative", maxHeight: clipped ? COLLAPSED_HEIGHT : undefined, overflow: clipped ? "hidden" : undefined }}>
-        <div ref={contentRef}>
-          <RichView html={html} style={{ fontSize: 15, marginTop: 0 }} />
-        </div>
-        {clipped ? (
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 60,
-              pointerEvents: "none",
-              background: "linear-gradient(to bottom, transparent, var(--surface-card))",
-            }}
-          />
-        ) : null}
-      </div>
-
-      {overflows ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            marginTop: 8,
-            padding: 0,
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            fontSize: 13.5,
-            fontWeight: 700,
-            fontFamily: "var(--font-sans)",
-            color: "var(--brand-primary)",
-          }}
-        >
-          <Icon name="chevron-down" size={16} style={{ transform: expanded ? "rotate(180deg)" : "none", transition: "transform .15s ease" }} />
-          {expanded ? "Ver menos" : "Ver más"}
-        </button>
-      ) : null}
-    </div>
+    <button
+      type="button"
+      onClick={onSelect}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        width: "100%",
+        textAlign: "left",
+        border: "none",
+        cursor: "pointer",
+        padding: "10px 14px",
+        borderRadius: "var(--radius-md)",
+        background: active ? "var(--primary-100)" : hover ? "var(--state-hover-tint)" : "transparent",
+        transition: "background .15s ease",
+      }}
+    >
+      <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: "var(--yellow-200)", color: "var(--yellow-700)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name="home" size={16} />
+      </span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: active ? "var(--brand-primary)" : "var(--text-strong)" }}>Sobre el curso</span>
+    </button>
   );
 }
 
+/** Separador entre «Sobre el curso» y el listado de unidades. */
+export const RAIL_DIVIDER: React.CSSProperties = { height: 1, background: "var(--border-subtle)", margin: "14px 6px" };
+
 /**
- * Ficha «Sobre el curso»: portada a la izquierda y descripción a la derecha.
- * El docente puede subir/quitar la imagen y editar el texto desde aquí.
+ * Ficha «Sobre el curso»: la portada flota dentro del texto (media columna) y la
+ * descripción la rodea. El docente puede subir/quitar la imagen y editar el texto.
+ * `embedded`: sin tarjeta propia, para ir dentro del panel de Módulos.
  */
-export function ClassAbout({ c, canEdit }: { c: ClassInfo; canEdit?: boolean }) {
+export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: boolean; embedded?: boolean }) {
   const uploadCover = useUploadClassCover(c.id);
   const clearCover = useClearClassCover(c.id);
   const [editing, setEditing] = useState(false);
@@ -101,6 +67,9 @@ export function ClassAbout({ c, canEdit }: { c: ClassInfo; canEdit?: boolean }) 
   const desc = stripEmptyParagraphs(c.desc);
 
   const pickFile = async (f: File | null) => {
+    // El input conserva el valor tras elegir: sin limpiarlo, volver a escoger el
+    // mismo archivo no dispararía `change` y la portada no se podría reintentar.
+    if (fileInput.current) fileInput.current.value = "";
     if (!f || !canEdit) return;
     if (!f.type.startsWith("image/")) {
       setError("El archivo debe ser una imagen.");
@@ -121,28 +90,31 @@ export function ClassAbout({ c, canEdit }: { c: ClassInfo; canEdit?: boolean }) 
   return (
     <section
       style={{
-        background: "var(--surface-card)",
-        borderRadius: "var(--radius-xl)",
-        boxShadow: "var(--ring-hairline), var(--shadow-md)",
-        padding: 22,
-        display: "grid",
-        gridTemplateColumns: "minmax(220px, 300px) 1fr",
-        gap: 26,
-        alignItems: "stretch",
+        background: embedded ? "transparent" : "var(--surface-card)",
+        borderRadius: embedded ? 0 : "var(--radius-xl)",
+        boxShadow: embedded ? "none" : "var(--ring-hairline), var(--shadow-md)",
+        padding: embedded ? 0 : 22,
       }}
-      className="atria-2col"
     >
-      {/* Portada */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+        <h2 style={{ fontSize: embedded ? 21 : 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
+        {canEdit ? (
+          <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={() => setEditing(true)}>
+            Editar
+          </Button>
+        ) : null}
+      </div>
+
+      {/* Portada: flota a la izquierda y el texto la rodea (ancho y márgenes en globals.css). */}
       <div
+        className="atria-about-cover"
         onDragOver={canEdit ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}
         onDragLeave={canEdit ? () => setDragOver(false) : undefined}
         onDrop={canEdit ? (e) => { e.preventDefault(); setDragOver(false); void pickFile(e.dataTransfer.files?.[0] ?? null); } : undefined}
         style={{
           position: "relative",
-          // Altura fija y anclada arriba: al desplegar la descripción crece la fila,
-          // pero la portada se queda como está en vez de estirarse con ella.
-          height: COVER_HEIGHT,
-          alignSelf: "start",
+          // Proporción fija: al ser media columna, el alto sale del ancho disponible.
+          aspectRatio: "4 / 3",
           borderRadius: "var(--radius-lg)",
           overflow: "hidden",
           background: "var(--surface-sunken)",
@@ -173,12 +145,58 @@ export function ClassAbout({ c, canEdit }: { c: ClassInfo; canEdit?: boolean }) 
           </div>
         )}
 
+        {cover && canEdit && dragOver ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(11,18,38,.55)",
+              boxShadow: "inset 0 0 0 3px var(--brand-accent)",
+              color: "#fff",
+              fontSize: 13.5,
+              fontWeight: 700,
+            }}
+          >
+            Suelta la imagen para cambiar la portada
+          </div>
+        ) : null}
+
         {cover && canEdit ? (
-          <div style={{ position: "absolute", right: 8, bottom: 8, display: "flex", gap: 8 }}>
-            <Button variant="outline" size="small" iconLeft={<Icon name="upload" size={15} />} onClick={() => fileInput.current?.click()} disabled={busy}>
-              Cambiar
+          // Velo inferior + botones opacos: sobre una foto clara los botones de
+          // contorno se perdían y no se veía que la portada se puede cambiar.
+          <div
+            style={{
+              position: "absolute",
+              inset: "auto 0 0 0",
+              padding: 10,
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 8,
+              background: "linear-gradient(to top, rgba(11,18,38,.55), rgba(11,18,38,0))",
+              pointerEvents: dragOver ? "none" : undefined,
+            }}
+          >
+            <Button
+              variant="secondary"
+              size="small"
+              iconLeft={<Icon name="upload" size={15} />}
+              onClick={() => fileInput.current?.click()}
+              disabled={busy}
+              style={{ background: "var(--surface-card)", color: "var(--brand-primary)", boxShadow: "var(--shadow-md)" }}
+            >
+              {uploadCover.isPending ? "Subiendo…" : "Cambiar imagen"}
             </Button>
-            <Button variant="outline" size="small" iconLeft={<Icon name="trash" size={15} />} onClick={() => clearCover.mutate()} disabled={busy}>
+            <Button
+              variant="secondary"
+              size="small"
+              iconLeft={<Icon name="trash" size={15} />}
+              onClick={() => clearCover.mutate()}
+              disabled={busy}
+              style={{ background: "var(--surface-card)", color: "var(--text-body)", boxShadow: "var(--shadow-md)" }}
+            >
               Quitar
             </Button>
           </div>
@@ -187,36 +205,26 @@ export function ClassAbout({ c, canEdit }: { c: ClassInfo; canEdit?: boolean }) 
         <input ref={fileInput} type="file" accept={ACCEPT} hidden onChange={(e) => void pickFile(e.target.files?.[0] ?? null)} />
       </div>
 
-      {/* Texto */}
-      <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-          <h2 style={{ fontSize: 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
-          {canEdit ? (
-            <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={() => setEditing(true)}>
-              Editar
-            </Button>
-          ) : null}
+      {/* Texto: fluye alrededor de la portada */}
+      {desc.trim() ? (
+        <RichView html={desc} style={{ fontSize: 15, marginTop: 0 }} />
+      ) : (
+        <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: "14px 0 0", lineHeight: 1.6 }}>
+          {canEdit ? "Todavía no hay descripción. Usa «Editar» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
+        </p>
+      )}
+
+      {error ? (
+        <div style={{ marginTop: 12, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>
+          {error}
         </div>
+      ) : null}
 
-        {desc.trim() ? (
-          <ClassDescription html={desc} />
-        ) : (
-          <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: "14px 0 0", lineHeight: 1.6 }}>
-            {canEdit ? "Todavía no hay descripción. Usa «Editar» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
-          </p>
-        )}
-
-        {error ? (
-          <div style={{ marginTop: 12, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>
-            {error}
-          </div>
-        ) : null}
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 18, marginTop: "auto", paddingTop: 18 }}>
-          <Chip icon="academic-cap">{c.code}</Chip>
-          <Chip icon="users">{c.students} alumnos</Chip>
-          <Chip icon="calendar">{c.nextSession}</Chip>
-        </div>
+      {/* clear: los datos del curso van siempre por debajo de la portada. */}
+      <div style={{ clear: "both", display: "flex", flexWrap: "wrap", gap: 18, paddingTop: 18 }}>
+        <Chip icon="academic-cap">{c.code}</Chip>
+        <Chip icon="users">{c.students} alumnos</Chip>
+        <Chip icon="calendar">{c.nextSession}</Chip>
       </div>
 
       {editing ? (

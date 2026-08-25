@@ -366,6 +366,22 @@ a { color: var(--text-link); }
 [data-theme="dark"] input { color: var(--text-strong); }
 [data-theme="dark"] ::placeholder { color: var(--text-muted) !important; opacity: 1; }
 
+/* Ficha «Sobre el curso»: la portada flota dentro del texto y siempre ocupa la
+   mitad del ancho de la descripción, que la rodea. */
+.atria-about-cover {
+  float: left;
+  width: 50%;
+  margin: 14px 22px 12px 0;
+}
+/* En columnas estrechas media columna deja el texto en tiras: mejor a lo ancho. */
+@media (max-width: 700px) {
+  .atria-about-cover {
+    float: none;
+    width: 100%;
+    margin: 14px 0 16px;
+  }
+}
+
 /* Columna lateral de Módulos (chat, alumnos, entregas): cada panel se agrupa
    con un recuadro, sin hairline entre secciones. */
 .atria-modaside {

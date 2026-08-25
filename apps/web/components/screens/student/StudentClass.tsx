@@ -11,6 +11,7 @@ import { UnitDescription } from "@/components/modules/UnitDescription";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
+import { ABOUT_UNIT, AboutRailItem, ClassAbout, RAIL_DIVIDER } from "@/components/classes/ClassAbout";
 import { ClassChatPanel } from "@/components/classes/ClassChatPanel";
 import { StudentUnitProgressPanel } from "@/components/classes/ClassSidePanels";
 import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
@@ -51,12 +52,14 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
   const [tab, setTab] = useState("contenido");
   const [debateId, setDebateId] = useState<string>("");
   const currentDebate = debates.find((a) => a.id === debateId) ?? debates[0];
-  const [selMod, setSelMod] = useState<string | null>(null);
+  // El temario abre por «Sobre el curso»: la ficha del curso con portada y descripción.
+  const [selMod, setSelMod] = useState<string>(ABOUT_UNIT);
   const [detail, setDetail] = useState<Activity | null>(null);
   useEffect(() => {
-    if ((!selMod || !units.some((m) => m.id === selMod)) && units.length) setSelMod(units[0].id);
+    if (selMod !== ABOUT_UNIT && !units.some((m) => m.id === selMod)) setSelMod(units.length ? units[0].id : ABOUT_UNIT);
   }, [units, selMod]);
-  const curMod = units.find((m) => m.id === selMod) || units[0];
+  const showAbout = selMod === ABOUT_UNIT;
+  const curMod = showAbout ? undefined : units.find((m) => m.id === selMod) || units[0];
 
   const progress = (
     <div key="prog" style={{ minWidth: 180 }}>
@@ -83,10 +86,12 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
       {tab === "contenido" ? (
         <div className="atria-2col atria-modules" style={{ display: "grid", gridTemplateColumns: "256px minmax(0, 1fr) 320px", gap: 0, alignItems: "start", background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", padding: "24px 28px" }}>
           <div className="atria-modules-rail" style={{ display: "flex", flexDirection: "column", paddingRight: 28, borderRight: "1px solid var(--border-subtle)", position: "sticky", top: 0 }}>
+            <AboutRailItem active={showAbout} onSelect={() => setSelMod(ABOUT_UNIT)} />
+            <div style={RAIL_DIVIDER} />
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {units.map((m) => {
-                const active = m.id === curMod.id;
+                const active = m.id === curMod?.id;
                 const [lead, sub] = modParts(m.title);
                 return (
                   <button
@@ -110,7 +115,11 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
             </div>
           </div>
 
-          {curMod ? (
+          {showAbout ? (
+            <div className="atria-modmain" style={{ paddingLeft: 28 }}>
+              <ClassAbout c={c} embedded />
+            </div>
+          ) : curMod ? (
             <div key={curMod.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                 <span style={{ width: 32, height: 32, borderRadius: "50%", background: curMod.done ? "var(--success-100)" : "var(--surface-soft)", color: curMod.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
