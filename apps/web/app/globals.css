@@ -382,18 +382,23 @@ a { color: var(--text-link); }
   }
 }
 
-/* Columna lateral de Módulos (chat, alumnos, entregas): cada panel se agrupa
-   con un recuadro, sin hairline entre secciones. */
+/* Columna lateral de Contenido: ficha del curso, chat y entregas van en un
+   único recuadro, separados entre sí por un hairline. */
 .atria-modaside {
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
-.atria-modaside > * {
+.atria-modaside-card {
   min-width: 0;
-  padding: 16px 14px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+}
+.atria-modaside-card > * {
+  min-width: 0;
+  padding: 16px 14px;
+}
+.atria-modaside-card > * + * {
+  border-top: 1px solid var(--border-subtle);
 }
 /* Aire extra entre el temario y el separador vertical de la columna. */
 .atria-modules > .atria-modmain {

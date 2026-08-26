@@ -27,6 +27,8 @@ export interface ClassShellProps {
   onTab?: (value: string) => void;
   tabs?: ClassTab[];
   meta?: ReactNode;
+  /** El distintivo de la clase; el docente lo lleva en la columna lateral. */
+  showIcon?: boolean;
   badge?: [string, BadgeColor];
   actions?: ReactNode;
   rightExtra?: ReactNode;
@@ -55,6 +57,7 @@ export function ClassShell({
   onTab,
   tabs = [],
   meta,
+  showIcon = true,
   badge,
   actions,
   rightExtra,
@@ -103,9 +106,11 @@ export function ClassShell({
         </div>
 
         <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 18, padding: "4px 0 18px", flexWrap: "wrap" }}>
-          <span style={{ width: 52, height: 52, borderRadius: "var(--radius-lg)", background: c.color || "var(--primary-400)", color: "rgba(255,255,255,0.95)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
-            <Icon name={c.icon || "academic-cap"} size={28} />
-          </span>
+          {showIcon ? (
+            <span style={{ width: 52, height: 52, borderRadius: "var(--radius-lg)", background: c.color || "var(--primary-400)", color: "rgba(255,255,255,0.95)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
+              <Icon name={c.icon || "academic-cap"} size={28} />
+            </span>
+          ) : null}
           <div style={{ flex: 1, minWidth: 180 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <h2 style={{ color: "#fff", fontSize: 24, margin: 0 }}>{c.name || "Clase"}</h2>

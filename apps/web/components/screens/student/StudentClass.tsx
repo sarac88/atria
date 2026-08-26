@@ -13,7 +13,7 @@ import { DebateBoard } from "@/components/activities/DebateBoard";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
 import { ABOUT_UNIT, AboutRailItem, ClassAbout, RAIL_DIVIDER } from "@/components/classes/ClassAbout";
 import { ClassChatPanel } from "@/components/classes/ClassChatPanel";
-import { StudentUnitProgressPanel } from "@/components/classes/ClassSidePanels";
+import { ClassIdentityPanel, StudentUnitProgressPanel } from "@/components/classes/ClassSidePanels";
 import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
@@ -77,7 +77,8 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
       onBack={onBack}
       onProfile={onProfile}
       onLogout={onLogout}
-      meta={c.teacher ? `${c.code} · ${c.teacher}` : c.code}
+      // Distintivo y datos de la clase bajan a la ficha de la columna lateral.
+      showIcon={false}
       rightExtra={progress}
       tab={tab}
       onTab={setTab}
@@ -161,8 +162,11 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
 
           {/* El recuento de alumnos se queda fuera: es información del docente. */}
           <div className="atria-modaside" style={{ paddingLeft: 28, borderLeft: "1px solid rgb(237, 236, 236)", position: "sticky", top: 0 }}>
-            <ClassChatPanel classId={c.id} />
-            <StudentUnitProgressPanel classId={c.id} onReview={() => setTab("tareas")} />
+            <div className="atria-modaside-card">
+              <ClassIdentityPanel c={c} role="alumno" />
+              <StudentUnitProgressPanel classId={c.id} onReview={() => setTab("tareas")} />
+              <ClassChatPanel classId={c.id} />
+            </div>
           </div>
         </div>
       ) : tab === "notas" ? (

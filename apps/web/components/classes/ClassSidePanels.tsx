@@ -7,9 +7,10 @@
 import { Avatar, Button, Icon } from "@/components/ui";
 import { Eyebrow, ProgressBar } from "@/components/layout";
 import { useActivities, useModules, useMyGrades, useRoster } from "@/lib/api/classwork";
-import type { Activity, Module } from "@/lib/types";
+import type { Activity, ClassInfo, Module, Role } from "@/lib/types";
 
-// Viven dentro del bloque blanco de Módulos: el recuadro lo pone .atria-modaside.
+// Son secciones de la tarjeta única de la columna: el recuadro y los hairlines
+// que las separan los pone .atria-modaside-card.
 const SECTION: React.CSSProperties = { display: "flex", flexDirection: "column", minWidth: 0 };
 
 /** Los títulos son "Unidad 1 · Límites"; en la lista basta la primera mitad. */
@@ -41,32 +42,77 @@ function AvatarStack({ names, max = 5 }: { names: string[]; max?: number }) {
   );
 }
 
-/** Alumnos matriculados en la clase y cuántos han entregado ya algo. */
-export function ClassRosterPanel({ classId }: { classId: string }) {
-  const { data: roster } = useRoster(classId);
+/**
+ * Ficha de la clase: el distintivo y los datos que antes iban en la cabecera
+ * (código, aula, actividades), fusionados con el recuento de alumnos.
+ * El número de matriculados es el de «Alumnos», así que no se repite arriba.
+ * El alumno ve la misma ficha sin el recuento (es información del docente) y
+ * con el nombre de quien imparte, que en su cabecera iba junto al código.
+ */
+export function ClassIdentityPanel({ c, role = "docente" }: { c: ClassInfo; role?: Role }) {
+  const isTeacher = role !== "alumno";
+  // El alumno no pide el roster: no es suyo y la ficha no lo muestra.
+  const { data: roster } = useRoster(isTeacher ? c.id : "");
   const students = roster ?? [];
   const active = students.filter((s) => s.submitted > 0).length;
+  const teacherLine = !isTeacher && c.teacher ? c.teacher : "";
 
   return (
     <section style={SECTION}>
-      <Eyebrow>Alumnos</Eyebrow>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8, margin: "10px 0 14px" }}>
-        <span style={{ fontSize: 34, fontWeight: 700, color: "var(--text-strong)", lineHeight: 1 }}>{students.length}</span>
-        <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>matriculados</span>
+      <span
+        style={{
+          width: "100%",
+          height: 96,
+          borderRadius: "var(--radius-lg)",
+          background: c.color || "var(--primary-400)",
+          color: "rgba(255,255,255,0.95)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
+        }}
+      >
+        <Icon name={c.icon || "academic-cap"} size={40} />
+      </span>
+
+      {teacherLine ? (
+        <div style={{ textAlign: "center", fontSize: 13.5, fontWeight: 700, color: "var(--text-strong)", marginTop: 12 }}>{teacherLine}</div>
+      ) : null}
+
+      {/* Los tres datos en una fila; sin iconos, que no caben a esta anchura. */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 10, marginTop: teacherLine ? 6 : 12, fontSize: 13, color: "var(--text-muted)" }}>
+        {[c.code, c.room, `${c.openActivities} actividades`].filter(Boolean).map((d, i) => (
+          <span key={d} style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            {i ? <span aria-hidden="true" style={{ width: 1, height: 13, background: "var(--border-default)" }} /> : null}
+            <span style={{ whiteSpace: "nowrap" }}>{d}</span>
+          </span>
+        ))}
       </div>
-      {students.length === 0 ? (
-        <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-          Invita a tus alumnos desde la pestaña «Alumnos» y aparecerán aquí.
-        </p>
-      ) : (
+
+      {isTeacher ? (
         <>
-          <AvatarStack names={students.map((s) => s.name)} />
-          <p style={{ fontSize: 13, color: "var(--text-body)", margin: "14px 0 8px", lineHeight: 1.45 }}>
-            <strong style={{ color: "var(--text-strong)" }}>{active} de {students.length}</strong> han entregado alguna actividad.
-          </p>
-          <ProgressBar value={active / students.length} />
+          <div style={{ height: 1, background: "var(--border-subtle)", margin: "16px 0 14px" }} />
+
+          <Eyebrow>Alumnos</Eyebrow>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, margin: "10px 0 14px" }}>
+            <span style={{ fontSize: 34, fontWeight: 700, color: "var(--text-strong)", lineHeight: 1 }}>{students.length}</span>
+            <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>matriculados</span>
+          </div>
+          {students.length === 0 ? (
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+              Invita a tus alumnos desde la pestaña «Alumnos» y aparecerán aquí.
+            </p>
+          ) : (
+            <>
+              <AvatarStack names={students.map((s) => s.name)} />
+              <p style={{ fontSize: 13, color: "var(--text-body)", margin: "14px 0 8px", lineHeight: 1.45 }}>
+                <strong style={{ color: "var(--text-strong)" }}>{active} de {students.length}</strong> han entregado alguna actividad.
+              </p>
+              <ProgressBar value={active / students.length} />
+            </>
+          )}
         </>
-      )}
+      ) : null}
     </section>
   );
 }

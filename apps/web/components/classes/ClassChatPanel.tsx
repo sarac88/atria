@@ -17,7 +17,8 @@ import { useSocket } from "@/components/messaging/SocketProvider";
 import { useClassChat, useMessages, useOpenClassThread } from "@/lib/api/messaging";
 import type { ClassChatThreadDto } from "@/lib/types";
 
-// Vive dentro del bloque blanco de Módulos: el recuadro lo pone .atria-modaside.
+// Es una sección de la tarjeta única de la columna: el recuadro lo pone
+// .atria-modaside-card.
 const SECTION: React.CSSProperties = { display: "flex", flexDirection: "column", minWidth: 0 };
 
 const firstName = (name: string) => name.split(" ")[0] || name;

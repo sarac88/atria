@@ -14,7 +14,7 @@ import { InviteStudentsModal } from "@/components/modals/InviteStudentsModal";
 import { ABOUT_UNIT, AboutRailItem, ClassAbout, RAIL_DIVIDER } from "@/components/classes/ClassAbout";
 import { ClassInvitations } from "@/components/classes/ClassInvitations";
 import { ClassChatPanel } from "@/components/classes/ClassChatPanel";
-import { ClassRosterPanel, ClassUnitProgressPanel } from "@/components/classes/ClassSidePanels";
+import { ClassIdentityPanel, ClassUnitProgressPanel } from "@/components/classes/ClassSidePanels";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ModuleSessions } from "@/components/modules/ModuleSessions";
 import { UnitDescription } from "@/components/modules/UnitDescription";
@@ -959,7 +959,9 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         onBack={onBack}
         onProfile={onProfile}
         onLogout={onLogout}
-        meta={`${c.code} · ${c.room} · ${c.students} alumnos · ${c.openActivities} actividades abiertas`}
+        // Distintivo y datos de la clase viven ahora en la ficha de la columna
+        // lateral de Contenido, así que la cabecera solo lleva nombre y estado.
+        showIcon={false}
         badge={c.status}
         actions={
           <>
@@ -987,11 +989,11 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
             layout={modLayout}
             onGrade={(id) => { setActivityId(id); setTab("entregas"); }}
             aside={
-              <>
-                <ClassChatPanel classId={c.id} />
-                <ClassRosterPanel classId={c.id} />
+              <div className="atria-modaside-card">
+                <ClassIdentityPanel c={c} />
                 <ClassUnitProgressPanel classId={c.id} onReview={() => setTab("entregas")} />
-              </>
+                <ClassChatPanel classId={c.id} />
+              </div>
             }
           />
         ) : null}
