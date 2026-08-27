@@ -50,7 +50,7 @@ export function AboutRailItem({ active, onSelect }: { active: boolean; onSelect:
 export const RAIL_DIVIDER: React.CSSProperties = { height: 1, background: "var(--border-subtle)", margin: "14px 6px" };
 
 /**
- * Ficha «Sobre el curso»: la portada flota dentro del texto (media columna) y la
+ * Ficha «Sobre el curso»: la portada flota a la derecha (media columna) y la
  * descripción la rodea. El docente puede subir/quitar la imagen y editar el texto.
  * `embedded`: sin tarjeta propia, para ir dentro del panel de Módulos.
  */
@@ -96,7 +96,7 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         padding: embedded ? 0 : 22,
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h2 style={{ fontSize: embedded ? 21 : 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
         {canEdit ? (
           <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={() => setEditing(true)}>
@@ -105,7 +105,7 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         ) : null}
       </div>
 
-      {/* Portada: flota a la izquierda y el texto la rodea (ancho y márgenes en globals.css). */}
+      {/* Portada: flota a la derecha y el texto la rodea (ancho y márgenes en globals.css). */}
       <div
         className="atria-about-cover"
         onDragOver={canEdit ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}

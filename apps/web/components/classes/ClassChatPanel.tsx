@@ -58,14 +58,13 @@ function ThreadList({ threads, onOpen }: { threads: ClassChatThreadDto[]; onOpen
     );
   }
   return (
-    // Los márgenes negativos dejan que el realce del hover llegue al borde del recuadro.
-    <div style={{ maxHeight: 380, overflowY: "auto", margin: "0 -14px" }}>
+    <div style={{ maxHeight: 380, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
       {threads.map((t) => (
         <button
           key={t.userId}
           type="button"
           onClick={() => onOpen(t)}
-          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: "none", borderRadius: "var(--radius-sm)", background: "transparent", cursor: "pointer", padding: "11px 14px", transition: "background .15s ease" }}
+          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: "none", borderRadius: "var(--radius-md)", background: "transparent", cursor: "pointer", padding: "10px 12px", transition: "background .15s ease" }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
         >

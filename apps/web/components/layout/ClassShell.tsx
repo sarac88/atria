@@ -112,14 +112,14 @@ export function ClassShell({
             </span>
           ) : null}
           <div style={{ flex: 1, minWidth: 180 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <h2 style={{ color: "#fff", fontSize: 24, margin: 0 }}>{c.name || "Clase"}</h2>
               {badge ? <Badge color={badge[1]}>{badge[0]}</Badge> : null}
+              {actions ? <div style={{ display: "flex", gap: 8 }}>{actions}</div> : null}
             </div>
             {meta ? <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 13.5, margin: "5px 0 0" }}>{meta}</p> : null}
           </div>
           {rightExtra || null}
-          {actions ? <div style={{ display: "flex", gap: 10 }}>{actions}</div> : null}
         </div>
 
         {tabs.length ? (
