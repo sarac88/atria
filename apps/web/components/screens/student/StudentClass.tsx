@@ -18,6 +18,7 @@ import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
 import { studentTaskBadge, isDelivered } from "@/lib/student-task";
+import { PAGE_SIZE } from "@/lib/pagination";
 import type { Activity, ClassInfo, StudentTaskDto } from "@/lib/types";
 
 function modParts(title: string): [string, string] {
@@ -181,7 +182,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
       ) : tab === "tareas" ? (
         classTasks.length ? (
           <Panel pad={0}>
-            <StudentTaskList tasks={classTasks} onOpen={setDetail} showClass={false} />
+            <StudentTaskList tasks={classTasks} onOpen={setDetail} showClass={false} pageSize={PAGE_SIZE} />
           </Panel>
         ) : (
           <EmptyState

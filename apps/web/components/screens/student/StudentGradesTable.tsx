@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable, Badge, type Column } from "@/components/ui";
+import { PAGE_SIZE } from "@/lib/pagination";
 import type { SubmissionDto } from "@/lib/types";
 
 /** Una entrega propia; `className` solo se usa en la vista global de "Mis notas". */
@@ -30,5 +31,5 @@ export function StudentGradesTable({
       },
     },
   ];
-  return <DataTable title={title} rowKey="id" columns={cols} rows={rows} selectable={false} />;
+  return <DataTable title={title} rowKey="id" columns={cols} rows={rows} selectable={false} pageSize={PAGE_SIZE} />;
 }

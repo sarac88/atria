@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Checkbox } from "./Checkbox";
+import { Pagination } from "./Pagination";
+import { paginate } from "@/lib/pagination";
 
 export interface Column<T = Record<string, unknown>> {
   key: string;
@@ -20,6 +22,8 @@ export interface DataTableProps<T = Record<string, unknown>> {
   onSelectionChange?: (keys: Array<string | number>) => void;
   rowKey?: string;
   toolbar?: ReactNode;
+  /** If set, the table shows `pageSize` rows at a time with a pager. */
+  pageSize?: number;
   style?: CSSProperties;
 }
 
@@ -50,10 +54,12 @@ export function DataTable<T extends Record<string, any>>({
   onSelectionChange,
   rowKey = "id",
   toolbar,
+  pageSize,
   style = {},
 }: DataTableProps<T>) {
   const [internalSel, setInternalSel] = useState<Array<string | number>>([]);
   const [sort, setSort] = useState<{ key: string | null; dir: number }>({ key: null, dir: 1 });
+  const [page, setPage] = useState(1);
   const isControlled = selectedKeys !== null;
   const sel = isControlled ? selectedKeys! : internalSel;
   const setSel = (next: Array<string | number>) => {
@@ -75,6 +81,11 @@ export function DataTable<T extends Record<string, any>>({
       return (av > bv ? 1 : av < bv ? -1 : 0) * sort.dir;
     });
   }, [rows, sort, columns]);
+  useEffect(() => {
+    setPage(1);
+  }, [rows.length, pageSize, sort.key, sort.dir]);
+  const paged = pageSize ? paginate(sorted, page, pageSize) : null;
+  const visible = paged?.items ?? sorted;
   const doSort = (key: string) => setSort((s) => (s.key === key ? { key, dir: -s.dir } : { key, dir: 1 }));
 
   return (
@@ -85,7 +96,7 @@ export function DataTable<T extends Record<string, any>>({
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>{toolbar}</div>
         </div>
       ) : null}
-      <div style={{ overflowX: "auto", margin: "4px 24px 24px", border: "1px solid var(--border-default)", borderRadius: 3 }}>
+      <div style={{ overflowX: "auto", margin: paged && paged.total > paged.pageSize ? "4px 24px 0" : "4px 24px 24px", border: "1px solid var(--border-default)", borderRadius: 3 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-sans)" }}>
           <thead>
             <tr style={{ background: "var(--surface-sunken)", borderBottom: "1px solid var(--border-default)" }}>
@@ -109,7 +120,7 @@ export function DataTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => {
+            {visible.map((r, i) => {
               const k = keyOf(r, i);
               const selectedRow = sel.includes(k);
               return (
@@ -135,6 +146,16 @@ export function DataTable<T extends Record<string, any>>({
           </tbody>
         </table>
       </div>
+      {paged && paged.total > paged.pageSize ? (
+        <Pagination
+          page={paged.page}
+          totalPages={paged.totalPages}
+          total={paged.total}
+          pageSize={paged.pageSize}
+          onChange={setPage}
+          style={{ padding: "12px 24px 20px" }}
+        />
+      ) : null}
     </div>
   );
 }

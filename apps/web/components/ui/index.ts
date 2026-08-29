@@ -33,6 +33,8 @@ export { DatePicker } from "./DatePicker";
 export type { DatePickerProps } from "./DatePicker";
 export { DataTable } from "./DataTable";
 export type { DataTableProps, Column } from "./DataTable";
+export { Pagination } from "./Pagination";
+export type { PaginationProps } from "./Pagination";
 export { HorizontalTabs, VerticalTabs } from "./Tabs";
 export type { TabItem } from "./Tabs";
 export { Icon } from "@/components/icons/Icon";
