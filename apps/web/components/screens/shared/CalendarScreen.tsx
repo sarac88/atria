@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui";
 import { Page, PageHead, Panel } from "@/components/layout";
 import { useCalendarEvents } from "@/lib/api/calendar";
@@ -32,6 +33,7 @@ const dateKey = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d
 const mondayOffset = (y: number, m: number) => (new Date(y, m, 1).getDay() + 6) % 7;
 
 export function CalendarScreen() {
+  const router = useRouter();
   const { data, isLoading } = useCalendarEvents();
   const [active, setActive] = useState<Record<CalendarKind, boolean>>({ entrega: true, sesion: true, examen: true });
   const [cursor, setCursor] = useState(() => {
@@ -73,14 +75,38 @@ export function CalendarScreen() {
     [data, year, month, active],
   );
 
-  const chip = (e: CalendarEventDto, key: number) => {
+  const chip = (e: CalendarEventDto) => {
     const c = CATS[e.kind];
     const sub = e.time ? `${e.time} · ${e.className}` : e.className;
     return (
-      <div key={key} title={`${e.title} · ${e.className}`} style={{ background: c.tint, borderRadius: 6, borderLeft: `3px solid ${c.color}`, padding: "4px 8px", minWidth: 0 }}>
+      <button
+        key={e.id}
+        type="button"
+        title={`${e.title} · ${e.className}`}
+        onClick={() => router.push(`/clase/${e.classId}`)}
+        style={{
+          display: "block",
+          width: "100%",
+          boxSizing: "border-box",
+          textAlign: "left",
+          background: c.tint,
+          borderRadius: 6,
+          border: "none",
+          borderLeft: `3px solid ${c.color}`,
+          padding: "4px 8px",
+          minWidth: 0,
+          maxWidth: "100%",
+          overflow: "hidden",
+          cursor: "pointer",
+          fontFamily: "var(--font-sans)",
+          transition: "filter .15s ease",
+        }}
+        onMouseEnter={(ev) => { ev.currentTarget.style.filter = "brightness(0.96)"; }}
+        onMouseLeave={(ev) => { ev.currentTarget.style.filter = "none"; }}
+      >
         <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.title}</div>
         <div style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sub}</div>
-      </div>
+      </button>
     );
   };
 
@@ -167,7 +193,7 @@ export function CalendarScreen() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid var(--border-subtle)" }}>
             {dows.map((d, i) => <div key={i} style={{ padding: "10px 0", textAlign: "center", fontSize: 12, fontWeight: 700, letterSpacing: ".03em", color: "var(--text-muted)" }}>{d}</div>)}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}>
             {days.map((d, i) => {
               const valid = d >= 1 && d <= daysInMonth;
               const evs = valid ? visible(d) : [];
@@ -175,10 +201,10 @@ export function CalendarScreen() {
               const extra = evs.length - shown.length;
               const isToday = d === todayDay;
               return (
-                <div key={i} style={{ minHeight: 124, display: "flex", flexDirection: "column", padding: 8, gap: 4, borderRight: i % 7 !== 6 ? "1px solid var(--border-subtle)" : "none", borderBottom: i < days.length - 7 ? "1px solid var(--border-subtle)" : "none", background: valid ? "transparent" : "var(--surface-soft)" }}>
+                <div key={i} style={{ minHeight: 124, minWidth: 0, display: "flex", flexDirection: "column", padding: 8, gap: 4, borderRight: i % 7 !== 6 ? "1px solid var(--border-subtle)" : "none", borderBottom: i < days.length - 7 ? "1px solid var(--border-subtle)" : "none", background: valid ? "transparent" : "var(--surface-soft)" }}>
                   {valid ? <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: "50%", fontSize: 13, fontWeight: 700, color: isToday ? "#fff" : "var(--text-strong)", background: isToday ? "var(--brand-primary)" : "transparent", alignSelf: "flex-start" }}>{d}</div> : null}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
-                    {shown.map((e, j) => chip(e, j))}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 3, width: "100%", minWidth: 0 }}>
+                    {shown.map((e) => chip(e))}
                     {extra > 0 ? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", padding: "0 4px" }}>+{extra} más</span> : null}
                   </div>
                 </div>
