@@ -7,6 +7,7 @@
 import { Avatar, Button, Icon } from "@/components/ui";
 import { Eyebrow, ProgressBar } from "@/components/layout";
 import { useActivities, useModules, useMyGrades, useRoster } from "@/lib/api/classwork";
+import { isDelivered } from "@/lib/student-task";
 import type { Activity, ClassInfo, Module, Role } from "@/lib/types";
 
 // Son secciones de la tarjeta única de la columna: el recuadro y los hairlines
@@ -207,10 +208,7 @@ export function StudentUnitProgressPanel({ classId, onReview }: { classId: strin
   const { data: activities } = useActivities(classId);
   const { data: mySubs } = useMyGrades(classId);
   const acts: Activity[] = activities ?? [];
-  // "Pendiente" es la fila que crea el docente al publicar, no una entrega hecha.
-  const delivered = new Set(
-    (mySubs ?? []).filter((s) => s.status !== "Pendiente").map((s) => s.activityId),
-  );
+  const delivered = new Set((mySubs ?? []).filter(isDelivered).map((s) => s.activityId));
 
   const rows = (modules ?? []).map((m: Module) => {
     const own = acts.filter((a) => a.moduleId === m.id);

@@ -42,13 +42,20 @@ export class ClassesService {
     }
     const ids = classes.map((c) => c.id);
     const [counts, counters] = await Promise.all([this.studentCounts(ids), this.classCounters(ids)]);
-    return classes.map((c) => toClassInfo(c, counts.get(c.id) ?? 0, counters.get(c.id)));
+    const infos = classes.map((c) => toClassInfo(c, counts.get(c.id) ?? 0, counters.get(c.id)));
+    if (user.role === "alumno") return this.withStudentProgress(infos, user.userId);
+    return infos;
   }
 
-  async findOne(id: string): Promise<ClassInfo> {
+  async findOne(id: string, user?: AuthUser): Promise<ClassInfo> {
     const cls = await this.prisma.class.findUnique({ where: { id }, include: CLASS_OWNER_INCLUDE });
     if (!cls) throw new NotFoundException();
-    return this.withStudents(cls);
+    const info = await this.withStudents(cls);
+    if (user?.role === "alumno") {
+      const [own] = await this.withStudentProgress([info], user.userId);
+      return own;
+    }
+    return info;
   }
 
   /** Recuento real de alumnos (matrículas con rol student) por clase. */
@@ -60,6 +67,41 @@ export class ClassesService {
       _count: true,
     });
     return new Map(grouped.map((g) => [g.classId, g._count]));
+  }
+
+  /**
+   * El progreso que ve el alumno es el suyo (entregas reales / actividades
+   * publicadas), no Class.progress de la semilla, que es del temario de la clase.
+   */
+  private async withStudentProgress(infos: ClassInfo[], studentId: string): Promise<ClassInfo[]> {
+    if (infos.length === 0) return infos;
+    const classIds = infos.map((c) => c.id);
+    const [activityCounts, subs] = await Promise.all([
+      this.prisma.activity.groupBy({
+        by: ["classId"],
+        where: { classId: { in: classIds }, status: { not: "draft" } },
+        _count: true,
+      }),
+      this.prisma.submission.findMany({
+        where: {
+          studentId,
+          status: { in: ["entregado", "atrasado"] },
+          activity: { classId: { in: classIds }, status: { not: "draft" } },
+        },
+        select: { activity: { select: { classId: true } } },
+      }),
+    ]);
+    const totalOf = new Map(activityCounts.map((a) => [a.classId, a._count]));
+    const deliveredOf = new Map<string, number>();
+    for (const s of subs) {
+      const classId = s.activity.classId;
+      deliveredOf.set(classId, (deliveredOf.get(classId) ?? 0) + 1);
+    }
+    return infos.map((c) => {
+      const total = totalOf.get(c.id) ?? 0;
+      const delivered = deliveredOf.get(c.id) ?? 0;
+      return { ...c, progress: total ? delivered / total : 0 };
+    });
   }
 
   /**

@@ -33,6 +33,10 @@ export interface ClassInfo {
   status: StatusTuple;
   /** Estado sin traducir, para filtrar sin depender de la etiqueta visible. */
   state: ClassState;
+  /**
+   * 0–1. Para el alumno es su ratio de entregas reales sobre las actividades
+   * publicadas; para el docente, el progreso del temario de la clase.
+   */
   progress: number;
   openActivities: number;
   pending: number;

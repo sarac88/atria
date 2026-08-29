@@ -17,7 +17,7 @@ import { ClassIdentityPanel, StudentUnitProgressPanel } from "@/components/class
 import { useActivities, useModules, useMyGrades } from "@/lib/api/classwork";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
-import { studentTaskBadge } from "@/lib/student-task";
+import { studentTaskBadge, isDelivered } from "@/lib/student-task";
 import type { Activity, ClassInfo, StudentTaskDto } from "@/lib/types";
 
 function modParts(title: string): [string, string] {
@@ -43,6 +43,13 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
   const modules = modulesData ?? [];
   const { units, actsOf } = buildUnits(modules, activities ?? []);
   const subByActivity = new Map((mySubs ?? []).map((s) => [s.activityId, s]));
+  const delivered = new Set((mySubs ?? []).filter(isDelivered).map((s) => s.activityId));
+  const published = activities ?? [];
+  const progressRatio = published.length ? published.filter((a) => delivered.has(a.id)).length / published.length : 0;
+  const unitsForStudent = units.map((m) => {
+    const own = actsOf(m.id);
+    return { ...m, done: own.length > 0 && own.every((a) => delivered.has(a.id)) };
+  });
   const classTasks: StudentTaskDto[] = (activities ?? []).map((a) => ({
     ...a,
     className: c.name,
@@ -59,13 +66,13 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
     if (selMod !== ABOUT_UNIT && !units.some((m) => m.id === selMod)) setSelMod(units.length ? units[0].id : ABOUT_UNIT);
   }, [units, selMod]);
   const showAbout = selMod === ABOUT_UNIT;
-  const curMod = showAbout ? undefined : units.find((m) => m.id === selMod) || units[0];
+  const curMod = showAbout ? undefined : unitsForStudent.find((m) => m.id === selMod) || unitsForStudent[0];
 
   const progress = (
     <div key="prog" style={{ minWidth: 180 }}>
-      <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.82)", marginBottom: 6 }}>Tu progreso · {Math.round(c.progress * 100)}%</div>
+      <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.82)", marginBottom: 6 }}>Tu progreso · {Math.round(progressRatio * 100)}%</div>
       <div style={{ height: 8, background: "rgba(255,255,255,0.25)", borderRadius: 999, overflow: "hidden" }}>
-        <div style={{ width: c.progress * 100 + "%", height: "100%", background: "#fff", borderRadius: 999 }} />
+        <div style={{ width: progressRatio * 100 + "%", height: "100%", background: "#fff", borderRadius: 999 }} />
       </div>
     </div>
   );
@@ -91,7 +98,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
             <div style={RAIL_DIVIDER} />
             <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 8px 12px" }}>Unidades</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {units.map((m) => {
+              {unitsForStudent.map((m) => {
                 const active = m.id === curMod?.id;
                 const [lead, sub] = modParts(m.title);
                 return (

@@ -94,6 +94,7 @@ export function useSubmitWork(classId?: string) {
     onSuccess: (_data, v) => {
       void qc.invalidateQueries({ queryKey: ["submissions", v.activityId] });
       void qc.invalidateQueries({ queryKey: ["studentTasks"] });
+      void qc.invalidateQueries({ queryKey: ["classes"] });
       if (classId) void qc.invalidateQueries({ queryKey: ["myGrades", classId] });
     },
   });
@@ -114,8 +115,11 @@ export function useCreateDebatePost(activityId?: string) {
       apiFetch<DebatePostDto>(`/activities/${activityId}/debate`, { method: "POST", body: JSON.stringify(v) }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["debate", activityId] });
-      // La primera intervención cuenta como entrega: refresca la tabla del docente.
+      // La primera intervención cuenta como entrega: refresca la tabla del docente y el progreso del alumno.
       void qc.invalidateQueries({ queryKey: ["submissions", activityId] });
+      void qc.invalidateQueries({ queryKey: ["studentTasks"] });
+      void qc.invalidateQueries({ queryKey: ["myGrades"] });
+      void qc.invalidateQueries({ queryKey: ["classes"] });
     },
   });
 }

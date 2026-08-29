@@ -28,8 +28,8 @@ export class ClassesController {
 
   @Get(":id")
   @UseGuards(ClassMembershipGuard)
-  findOne(@Param("id") id: string) {
-    return this.classes.findOne(id);
+  findOne(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.classes.findOne(id, user);
   }
 
   @Get(":id/activities")
