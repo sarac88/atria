@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Icon, Button, Select } from "@/components/ui";
+import { Icon, Button } from "@/components/ui";
 import { Chip, EmptyState, ClassShell, Panel } from "@/components/layout";
 import { StudentGradesTable } from "./StudentGradesTable";
 import { StudentTaskList } from "@/components/student/StudentTaskList";
@@ -192,19 +192,14 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
           />
         )
       ) : debates.length ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          {debates.length > 1 ? (
-            <div className="atria-selectwrap" style={{ width: 320 }}>
-              <Select
-                value={currentDebate?.id ?? ""}
-                options={debates.map((a) => ({ label: a.title, value: a.id }))}
-                onChange={setDebateId}
-                placeholder="Debate"
-              />
-            </div>
-          ) : null}
-          {currentDebate ? <DebateBoard activity={currentDebate} role="alumno" /> : null}
-        </div>
+        currentDebate ? (
+          <DebateBoard
+            activity={currentDebate}
+            role="alumno"
+            debates={debates}
+            onSelectDebate={setDebateId}
+          />
+        ) : null
       ) : (
         <EmptyState
           illo="empty-messages"

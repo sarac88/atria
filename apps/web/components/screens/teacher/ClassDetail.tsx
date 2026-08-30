@@ -1031,17 +1031,14 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         {tab === "alumnos" ? <ClassStudents klass={c} /> : null}
         {tab === "foro" ? (
           debates.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <div className="atria-selectwrap" style={{ width: 320 }}>
-                <Select
-                  value={currentDebate?.id ?? debateId}
-                  options={debates.map((a) => ({ label: a.title, value: a.id }))}
-                  onChange={setDebateId}
-                  placeholder="Debate"
-                />
-              </div>
-              {currentDebate ? <DebateBoard activity={currentDebate} role={role} /> : null}
-            </div>
+            currentDebate ? (
+              <DebateBoard
+                activity={currentDebate}
+                role={role}
+                debates={debates}
+                onSelectDebate={setDebateId}
+              />
+            ) : null
           ) : (
             <EmptyState
               illo="empty-messages"
