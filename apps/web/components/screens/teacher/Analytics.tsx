@@ -53,9 +53,9 @@ export function Analytics() {
     };
   }, [roster, graded, activities]);
 
-  /** Entregas recibidas por actividad, en el orden en que se publicaron. */
+  /** Entregas recibidas por actividad, en el orden en que se publicaron. El título va en el tooltip. */
   const perActivity = useMemo(
-    () => activities.map((a) => ({ label: a.title, value: a.submitted })),
+    () => activities.map((a, i) => ({ label: `Actividad ${i + 1}`, value: a.submitted, hint: a.title })),
     [activities],
   );
 
@@ -104,7 +104,7 @@ export function Analytics() {
         <Panel title="Entregas por actividad">
           {perActivity.length ? (
             <>
-              <BarChart data={perActivity} />
+              <BarChart data={perActivity} minBarWidth={78} />
               <p style={{ fontSize: 12.5, color: "var(--text-muted)", margin: "14px 0 0" }}>
                 Entregas recibidas en cada actividad publicada, sobre {roster.length} {roster.length === 1 ? "alumno" : "alumnos"}.
               </p>

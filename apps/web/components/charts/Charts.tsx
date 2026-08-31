@@ -1,8 +1,12 @@
 import type { ReactNode } from "react";
+import { Icon } from "@/components/icons/Icon";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 export interface BarDatum {
   label: string;
   value: number;
+  /** Texto completo, visible al pasar el cursor por el icono de info junto a la etiqueta. */
+  hint?: string;
 }
 
 export interface BarChartProps {
@@ -11,31 +15,55 @@ export interface BarChartProps {
   color?: string;
   accent?: string;
   highlightLast?: boolean;
+  /** Ancho mínimo de cada columna: si no caben todas, el gráfico hace scroll horizontal. */
+  minBarWidth?: number;
 }
 
 /** Vertical bar chart. */
-export function BarChart({ data, height = 150, color = "var(--brand-primary)", accent = "var(--brand-accent)", highlightLast = true }: BarChartProps) {
+export function BarChart({ data, height = 150, color = "var(--brand-primary)", accent = "var(--brand-accent)", highlightLast = true, minBarWidth }: BarChartProps) {
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 12, height, paddingTop: 8 }}>
-      {data.map((d, i) => (
-        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", justifyContent: "flex-end" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>{d.value}</div>
-          <div
-            title={d.label}
-            style={{
-              width: "100%",
-              maxWidth: 44,
-              height: (d.value / max) * (height - 44) + "px",
-              minHeight: 4,
-              borderRadius: "6px 6px 0 0",
-              background: highlightLast && i === data.length - 1 ? accent : color,
-              transition: "height .5s ease",
-            }}
-          />
-          <div style={{ fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{d.label}</div>
-        </div>
-      ))}
+    <div style={minBarWidth ? { overflowX: "auto", paddingBottom: 6 } : undefined}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 12, height, paddingTop: 8, minWidth: "100%" }}>
+        {data.map((d, i) => {
+          const bar = (
+            <div
+              title={d.hint ? undefined : d.label}
+              style={{
+                width: "100%",
+                maxWidth: 44,
+                height: (d.value / max) * (height - 44) + "px",
+                minHeight: 4,
+                borderRadius: "6px 6px 0 0",
+                background: highlightLast && i === data.length - 1 ? accent : color,
+                transition: "height .5s ease",
+              }}
+            />
+          );
+          return (
+            <div key={i} style={{ flex: minBarWidth ? `1 0 ${minBarWidth}px` : 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", justifyContent: "flex-end" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>{d.value}</div>
+              {d.hint ? (
+                <Tooltip text={d.hint} focusable={false} style={{ width: "100%", maxWidth: 44, justifyContent: "center", cursor: "help" }}>
+                  {bar}
+                </Tooltip>
+              ) : (
+                bar
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                <span>{d.label}</span>
+                {d.hint ? (
+                  <Tooltip text={d.hint} style={{ cursor: "help" }}>
+                    <span aria-label={d.hint} style={{ display: "inline-flex" }}>
+                      <Icon name="information-circle" size={13} />
+                    </span>
+                  </Tooltip>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

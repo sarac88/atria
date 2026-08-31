@@ -35,6 +35,8 @@ export { DataTable } from "./DataTable";
 export type { DataTableProps, Column } from "./DataTable";
 export { Pagination } from "./Pagination";
 export type { PaginationProps } from "./Pagination";
+export { Tooltip } from "./Tooltip";
+export type { TooltipProps } from "./Tooltip";
 export { HorizontalTabs, VerticalTabs } from "./Tabs";
 export type { TabItem } from "./Tabs";
 export { Icon } from "@/components/icons/Icon";
