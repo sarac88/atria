@@ -17,9 +17,9 @@ interface CatDef {
 const dows = ["L", "M", "X", "J", "V", "S", "D"];
 
 const CATS: Record<CalendarKind, CatDef> = {
-  entrega: { label: "Entregas", icon: "document-text", color: "var(--info-600)", tint: "var(--info-100)" },
-  sesion: { label: "Sesiones", icon: "academic-cap", color: "var(--primary-600)", tint: "var(--primary-100)" },
-  examen: { label: "Exámenes", icon: "clipboard-check", color: "var(--warning-600)", tint: "var(--warning-200)" },
+  entrega: { label: "Entregas", icon: "document-text", color: "var(--event-entrega)", tint: "var(--event-entrega-soft)" },
+  sesion: { label: "Sesiones", icon: "academic-cap", color: "var(--event-sesion)", tint: "var(--event-sesion-soft)" },
+  examen: { label: "Exámenes", icon: "clipboard-check", color: "var(--event-examen)", tint: "var(--event-examen-soft)" },
 };
 
 const KINDS = Object.keys(CATS) as CalendarKind[];

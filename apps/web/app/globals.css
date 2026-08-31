@@ -188,6 +188,14 @@
   --status-info-soft: var(--info-100);
   --status-new-soft: var(--yellow-200);
 
+  /* Calendario — un color por tipo de evento */
+  --event-entrega: #2b9fd4;
+  --event-entrega-soft: #e3f3fc;
+  --event-sesion: #d2568c;
+  --event-sesion-soft: #fbe4ee;
+  --event-examen: #c88a00;
+  --event-examen-soft: #fdf2ce;
+
   /* Interactive states */
   --state-hover-tint: rgba(22, 36, 74, 0.06);
   --state-selected-tint: var(--primary-100);
@@ -359,6 +367,9 @@ a { color: var(--text-link); }
   --yellow-100: #2e2711;  --yellow-200: #3b3116;
   --yellow-300: #4a3c15;  --yellow-700: #f0c96a;
   --error-100: #3a1620;  --error-600: #ff8088;
+  --event-entrega: #6fc5ec;  --event-entrega-soft: #12314a;
+  --event-sesion: #f09bc0;   --event-sesion-soft: #3d1f2e;
+  --event-examen: #f2c14e;   --event-examen-soft: #3b3116;
 }
 [data-theme="dark"] textarea { background: var(--surface-card) !important; color: var(--text-strong) !important; }
 [data-theme="dark"] div:has(> input:not([type="checkbox"]):not([type="radio"])) { background: var(--surface-card) !important; }
