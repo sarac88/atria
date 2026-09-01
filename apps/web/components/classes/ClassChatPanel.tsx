@@ -13,6 +13,8 @@ import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, Icon } from "@/components/ui";
 import { Modal } from "@/components/layout";
+import { EmojiPicker } from "@/components/messaging/EmojiPicker";
+import { MessageRow, useNowTick } from "@/components/messaging/MessageRow";
 import { useSocket } from "@/components/messaging/SocketProvider";
 import { useClassChat, useMessages, useOpenClassThread } from "@/lib/api/messaging";
 import type { ClassChatThreadDto } from "@/lib/types";
@@ -88,10 +90,12 @@ function ThreadList({ threads, onOpen }: { threads: ClassChatThreadDto[]; onOpen
 /** Conversación 1:1 en modal: historial arriba y el redactor fijo en el pie. */
 function ClassChatModal({ classId, thread, onClose }: { classId: string; thread: ClassChatThreadDto; onClose: () => void }) {
   const qc = useQueryClient();
-  const { sendMessage } = useSocket();
+  const { sendMessage, editMessage, deleteMessage } = useSocket();
   const openThread = useOpenClassThread(classId);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const now = useNowTick();
 
   // El hilo puede nacer al enviar el primer mensaje, así que se guarda aquí para
   // no perder la conversación recién creada mientras el modal sigue abierto.
@@ -128,8 +132,9 @@ function ClassChatModal({ classId, thread, onClose }: { classId: string; thread:
   );
 
   const composer = (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", height: 44, padding: "0 6px 0 14px", borderRadius: "var(--radius-md)", boxShadow: "inset 0 0 0 1px var(--border-default)", background: "var(--surface-card)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", height: 44, padding: "0 6px 0 14px", borderRadius: "var(--radius-md)", boxShadow: "inset 0 0 0 1px var(--border-default)", background: "var(--surface-card)" }}>
       <input
+        ref={inputRef}
         value={draft}
         autoFocus
         onChange={(e) => setDraft(e.target.value)}
@@ -138,6 +143,7 @@ function ClassChatModal({ classId, thread, onClose }: { classId: string; thread:
         aria-label={`Escribe a ${thread.name}`}
         style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none", fontSize: 14, color: "var(--text-strong)", fontFamily: "var(--font-sans)" }}
       />
+      <EmojiPicker inputRef={inputRef} setValue={setDraft} />
       <button
         type="button"
         aria-label="Enviar mensaje"
@@ -161,29 +167,26 @@ function ClassChatModal({ classId, thread, onClose }: { classId: string; thread:
             Aún no hay mensajes. Escribe el primero.
           </p>
         ) : null}
-        {(msgs ?? []).map((m) => {
-          const mine = m.from === "me";
-          return (
-            <div key={m.id} style={{ display: "flex", gap: 8, alignItems: "flex-end", flexDirection: mine ? "row-reverse" : "row" }}>
-              {mine ? null : <Avatar name={thread.name} size={26} />}
-              <div style={{ maxWidth: "78%" }}>
-                <div
-                  style={{
-                    padding: "9px 13px",
-                    borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                    background: mine ? "var(--primary-100)" : "var(--surface-soft)",
-                    color: "var(--text-body)",
-                    fontSize: 13.5,
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {m.text}
-                </div>
-                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3, textAlign: mine ? "right" : "left" }}>{m.time}</div>
-              </div>
-            </div>
-          );
-        })}
+        {(msgs ?? []).map((m) => (
+          <MessageRow
+            key={m.id}
+            message={m}
+            now={now}
+            avatar={<Avatar name={thread.name} size={26} />}
+            onEdit={editMessage}
+            onDelete={deleteMessage}
+            bubbleStyle={{
+              padding: "9px 13px",
+              borderRadius: m.from === "me" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+              background: m.from === "me" ? "var(--primary-100)" : "var(--surface-soft)",
+              color: "var(--text-body)",
+              fontSize: 13.5,
+              lineHeight: 1.45,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+            }}
+          />
+        ))}
       </div>
     </Modal>
   );

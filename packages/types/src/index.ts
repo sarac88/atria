@@ -418,6 +418,24 @@ export interface MessageDto {
   text: string;
   time: string;
   createdAt: string;
+  /** true si su autor lo ha reescrito después de enviarlo. */
+  edited: boolean;
+}
+
+/**
+ * Margen para rectificar: un mensaje sólo lo puede editar o borrar quien lo
+ * escribió, y sólo durante los primeros minutos. Pasado ese plazo el otro ya lo
+ * ha leído y reescribirle la conversación por detrás sería engañoso.
+ */
+export const MESSAGE_EDIT_WINDOW_MS = 15 * 60 * 1000;
+
+/** Minutos del margen, para los textos de la interfaz. */
+export const MESSAGE_EDIT_WINDOW_MIN = Math.round(MESSAGE_EDIT_WINDOW_MS / 60_000);
+
+/** true mientras el autor siga dentro del plazo para editar o borrar. */
+export function withinEditWindow(createdAt: string | Date, now: number = Date.now()): boolean {
+  const sentAt = createdAt instanceof Date ? createdAt.getTime() : new Date(createdAt).getTime();
+  return Number.isFinite(sentAt) && now - sentAt < MESSAGE_EDIT_WINDOW_MS;
 }
 
 // ---- Zod contracts (shared validation, doc §3–§4) --------------------------
@@ -559,6 +577,23 @@ export const sendMessageSchema = z.object({
   body: z.string().min(1),
 });
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+export const editMessageSchema = z.object({
+  messageId: z.string().min(1),
+  body: z.string().min(1),
+});
+export type EditMessageInput = z.infer<typeof editMessageSchema>;
+
+export const deleteMessageSchema = z.object({
+  messageId: z.string().min(1),
+});
+export type DeleteMessageInput = z.infer<typeof deleteMessageSchema>;
+
+/** Respuesta de los eventos de socket que pueden fallar (editar y borrar). */
+export interface MessageActionAck {
+  ok: boolean;
+  error?: string;
+}
 
 export const openClassThreadSchema = z.object({
   /** Alumno con quien abre el hilo el docente; el alumno lo omite y va a su docente. */

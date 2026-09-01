@@ -8,7 +8,14 @@ import {
   WebSocketServer,
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
-import { sendMessageSchema } from "@atria/types";
+import {
+  deleteMessageSchema,
+  editMessageSchema,
+  sendMessageSchema,
+  withinEditWindow,
+  MESSAGE_EDIT_WINDOW_MIN,
+  type MessageActionAck,
+} from "@atria/types";
 import { PrismaService } from "../prisma/prisma.service";
 
 function parseCookies(header: string | undefined): Record<string, string> {
@@ -88,21 +95,90 @@ export class MessagingGateway implements OnGatewayConnection {
       data: { lastReadAt: new Date() },
     });
 
-    // Se reparte por la sala personal de cada participante, no por una sala de
-    // conversación: el chat de la clase crea el hilo con el primer mensaje y
-    // los sockets ya conectados nunca habrían entrado en esa sala.
-    const parts = await this.prisma.conversationParticipant.findMany({
-      where: { conversationId },
-      select: { userId: true },
-    });
     // Payload agnóstico del destinatario; cada cliente deduce si es suyo.
-    const event = {
+    await this.broadcast(conversationId, "message.new", {
       id: msg.id,
       conversationId,
       senderId: userId,
       body,
       createdAt: msg.createdAt.toISOString(),
-    };
-    for (const p of parts) this.server.to(`user:${p.userId}`).emit("message.new", event);
+    });
+  }
+
+  /**
+   * Un mensaje sólo lo toca su autor y sólo dentro del plazo de rectificación,
+   * comprobado aquí y no sólo en la interfaz.
+   */
+  private async ownEditableMessage(userId: string, messageId: string) {
+    const msg = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      select: { id: true, conversationId: true, senderId: true, createdAt: true, deletedAt: true },
+    });
+    if (!msg || msg.deletedAt) return { error: "El mensaje ya no existe." } as const;
+    if (msg.senderId !== userId) return { error: "Sólo puedes tocar tus propios mensajes." } as const;
+    if (!withinEditWindow(msg.createdAt)) {
+      return { error: `El plazo para cambiarlo era de ${MESSAGE_EDIT_WINDOW_MIN} minutos.` } as const;
+    }
+    return { msg } as const;
+  }
+
+  @SubscribeMessage("message.edit")
+  async onEdit(@ConnectedSocket() client: Socket, @MessageBody() payload: unknown): Promise<MessageActionAck> {
+    const userId = client.data.userId as string | undefined;
+    if (!userId) return { ok: false, error: "Sesión caducada." };
+    const parsed = editMessageSchema.safeParse(payload);
+    if (!parsed.success) return { ok: false, error: "El mensaje no puede quedarse vacío." };
+
+    const found = await this.ownEditableMessage(userId, parsed.data.messageId);
+    if ("error" in found) return { ok: false, error: found.error };
+
+    const body = parsed.data.body.trim();
+    if (!body) return { ok: false, error: "El mensaje no puede quedarse vacío." };
+
+    const updated = await this.prisma.message.update({
+      where: { id: found.msg.id },
+      data: { body, editedAt: new Date() },
+    });
+    await this.broadcast(found.msg.conversationId, "message.updated", {
+      id: updated.id,
+      conversationId: updated.conversationId,
+      senderId: updated.senderId,
+      body: updated.body,
+      createdAt: updated.createdAt.toISOString(),
+      edited: true,
+    });
+    return { ok: true };
+  }
+
+  @SubscribeMessage("message.delete")
+  async onDelete(@ConnectedSocket() client: Socket, @MessageBody() payload: unknown): Promise<MessageActionAck> {
+    const userId = client.data.userId as string | undefined;
+    if (!userId) return { ok: false, error: "Sesión caducada." };
+    const parsed = deleteMessageSchema.safeParse(payload);
+    if (!parsed.success) return { ok: false, error: "Mensaje no válido." };
+
+    const found = await this.ownEditableMessage(userId, parsed.data.messageId);
+    if ("error" in found) return { ok: false, error: found.error };
+
+    // Borrado lógico: desaparece del hilo de todos, pero la fila se conserva.
+    await this.prisma.message.update({ where: { id: found.msg.id }, data: { deletedAt: new Date() } });
+    await this.broadcast(found.msg.conversationId, "message.deleted", {
+      id: found.msg.id,
+      conversationId: found.msg.conversationId,
+    });
+    return { ok: true };
+  }
+
+  /**
+   * Se reparte por la sala personal de cada participante, no por una sala de
+   * conversación: el chat de la clase crea el hilo con el primer mensaje y los
+   * sockets ya conectados nunca habrían entrado en esa sala.
+   */
+  private async broadcast(conversationId: string, event: string, payload: unknown): Promise<void> {
+    const parts = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId },
+      select: { userId: true },
+    });
+    for (const p of parts) this.server.to(`user:${p.userId}`).emit(event, payload);
   }
 }

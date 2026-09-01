@@ -215,6 +215,7 @@ export function toMessageDto(m: Message, meId: string): MessageDto {
     text: m.body,
     time: formatTime(m.createdAt),
     createdAt: m.createdAt.toISOString(),
+    edited: m.editedAt != null,
   };
 }
 

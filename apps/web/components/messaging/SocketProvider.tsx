@@ -8,7 +8,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
-import type { MessageDto, NotificationDto, UserDto } from "@atria/types";
+import type { MessageActionAck, MessageDto, NotificationDto, UserDto } from "@atria/types";
 import { getMe } from "@/lib/api/auth";
 import { formatTime } from "@/lib/time";
 
@@ -20,14 +20,25 @@ interface RawMessage {
   senderId: string;
   body: string;
   createdAt: string;
+  edited?: boolean;
 }
 
 interface SocketContextValue {
   connected: boolean;
   sendMessage: (conversationId: string, body: string) => void;
+  /** Reescribe un mensaje propio; el servidor responde si el plazo ya pasó. */
+  editMessage: (messageId: string, body: string) => Promise<MessageActionAck>;
+  deleteMessage: (messageId: string) => Promise<MessageActionAck>;
 }
 
-const SocketContext = createContext<SocketContextValue>({ connected: false, sendMessage: () => {} });
+const OFFLINE: MessageActionAck = { ok: false, error: "Sin conexión con el servidor." };
+
+const SocketContext = createContext<SocketContextValue>({
+  connected: false,
+  sendMessage: () => {},
+  editMessage: async () => OFFLINE,
+  deleteMessage: async () => OFFLINE,
+});
 
 export function useSocket() {
   return useContext(SocketContext);
@@ -46,6 +57,13 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socket.on("connect", () => setConnected(true));
     socket.on("disconnect", () => setConnected(false));
 
+    // Las tres mutaciones refrescan lo mismo: la lista de conversaciones y la
+    // insignia de no leídos del panel de módulos dependen del último mensaje.
+    const refreshLists = () => {
+      void qc.invalidateQueries({ queryKey: ["conversations"] });
+      void qc.invalidateQueries({ queryKey: ["classChat"] });
+    };
+
     socket.on("message.new", (raw: RawMessage) => {
       const dto: MessageDto = {
         id: raw.id,
@@ -55,15 +73,28 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         text: raw.body,
         time: formatTime(raw.createdAt),
         createdAt: raw.createdAt,
+        edited: false,
       };
       qc.setQueryData<MessageDto[]>(["messages", raw.conversationId], (old) => {
         if (!old) return old;
         if (old.some((m) => m.id === dto.id)) return old;
         return [...old, dto];
       });
-      void qc.invalidateQueries({ queryKey: ["conversations"] });
-      // El panel de módulos muestra su propia insignia de no leídos.
-      void qc.invalidateQueries({ queryKey: ["classChat"] });
+      refreshLists();
+    });
+
+    socket.on("message.updated", (raw: RawMessage) => {
+      qc.setQueryData<MessageDto[]>(["messages", raw.conversationId], (old) =>
+        old?.map((m) => (m.id === raw.id ? { ...m, text: raw.body, edited: true } : m)),
+      );
+      refreshLists();
+    });
+
+    socket.on("message.deleted", (raw: { id: string; conversationId: string }) => {
+      qc.setQueryData<MessageDto[]>(["messages", raw.conversationId], (old) =>
+        old?.filter((m) => m.id !== raw.id),
+      );
+      refreshLists();
     });
 
     socket.on("notification.new", (raw: NotificationDto) => {
@@ -87,5 +118,27 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socketRef.current?.emit("message.send", { conversationId, body });
   }, []);
 
-  return <SocketContext.Provider value={{ connected, sendMessage }}>{children}</SocketContext.Provider>;
+  // Editar y borrar sí necesitan respuesta: el servidor es quien decide si el
+  // plazo de rectificación sigue abierto.
+  const ask = useCallback((event: string, payload: unknown): Promise<MessageActionAck> => {
+    const socket = socketRef.current;
+    if (!socket?.connected) return Promise.resolve(OFFLINE);
+    return new Promise((resolve) => {
+      socket.timeout(5000).emit(event, payload, (err: unknown, ack: MessageActionAck) => {
+        resolve(err ? OFFLINE : ack ?? OFFLINE);
+      });
+    });
+  }, []);
+
+  const editMessage = useCallback(
+    (messageId: string, body: string) => ask("message.edit", { messageId, body }),
+    [ask],
+  );
+  const deleteMessage = useCallback((messageId: string) => ask("message.delete", { messageId }), [ask]);
+
+  return (
+    <SocketContext.Provider value={{ connected, sendMessage, editMessage, deleteMessage }}>
+      {children}
+    </SocketContext.Provider>
+  );
 }

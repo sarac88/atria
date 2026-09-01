@@ -191,74 +191,14 @@ async function main() {
     if (A3[i] != null) await addSub("a3", rosterIds[i], SubmissionStatus.entregado, new Date(2022, 9, 18), A3[i], "cuestionario4.pdf");
   }
 
-  // ---- Conversaciones (mensajería) ----
-  const lucia = rosterIds[2];
-  const nadia = rosterIds[4];
+  // La mensajería no se siembra: las conversaciones y sus mensajes nacen sólo de
+  // gente real escribiendo, así que nadie ve un hilo que nunca ha ocurrido.
   const at = (h: number, m: number, daysAgo = 0) => {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     d.setHours(h, m, 0, 0);
     return d;
   };
-  const READ = new Date();
-
-  const makeConversation = async (opts: {
-    type: string;
-    title?: string;
-    classId?: string | null;
-    participants: { userId: string; lastReadAt: Date | null }[];
-    messages: { senderId: string; body: string; createdAt: Date }[];
-  }) => {
-    const conv = await prisma.conversation.create({
-      data: {
-        type: opts.type,
-        title: opts.title ?? "",
-        classId: opts.classId ?? null,
-        participants: { create: opts.participants.map((p) => ({ userId: p.userId, lastReadAt: p.lastReadAt })) },
-      },
-    });
-    for (const msg of opts.messages) {
-      await prisma.message.create({ data: { conversationId: conv.id, senderId: msg.senderId, body: msg.body, createdAt: msg.createdAt } });
-    }
-  };
-
-  // Directa Elena ↔ Lucía (Elena con 2 no-leídos: lastReadAt null)
-  await makeConversation({
-    type: "direct",
-    participants: [{ userId: elena.id, lastReadAt: null }, { userId: lucia, lastReadAt: at(10, 6) }],
-    messages: [
-      { senderId: lucia, body: "Profesora, ¿puedo entregar con un día de retraso? Tuve un problema con el archivo.", createdAt: at(9, 55) },
-      { senderId: lucia, body: "Lo tengo casi listo, solo me falta revisar la última parte.", createdAt: at(9, 58) },
-      { senderId: elena.id, body: "Hola Lucía, sin problema. Te amplío el plazo 24 horas. Súbelo cuando lo tengas.", createdAt: at(10, 5) },
-    ],
-  });
-  // Directa Elena ↔ Marc
-  await makeConversation({
-    type: "direct",
-    participants: [{ userId: elena.id, lastReadAt: READ }, { userId: marc.id, lastReadAt: READ }],
-    messages: [{ senderId: marc.id, body: "Gracias por la corrección, lo reviso.", createdAt: at(16, 30, 1) }],
-  });
-  // Directa Elena ↔ Nadia
-  await makeConversation({
-    type: "direct",
-    participants: [{ userId: elena.id, lastReadAt: READ }, { userId: nadia, lastReadAt: READ }],
-    messages: [{ senderId: nadia, body: "Adjunto la versión corregida del trabajo.", createdAt: at(11, 0, 4) }],
-  });
-  // Canal de clase · Cálculo II · Tablón
-  await makeConversation({
-    type: "channel",
-    title: "Cálculo II · Tablón",
-    classId: "calc2",
-    participants: [elena.id, ...rosterIds].map((userId) => ({ userId, lastReadAt: READ })),
-    messages: [{ senderId: elena.id, body: "Recordad subir el ensayo antes del jueves.", createdAt: at(10, 24) }],
-  });
-  // Grupo · Claustro de Matemáticas
-  await makeConversation({
-    type: "group",
-    title: "Claustro de Matemáticas",
-    participants: [{ userId: elena.id, lastReadAt: READ }],
-    messages: [{ senderId: elena.id, body: "Reunión de departamento el viernes a las 12.", createdAt: at(12, 0, 1) }],
-  });
 
   // Plazo próximo para el planificador (a4 "Proyecto" sin entregas → avisos a los alumnos).
   await prisma.activity.update({ where: { id: "a4" }, data: { dueDate: new Date(Date.now() + 18 * 3600 * 1000) } });
@@ -272,7 +212,7 @@ async function main() {
     ],
   });
 
-  console.log("Seed completado: usuarios + roster, clases, entregas, notas, conversaciones y notificaciones.");
+  console.log("Seed completado: usuarios + roster, clases, entregas, notas y notificaciones.");
 }
 
 main()

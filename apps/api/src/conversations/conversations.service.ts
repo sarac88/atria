@@ -4,9 +4,13 @@ import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { formatTime, ROLE_LABEL, toConversationDto, toMessageDto } from "../common/mappers";
 
+// Los mensajes borrados por su autor no cuentan para nada: ni se listan, ni son
+// el último del hilo, ni suman no leídos.
+const VISIBLE = { deletedAt: null };
+
 const PARTICIPANT_INCLUDE = {
   participants: { include: { user: { select: { id: true, name: true, role: true } } } },
-  messages: { orderBy: { createdAt: "desc" as const }, take: 1 },
+  messages: { where: VISIBLE, orderBy: { createdAt: "desc" as const }, take: 1 },
 };
 
 @Injectable()
@@ -23,6 +27,7 @@ export class ConversationsService {
       parts.map(async (p) => {
         const unread = await this.prisma.message.count({
           where: {
+            ...VISIBLE,
             conversationId: p.conversationId,
             senderId: { not: userId },
             ...(p.lastReadAt ? { createdAt: { gt: p.lastReadAt } } : {}),
@@ -44,7 +49,7 @@ export class ConversationsService {
     if (!part) throw new ForbiddenException();
 
     const messages = await this.prisma.message.findMany({
-      where: { conversationId },
+      where: { ...VISIBLE, conversationId },
       orderBy: { createdAt: "asc" },
     });
     // Marcar como leída al abrir.
@@ -97,7 +102,7 @@ export class ConversationsService {
       where: { classId, type: "direct", participants: { some: { userId: user.userId } } },
       include: {
         participants: { select: { userId: true, lastReadAt: true } },
-        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        messages: { where: VISIBLE, orderBy: { createdAt: "desc" }, take: 1 },
       },
     });
     // Indexado por el otro participante para casarlo con la lista de peers.
@@ -115,6 +120,7 @@ export class ConversationsService {
         const mine = conv.participants.find((p) => p.userId === user.userId);
         const unread = await this.prisma.message.count({
           where: {
+            ...VISIBLE,
             conversationId: conv.id,
             senderId: { not: user.userId },
             ...(mine?.lastReadAt ? { createdAt: { gt: mine.lastReadAt } } : {}),

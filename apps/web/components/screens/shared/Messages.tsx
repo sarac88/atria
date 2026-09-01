@@ -5,15 +5,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, Icon } from "@/components/ui";
 import { Page, PageHead } from "@/components/layout";
 import { useConversations, useMessages } from "@/lib/api/messaging";
+import { EmojiPicker } from "@/components/messaging/EmojiPicker";
+import { MessageRow, useNowTick } from "@/components/messaging/MessageRow";
 import { useSocket } from "@/components/messaging/SocketProvider";
 
 export function Messages({ embedded = false }: { embedded?: boolean }) {
   const qc = useQueryClient();
-  const { sendMessage } = useSocket();
+  const { sendMessage, editMessage, deleteMessage } = useSocket();
   const { data: conversations } = useConversations();
   const [active, setActive] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const now = useNowTick();
 
   useEffect(() => {
     if (!active && conversations && conversations.length) setActive(conversations[0].id);
@@ -57,6 +61,11 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
           </div>
         </div>
         <div style={{ overflow: "auto", flex: 1 }}>
+          {conversations && conversations.length === 0 ? (
+            <p style={{ margin: 0, padding: "18px 16px", fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,.65)" }}>
+              Todavía no tienes conversaciones. Escribe a un alumno desde el chat de su clase y el hilo aparecerá aquí.
+            </p>
+          ) : null}
           {(conversations ?? []).map((m) => {
             const on = m.id === active;
             return (
@@ -84,35 +93,68 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
           })}
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: "1px solid var(--border-subtle)" }}>
-          <Avatar name={activeConv?.name ?? ""} size="sm" />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{activeConv?.name ?? ""}</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{activeConv?.role ?? ""}</div>
-          </div>
-          <Icon name="ellipsis-vertical" size={20} color="var(--text-muted)" />
-        </div>
-        <div ref={scrollRef} style={{ flex: 1, overflow: "auto", padding: 22, display: "flex", flexDirection: "column", gap: 14, background: "var(--surface-page)" }}>
-          {(msgs ?? []).map((c) => (
-            <div key={c.id} style={{ alignSelf: c.from === "me" ? "flex-end" : "flex-start", maxWidth: "70%" }}>
-              <div style={{ padding: "11px 15px", borderRadius: c.from === "me" ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: c.from === "me" ? "var(--brand-primary)" : "var(--surface-card)", color: c.from === "me" ? "#fff" : "var(--text-body)", fontSize: 14, lineHeight: 1.5, boxShadow: c.from === "me" ? "none" : "var(--ring-hairline)" }}>{c.text}</div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, textAlign: c.from === "me" ? "right" : "left" }}>{c.time}</div>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "var(--surface-page)" }}>
+        {activeConv ? (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: "1px solid var(--border-subtle)", background: "var(--surface-card)" }}>
+              <Avatar name={activeConv.name} size="sm" />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{activeConv.name}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{activeConv.role}</div>
+              </div>
+              <Icon name="ellipsis-vertical" size={20} color="var(--text-muted)" />
             </div>
-          ))}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderTop: "1px solid var(--border-subtle)" }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, height: 44, padding: "0 16px", background: "var(--surface-page)", borderRadius: "var(--radius-pill)" }}>
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") onSend(); }}
-              placeholder="Escribe un mensaje…"
-              style={{ flex: 1, border: "none", background: "transparent", outline: "none", fontSize: 14, color: "var(--text-strong)", fontFamily: "var(--font-sans)" }}
-            />
+            <div ref={scrollRef} style={{ flex: 1, overflow: "auto", padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
+              {msgs && msgs.length === 0 ? (
+                <p style={{ margin: "auto", fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay mensajes. Escribe el primero.</p>
+              ) : null}
+              {(msgs ?? []).map((c) => (
+                <MessageRow
+                  key={c.id}
+                  message={c}
+                  now={now}
+                  maxWidth="70%"
+                  onEdit={editMessage}
+                  onDelete={deleteMessage}
+                  bubbleStyle={{
+                    padding: "11px 15px",
+                    borderRadius: c.from === "me" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                    background: c.from === "me" ? "var(--brand-primary)" : "var(--surface-card)",
+                    color: c.from === "me" ? "#fff" : "var(--text-body)",
+                    fontSize: 14,
+                    lineHeight: 1.5,
+                    boxShadow: c.from === "me" ? "none" : "var(--ring-hairline)",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                  }}
+                />
+              ))}
+            </div>
+            {/* La barra del redactor deja ver el fondo del hilo: lo único blanco es el campo. */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", background: "transparent" }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 8px 0 16px", background: "var(--surface-card)", borderRadius: "var(--radius-pill)", boxShadow: "var(--ring-hairline)" }}>
+                <input
+                  ref={inputRef}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") onSend(); }}
+                  placeholder="Escribe un mensaje…"
+                  style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none", fontSize: 14, color: "var(--text-strong)", fontFamily: "var(--font-sans)" }}
+                />
+                <EmojiPicker inputRef={inputRef} setValue={setDraft} />
+              </div>
+              <button onClick={onSend} aria-label="Enviar" style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: "var(--brand-primary)", color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="arrow-right" size={20} /></button>
+            </div>
+          </>
+        ) : (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 32, textAlign: "center" }}>
+            <Icon name="chat" size={34} color="var(--text-muted)" />
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>Ninguna conversación abierta</p>
+            <p style={{ margin: 0, fontSize: 13.5, color: "var(--text-muted)", maxWidth: 300, lineHeight: 1.5 }}>
+              Elige un hilo de la lista, o empieza uno nuevo desde el chat de una clase.
+            </p>
           </div>
-          <button onClick={onSend} aria-label="Enviar" style={{ width: 44, height: 44, borderRadius: "50%", border: "none", background: "var(--brand-primary)", color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name="arrow-right" size={20} /></button>
-        </div>
+        )}
       </div>
     </div>
   );

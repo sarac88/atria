@@ -298,6 +298,10 @@ model Message {
   senderId       String
   body           String
   readAt         DateTime?
+  /// Fecha de la última reescritura del autor, o null si nunca se editó.
+  editedAt       DateTime?
+  /// Borrado lógico: la fila se conserva pero deja de mostrarse en el hilo.
+  deletedAt      DateTime?
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation(fields: [senderId], references: [id])
   createdAt      DateTime     @default(now())
