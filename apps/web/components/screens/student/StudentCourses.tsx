@@ -1,17 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Card, Icon } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { Page, PageHead, ProgressBar } from "@/components/layout";
+import { ClassThumb } from "@/components/classes/ClassThumb";
 import type { ClassInfo } from "@/lib/types";
-
-function cover(bg: string, ic: string): ReactNode {
-  return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: bg, color: "rgba(255,255,255,0.92)" }}>
-      <Icon name={ic} size={46} />
-    </div>
-  );
-}
 
 export function StudentCourses({ classes, onOpenClass }: { classes: ClassInfo[]; onOpenClass: (c: ClassInfo) => void }) {
   return (
@@ -19,7 +11,7 @@ export function StudentCourses({ classes, onOpenClass }: { classes: ClassInfo[];
       <PageHead title="Mis cursos" subtitle="5 cursos en marcha" />
       <div className="atria-classgrid3" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
         {classes.slice(0, 5).map((c) => (
-          <Card key={c.id} title={c.name} subtitle={c.code} interactive media={cover(c.color, c.icon)} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
+          <Card key={c.id} title={c.name} subtitle={c.code} interactive media={<ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={46} />} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
         ))}
       </div>
     </Page>

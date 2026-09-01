@@ -72,6 +72,7 @@ export function toClassInfo(c: ClassWithOwner, studentsCount?: number, counters?
     students: studentsCount ?? c.studentsCount,
     color: c.color,
     icon: c.icon,
+    thumb: c.thumb,
     status: STATUS[c.status],
     state: c.status,
     progress: c.progress,

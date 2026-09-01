@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { Badge, Icon } from "@/components/ui";
 import { Page, PageHead, Chip } from "@/components/layout";
+import { ClassThumb } from "@/components/classes/ClassThumb";
 import type { ClassInfo } from "@/lib/types";
-
-function cover(bg: string, icon: string): ReactNode {
-  return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: bg, color: "rgba(255,255,255,0.92)" }}>
-      <Icon name={icon} size={48} />
-    </div>
-  );
-}
 
 function CardAction({ icon, label, danger, onClick }: { icon: string; label: string; danger?: boolean; onClick: (e: React.MouseEvent) => void }) {
   return (
@@ -39,7 +32,7 @@ function ClassCard({ c, onOpen, onEdit, onDelete }: { c: ClassInfo; onOpen: () =
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--ring-hairline), var(--shadow-md)"; e.currentTarget.style.transform = "none"; }}
     >
       <div style={{ position: "relative", borderRadius: "var(--radius-md)", overflow: "hidden", height: 170, background: "var(--surface-sunken)" }}>
-        {cover(c.color, c.icon)}
+        <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={48} />
         {hasActions ? (
           <div style={{ position: "absolute", top: 10, right: 10, display: "flex", alignItems: "center", gap: 8 }}>
             {onEdit ? <CardAction icon="pencil" label="Editar clase" onClick={(e) => { e.stopPropagation(); onEdit(); }} /> : null}

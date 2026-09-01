@@ -6,6 +6,7 @@
 
 import { Avatar, Button, Icon } from "@/components/ui";
 import { Eyebrow, ProgressBar } from "@/components/layout";
+import { ClassThumb } from "./ClassThumb";
 import { useActivities, useModules, useMyGrades, useRoster } from "@/lib/api/classwork";
 import { isDelivered } from "@/lib/student-task";
 import type { Activity, ClassInfo, Module, Role } from "@/lib/types";
@@ -60,20 +61,8 @@ export function ClassIdentityPanel({ c, role = "docente" }: { c: ClassInfo; role
 
   return (
     <section style={SECTION}>
-      <span
-        style={{
-          width: "100%",
-          height: 96,
-          borderRadius: "var(--radius-lg)",
-          background: c.color || "var(--primary-400)",
-          color: "rgba(255,255,255,0.95)",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
-        }}
-      >
-        <Icon name={c.icon || "academic-cap"} size={40} />
+      <span style={{ width: "100%", height: 96, borderRadius: "var(--radius-lg)", overflow: "hidden", display: "inline-flex", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
+        <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={40} />
       </span>
 
       {teacherLine ? (

@@ -5,6 +5,7 @@
 
 import type { ReactNode } from "react";
 import { Icon, Avatar, Badge } from "@/components/ui";
+import { ClassThumb } from "@/components/classes/ClassThumb";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { resourceUrl } from "@/lib/api/client";
@@ -107,8 +108,8 @@ export function ClassShell({
 
         <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 18, padding: "4px 0 18px", flexWrap: "wrap" }}>
           {showIcon ? (
-            <span style={{ width: 52, height: 52, borderRadius: "var(--radius-lg)", background: c.color || "var(--primary-400)", color: "rgba(255,255,255,0.95)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
-              <Icon name={c.icon || "academic-cap"} size={28} />
+            <span style={{ width: 52, height: 52, borderRadius: "var(--radius-lg)", overflow: "hidden", display: "inline-flex", flexShrink: 0, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
+              <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={28} />
             </span>
           ) : null}
           <div style={{ flex: 1, minWidth: 180 }}>

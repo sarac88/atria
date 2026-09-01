@@ -2,12 +2,13 @@
 
 import { DataTable, Badge, Button, Icon, type Column } from "@/components/ui";
 import { Page, PageHead } from "@/components/layout";
+import { ClassThumb } from "@/components/classes/ClassThumb";
 import type { ClassInfo, StatusTuple } from "@/lib/types";
 
 export function AdminClasses({ classes, onOpenClass }: { classes: ClassInfo[]; onOpenClass: (c: ClassInfo) => void }) {
   const rows = classes;
   const cols: Column<ClassInfo>[] = [
-    { key: "name", label: "Clase", render: (v, r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><span style={{ width: 30, height: 30, borderRadius: "var(--radius-sm)", background: r.color, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name={r.icon} size={16} /></span><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
+    { key: "name", label: "Clase", render: (v, r) => <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><span style={{ width: 30, height: 30, borderRadius: "var(--radius-sm)", overflow: "hidden", display: "inline-flex", flexShrink: 0 }}><ClassThumb thumb={r.thumb} color={r.color} icon={r.icon} name={r.name} iconSize={16} /></span><span style={{ fontWeight: 600, color: "var(--text-strong)", fontSize: 14 }}>{v as string}</span></span> },
     { key: "code", label: "Código" },
     { key: "teacher", label: "Docente", render: (v) => (v as string) || "—" },
     { key: "students", label: "Alumnos", render: (v) => <span style={{ fontWeight: 700 }}>{v as number}</span> },

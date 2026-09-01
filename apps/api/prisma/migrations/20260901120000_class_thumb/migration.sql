@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Class" ADD COLUMN "thumb" TEXT NOT NULL DEFAULT '';

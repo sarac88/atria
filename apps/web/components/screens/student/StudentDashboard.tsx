@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import { Card, Button, Badge, Icon } from "@/components/ui";
 import { Page, PageHead, StatTile, Panel, ProgressBar, EmptyState } from "@/components/layout";
+import { ClassThumb } from "@/components/classes/ClassThumb";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { useStudentTasks } from "@/lib/api/classwork";
 import { activityTypeMeta } from "@/lib/activity-meta";
@@ -11,14 +12,6 @@ import { firstName } from "@/lib/session";
 import type { ClassInfo, StudentTaskDto } from "@/lib/types";
 
 const UPCOMING = 3;
-
-function cover(bg: string, icon: string): ReactNode {
-  return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: bg, color: "rgba(255,255,255,0.92)" }}>
-      <Icon name={icon} size={46} />
-    </div>
-  );
-}
 
 /** Pendientes ordenadas por plazo; las que no tienen fecha reconocible van al final. */
 function upcoming(tasks: StudentTaskDto[]): StudentTaskDto[] {
@@ -78,7 +71,7 @@ export function StudentDashboard({ classes, onOpenClass, onNav }: { classes: Cla
         {classes.length ? (
           <div className="atria-classgrid3" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
             {classes.slice(0, 4).map((c) => (
-              <Card key={c.id} title={c.name} subtitle={c.code} interactive media={cover(c.color, c.icon)} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
+              <Card key={c.id} title={c.name} subtitle={c.code} interactive media={<ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={46} />} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
             ))}
           </div>
         ) : (

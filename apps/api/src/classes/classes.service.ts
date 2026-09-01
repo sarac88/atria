@@ -154,6 +154,7 @@ export class ClassesService {
         subject: input.subject ?? "",
         color: input.color,
         icon: input.icon,
+        thumb: input.thumb ?? "",
         desc: input.desc ?? "",
         status: input.publish === false ? "draft" : "live",
         ownerId,

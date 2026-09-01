@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import { Card, Button, Badge, Icon } from "@/components/ui";
 import { Page, PageHead, StatTile, Chip, Panel, EmptyState } from "@/components/layout";
+import { ClassThumb } from "@/components/classes/ClassThumb";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { useConversations } from "@/lib/api/messaging";
 import { useNotifications } from "@/lib/api/notifications";
@@ -16,14 +17,6 @@ const TYPE_META: Record<NotificationType, { icon: string; tint: string; fg: stri
   invite: { icon: "envelope", tint: "var(--yellow-200)", fg: "var(--yellow-700)" },
   system: { icon: "bell", tint: "var(--primary-100)", fg: "var(--primary-600)" },
 };
-
-function cover(bg: string, icon: string): ReactNode {
-  return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: bg, color: "rgba(255,255,255,0.92)" }}>
-      <Icon name={icon} size={46} />
-    </div>
-  );
-}
 
 export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { classes: ClassInfo[]; onOpenClass: (c: ClassInfo) => void; onCreate: () => void; onNav: (key: string) => void }) {
   const { user } = useSettings();
@@ -82,7 +75,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
                   title={c.name}
                   subtitle={c.room ? `${c.code} · ${c.room}` : c.code}
                   interactive
-                  media={cover(c.color, c.icon)}
+                  media={<ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={46} />}
                   onClick={() => onOpenClass(c)}
                   footer={
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>

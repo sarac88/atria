@@ -93,6 +93,8 @@ model Class {
   subject       String         @default("")
   color         String         @default("var(--primary-500)")
   icon          String         @default("academic-cap")
+  /// Ilustración de la miniatura ("art", "math"…), o "" para el par color + icono.
+  thumb         String         @default("")
   status        ClassStatus    @default(draft)
   progress      Float          @default(0)
   nextSession   String         @default("Sin programar")

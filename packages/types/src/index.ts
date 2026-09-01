@@ -22,6 +22,14 @@ export type StatusTuple = [string, BadgeColor];
 /** Estado de publicación de una clase, tal cual lo guarda la base de datos. */
 export type ClassState = "live" | "scheduled" | "draft";
 
+/**
+ * Ilustraciones que puede llevar la miniatura de una clase. Se guarda el
+ * identificador, no la ruta: la imagen vive en el frontend (public/thumbs) y así
+ * se puede reemplazar sin tocar la base de datos.
+ */
+export const CLASS_THUMBS = ["art", "history", "literature", "math", "physics", "science"] as const;
+export type ClassThumbId = (typeof CLASS_THUMBS)[number];
+
 export interface ClassInfo {
   id: string;
   name: string;
@@ -30,6 +38,8 @@ export interface ClassInfo {
   students: number;
   color: string;
   icon: string;
+  /** Ilustración de la miniatura, o "" si la clase usa el par color + icono. */
+  thumb: string;
   status: StatusTuple;
   /** Estado sin traducir, para filtrar sin depender de la etiqueta visible. */
   state: ClassState;
@@ -502,6 +512,8 @@ export const createClassSchema = z.object({
   subject: z.string().optional().default(""),
   color: z.string().min(1),
   icon: z.string().min(1),
+  /** "" = miniatura de color + icono; en otro caso, una de las ilustraciones. */
+  thumb: z.enum(CLASS_THUMBS).or(z.literal("")).optional().default(""),
   desc: z.string().optional().default(""),
   publish: z.boolean().optional().default(true),
 });
