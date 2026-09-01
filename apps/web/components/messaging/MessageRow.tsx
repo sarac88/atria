@@ -1,14 +1,22 @@
 "use client";
 
-// Una burbuja del chat con sus acciones de autor.
+// Una burbuja del chat con sus acciones.
 //
 // Compartida por la pantalla de Mensajes y por el chat de la clase: cada una
-// pasa el aspecto de su burbuja y aquí vive el comportamiento común, que es
-// editar y borrar lo propio mientras dure el plazo de rectificación. Pasado el
-// plazo las acciones desaparecen solas, sin recargar (de ahí useNowTick).
+// pasa el aspecto de su burbuja y aquí vive el comportamiento común. Editar y
+// borrar son sólo para lo propio y mientras dure el plazo de rectificación
+// (pasado el plazo las acciones desaparecen solas, de ahí useNowTick);
+// reaccionar vale para cualquier mensaje y no caduca.
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { MESSAGE_EDIT_WINDOW_MIN, withinEditWindow, type MessageActionAck, type MessageDto } from "@atria/types";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  MESSAGE_EDIT_WINDOW_MIN,
+  QUICK_REACTIONS,
+  withinEditWindow,
+  type MessageActionAck,
+  type MessageDto,
+  type MessageReactionDto,
+} from "@atria/types";
 import { Icon } from "@/components/ui";
 import { isEmojiOnly } from "./EmojiPicker";
 
@@ -63,6 +71,95 @@ function chipHover(el: HTMLElement, on: boolean, danger = false) {
   el.style.color = on && danger ? "var(--status-error)" : "var(--text-body)";
 }
 
+/**
+ * Atajo de reacción. Va en la propia fila de acciones, no en un globo flotante:
+ * la fila cuelga bajo la burbuja, así que un globo hacia arriba taparía el
+ * mensaje que estás valorando y hacia abajo lo recortaría el hilo.
+ */
+function QuickReactionBar({ onPick, onClose }: { onPick: (emoji: string) => void; onClose: () => void }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 1,
+        padding: "2px 4px",
+        borderRadius: "var(--radius-pill)",
+        background: "var(--surface-card)",
+        boxShadow: "inset 0 0 0 1px var(--border-subtle), var(--shadow-sm)",
+      }}
+    >
+      {QUICK_REACTIONS.map((emoji) => (
+        <button
+          key={emoji}
+          type="button"
+          aria-label={`Reaccionar con ${emoji}`}
+          onClick={() => onPick(emoji)}
+          style={{ border: "none", background: "transparent", borderRadius: "50%", width: 24, height: 24, fontSize: 15, lineHeight: 1, cursor: "pointer", padding: 0 }}
+          onMouseEnter={(ev) => { ev.currentTarget.style.background = "var(--state-hover-tint)"; }}
+          onMouseLeave={(ev) => { ev.currentTarget.style.background = "transparent"; }}
+        >
+          {emoji}
+        </button>
+      ))}
+      <button
+        type="button"
+        aria-label="Cerrar reacciones"
+        onClick={onClose}
+        style={{ border: "none", background: "transparent", borderRadius: "50%", width: 22, height: 22, cursor: "pointer", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+      >
+        <Icon name="x" size={13} />
+      </button>
+    </span>
+  );
+}
+
+/** Recuento por emoji bajo la burbuja; se pulsa para sumarse o retirarse. */
+function ReactionPills({
+  reactions,
+  mine,
+  onToggle,
+}: {
+  reactions: MessageReactionDto[];
+  mine: boolean;
+  onToggle: (emoji: string) => void;
+}) {
+  if (reactions.length === 0) return null;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5, flexDirection: mine ? "row-reverse" : "row" }}>
+      {reactions.map((r) => (
+        <button
+          key={r.emoji}
+          type="button"
+          onClick={() => onToggle(r.emoji)}
+          title={`${r.names.join(", ")} reaccionó con ${r.emoji}`}
+          aria-label={`${r.emoji} ${r.count}. ${r.mine ? "Retirar tu reacción" : "Sumarte a la reacción"}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            height: 22,
+            padding: "0 8px",
+            borderRadius: "var(--radius-pill)",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 12,
+            fontFamily: "var(--font-sans)",
+            lineHeight: 1,
+            background: r.mine ? "var(--primary-100)" : "var(--surface-card)",
+            color: r.mine ? "var(--primary-700)" : "var(--text-muted)",
+            fontWeight: r.mine ? 700 : 400,
+            boxShadow: r.mine ? "inset 0 0 0 1px var(--primary-300)" : "inset 0 0 0 1px var(--border-subtle)",
+          }}
+        >
+          <span style={{ fontSize: 13 }}>{r.emoji}</span>
+          {r.count}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function MessageRow({
   message,
   now,
@@ -71,6 +168,7 @@ export function MessageRow({
   maxWidth = "78%",
   onEdit,
   onDelete,
+  onReact,
 }: {
   message: MessageDto;
   now: number;
@@ -80,6 +178,7 @@ export function MessageRow({
   maxWidth?: string;
   onEdit: (messageId: string, body: string) => Promise<MessageActionAck>;
   onDelete: (messageId: string) => Promise<MessageActionAck>;
+  onReact: (messageId: string, emoji: string) => Promise<MessageActionAck>;
 }) {
   const mine = message.from === "me";
   const [mode, setMode] = useState<"view" | "edit" | "confirm">("view");
@@ -87,9 +186,10 @@ export function MessageRow({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState(false);
+  const [reacting, setReacting] = useState(false);
 
   const editable = mine && withinEditWindow(message.createdAt, now);
-  const showActions = editable && mode === "view" && active;
+  const showActions = mode === "view" && active;
 
   // Si el mensaje cambia por debajo (lo editaste en otra pestaña) el borrador
   // se queda desfasado.
@@ -125,15 +225,22 @@ export function MessageRow({
     }
   };
 
+  const react = async (emoji: string) => {
+    setReacting(false);
+    const ack = await onReact(message.id, emoji);
+    if (!ack.ok) setError(ack.error ?? "No se ha podido reaccionar.");
+  };
+
   const big = isEmojiOnly(message.text);
 
   return (
     <div
-      style={{ display: "flex", gap: 8, alignItems: "flex-end", flexDirection: mine ? "row-reverse" : "row" }}
+      // El avatar se ancla arriba: abajo bailaría según crezcan las reacciones.
+      style={{ display: "flex", gap: 8, alignItems: "flex-start", flexDirection: mine ? "row-reverse" : "row" }}
       onMouseEnter={() => setActive(true)}
-      onMouseLeave={() => setActive(false)}
+      onMouseLeave={() => { setActive(false); setReacting(false); }}
       onFocus={() => setActive(true)}
-      onBlur={(ev) => { if (!ev.currentTarget.contains(ev.relatedTarget as Node)) setActive(false); }}
+      onBlur={(ev) => { if (!ev.currentTarget.contains(ev.relatedTarget as Node)) { setActive(false); setReacting(false); } }}
     >
       {mine ? null : avatar}
       <div style={{ maxWidth, minWidth: 0 }}>
@@ -209,6 +316,8 @@ export function MessageRow({
           </div>
         )}
 
+        <ReactionPills reactions={message.reactions} mine={mine} onToggle={(emoji) => void react(emoji)} />
+
         {/* Alto fijo: las pastillas no deben empujar el hilo al aparecer. */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexDirection: mine ? "row-reverse" : "row", minHeight: 26 }}>
           <span style={META}>{message.time}</span>
@@ -226,30 +335,49 @@ export function MessageRow({
             </span>
           ) : null}
 
-          {showActions ? (
+          {showActions && reacting ? (
+            <QuickReactionBar onPick={(emoji) => void react(emoji)} onClose={() => setReacting(false)} />
+          ) : null}
+
+          {showActions && !reacting ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <button
                 type="button"
-                onClick={() => setMode("edit")}
-                aria-label="Editar mensaje"
-                title={`Puedes editarlo durante ${MESSAGE_EDIT_WINDOW_MIN} minutos`}
+                onClick={() => setReacting(true)}
+                aria-label="Reaccionar al mensaje"
+                title="Reaccionar"
                 style={CHIP}
                 onMouseEnter={(ev) => chipHover(ev.currentTarget, true)}
                 onMouseLeave={(ev) => chipHover(ev.currentTarget, false)}
               >
-                <Icon name="pencil" size={15} strokeWidth={1.7} />
+                <Icon name="face-smile" size={15} strokeWidth={1.7} />
               </button>
-              <button
-                type="button"
-                onClick={() => { setMode("confirm"); setError(""); }}
-                aria-label="Eliminar mensaje"
-                title="Eliminar mensaje"
-                style={CHIP}
-                onMouseEnter={(ev) => chipHover(ev.currentTarget, true, true)}
-                onMouseLeave={(ev) => chipHover(ev.currentTarget, false, true)}
-              >
-                <Icon name="trash" size={15} strokeWidth={1.7} />
-              </button>
+              {editable ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setMode("edit")}
+                    aria-label="Editar mensaje"
+                    title={`Puedes editarlo durante ${MESSAGE_EDIT_WINDOW_MIN} minutos`}
+                    style={CHIP}
+                    onMouseEnter={(ev) => chipHover(ev.currentTarget, true)}
+                    onMouseLeave={(ev) => chipHover(ev.currentTarget, false)}
+                  >
+                    <Icon name="pencil" size={15} strokeWidth={1.7} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMode("confirm"); setError(""); }}
+                    aria-label="Eliminar mensaje"
+                    title="Eliminar mensaje"
+                    style={CHIP}
+                    onMouseEnter={(ev) => chipHover(ev.currentTarget, true, true)}
+                    onMouseLeave={(ev) => chipHover(ev.currentTarget, false, true)}
+                  >
+                    <Icon name="trash" size={15} strokeWidth={1.7} />
+                  </button>
+                </>
+              ) : null}
             </span>
           ) : null}
         </div>

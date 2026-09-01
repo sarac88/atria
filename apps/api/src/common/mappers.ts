@@ -9,6 +9,7 @@ import type {
   File,
   Grade,
   Message,
+  MessageReaction,
   Module,
   Notification,
   OnlineSession,
@@ -17,6 +18,7 @@ import type {
   SubmissionStatus,
   User,
 } from "@prisma/client";
+import { groupReactions } from "@atria/types";
 import type {
   Activity as ActivityDto,
   ClassInfo,
@@ -24,6 +26,7 @@ import type {
   ConversationDto,
   MeetingProvider,
   MessageDto,
+  MessageReactionEntry,
   Module as ModuleDto,
   NotificationDto,
   NotificationType,
@@ -189,6 +192,8 @@ export const ROLE_LABEL: Record<string, string> = { docente: "Docente", alumno: 
 type ConversationWithRelations = Conversation & {
   participants: (ConversationParticipant & { user: Pick<User, "id" | "name" | "role"> })[];
   messages: Message[];
+  /** Cargada sólo donde interesa etiquetar el hilo con su clase de origen. */
+  class?: Pick<Class, "id" | "name" | "color"> | null;
 };
 
 export function toConversationDto(c: ConversationWithRelations, meId: string, unread: number): ConversationDto {
@@ -203,10 +208,20 @@ export function toConversationDto(c: ConversationWithRelations, meId: string, un
     time: last ? formatTime(last.createdAt) : "",
     unread,
     channel: isChannel,
+    origin: c.class ? { classId: c.class.id, className: c.class.name, color: c.class.color } : null,
   };
 }
 
-export function toMessageDto(m: Message, meId: string): MessageDto {
+/** Un mensaje con sus reacciones y el nombre de quien las puso. */
+export type MessageWithReactions = Message & {
+  reactions?: (MessageReaction & { user: Pick<User, "id" | "name"> })[];
+};
+
+export function toReactionEntries(m: MessageWithReactions): MessageReactionEntry[] {
+  return (m.reactions ?? []).map((r) => ({ emoji: r.emoji, userId: r.userId, name: r.user.name }));
+}
+
+export function toMessageDto(m: MessageWithReactions, meId: string): MessageDto {
   return {
     id: m.id,
     conversationId: m.conversationId,
@@ -216,6 +231,7 @@ export function toMessageDto(m: Message, meId: string): MessageDto {
     time: formatTime(m.createdAt),
     createdAt: m.createdAt.toISOString(),
     edited: m.editedAt != null,
+    reactions: groupReactions(toReactionEntries(m), meId),
   };
 }
 

@@ -11,6 +11,7 @@ import type { Server, Socket } from "socket.io";
 import {
   deleteMessageSchema,
   editMessageSchema,
+  reactToMessageSchema,
   sendMessageSchema,
   withinEditWindow,
   MESSAGE_EDIT_WINDOW_MIN,
@@ -165,6 +166,53 @@ export class MessagingGateway implements OnGatewayConnection {
     await this.broadcast(found.msg.conversationId, "message.deleted", {
       id: found.msg.id,
       conversationId: found.msg.conversationId,
+    });
+    return { ok: true };
+  }
+
+  /**
+   * Reaccionar es alternar: si ya habías puesto ese emoji se quita. A
+   * diferencia de editar, no caduca y vale para cualquier mensaje del hilo,
+   * también los ajenos.
+   */
+  @SubscribeMessage("message.react")
+  async onReact(@ConnectedSocket() client: Socket, @MessageBody() payload: unknown): Promise<MessageActionAck> {
+    const userId = client.data.userId as string | undefined;
+    if (!userId) return { ok: false, error: "Sesión caducada." };
+    const parsed = reactToMessageSchema.safeParse(payload);
+    if (!parsed.success) return { ok: false, error: "Reacción no válida." };
+    const { messageId, emoji } = parsed.data;
+
+    const msg = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      select: { id: true, conversationId: true, deletedAt: true },
+    });
+    if (!msg || msg.deletedAt) return { ok: false, error: "El mensaje ya no existe." };
+
+    const part = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId: msg.conversationId, userId } },
+    });
+    if (!part) return { ok: false, error: "No participas en esta conversación." };
+
+    const existing = await this.prisma.messageReaction.findUnique({
+      where: { messageId_userId_emoji: { messageId, userId, emoji } },
+    });
+    if (existing) {
+      await this.prisma.messageReaction.delete({ where: { id: existing.id } });
+    } else {
+      await this.prisma.messageReaction.create({ data: { messageId, userId, emoji } });
+    }
+
+    // Se envían en crudo: cada cliente decide cuáles son suyas al agruparlas.
+    const reactions = await this.prisma.messageReaction.findMany({
+      where: { messageId },
+      include: { user: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "asc" },
+    });
+    await this.broadcast(msg.conversationId, "message.reactions", {
+      id: messageId,
+      conversationId: msg.conversationId,
+      entries: reactions.map((r) => ({ emoji: r.emoji, userId: r.userId, name: r.user.name })),
     });
     return { ok: true };
   }

@@ -64,6 +64,7 @@ model User {
   conversations      ConversationParticipant[]
   notifications      Notification[]
   debatePosts        DebatePost[]
+  messageReactions   MessageReaction[]
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
 }
@@ -304,8 +305,24 @@ model Message {
   deletedAt      DateTime?
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation(fields: [senderId], references: [id])
+  reactions      MessageReaction[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+/// Un emoji que alguien ha puesto a un mensaje. Cada persona pone como mucho
+/// uno de cada emoji, de ahí la clave única de tres columnas.
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
 }
 
 model File {

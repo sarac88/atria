@@ -8,7 +8,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
-import type { MessageActionAck, MessageDto, NotificationDto, UserDto } from "@atria/types";
+import { groupReactions } from "@atria/types";
+import type { MessageActionAck, MessageDto, MessageReactionEntry, NotificationDto, UserDto } from "@atria/types";
 import { getMe } from "@/lib/api/auth";
 import { formatTime } from "@/lib/time";
 
@@ -29,6 +30,8 @@ interface SocketContextValue {
   /** Reescribe un mensaje propio; el servidor responde si el plazo ya pasó. */
   editMessage: (messageId: string, body: string) => Promise<MessageActionAck>;
   deleteMessage: (messageId: string) => Promise<MessageActionAck>;
+  /** Pone la reacción o la retira si ya era tuya. */
+  reactToMessage: (messageId: string, emoji: string) => Promise<MessageActionAck>;
 }
 
 const OFFLINE: MessageActionAck = { ok: false, error: "Sin conexión con el servidor." };
@@ -38,6 +41,7 @@ const SocketContext = createContext<SocketContextValue>({
   sendMessage: () => {},
   editMessage: async () => OFFLINE,
   deleteMessage: async () => OFFLINE,
+  reactToMessage: async () => OFFLINE,
 });
 
 export function useSocket() {
@@ -74,6 +78,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         time: formatTime(raw.createdAt),
         createdAt: raw.createdAt,
         edited: false,
+        reactions: [],
       };
       qc.setQueryData<MessageDto[]>(["messages", raw.conversationId], (old) => {
         if (!old) return old;
@@ -95,6 +100,13 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         old?.filter((m) => m.id !== raw.id),
       );
       refreshLists();
+    });
+
+    // Llegan en crudo para que cada cliente sepa cuáles son suyas.
+    socket.on("message.reactions", (raw: { id: string; conversationId: string; entries: MessageReactionEntry[] }) => {
+      qc.setQueryData<MessageDto[]>(["messages", raw.conversationId], (old) =>
+        old?.map((m) => (m.id === raw.id ? { ...m, reactions: groupReactions(raw.entries, user.id) } : m)),
+      );
     });
 
     socket.on("notification.new", (raw: NotificationDto) => {
@@ -135,9 +147,13 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     [ask],
   );
   const deleteMessage = useCallback((messageId: string) => ask("message.delete", { messageId }), [ask]);
+  const reactToMessage = useCallback(
+    (messageId: string, emoji: string) => ask("message.react", { messageId, emoji }),
+    [ask],
+  );
 
   return (
-    <SocketContext.Provider value={{ connected, sendMessage, editMessage, deleteMessage }}>
+    <SocketContext.Provider value={{ connected, sendMessage, editMessage, deleteMessage, reactToMessage }}>
       {children}
     </SocketContext.Provider>
   );

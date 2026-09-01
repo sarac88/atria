@@ -22,6 +22,7 @@ export const ICONS: Record<string, string> = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>',
   "chevron-down": '<path d="m6 9 6 6 6-6"/>',
+  "chevron-up": '<path d="m6 15 6-6 6 6"/>',
   "chevron-right": '<path d="m9 6 6 6-6 6"/>',
   "chevron-left": '<path d="m15 6-6 6 6 6"/>',
   "arrow-right": '<path d="M4 12h15m-6-6 6 6-6 6"/>',

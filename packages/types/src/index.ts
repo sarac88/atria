@@ -364,6 +364,16 @@ export interface ConversationDto {
   time: string;
   unread: number;
   channel: boolean;
+  /** Clase de la que salió el hilo, o null si es una conversación suelta. */
+  origin: ConversationOriginDto | null;
+}
+
+/** De dónde viene una conversación, para etiquetarla en la lista de Mensajes. */
+export interface ConversationOriginDto {
+  classId: string;
+  className: string;
+  /** Color de la clase, el mismo que usa su ficha. */
+  color: string;
 }
 
 /**
@@ -420,6 +430,45 @@ export interface MessageDto {
   createdAt: string;
   /** true si su autor lo ha reescrito después de enviarlo. */
   edited: boolean;
+  /** Reacciones agrupadas por emoji, ya resueltas para quien mira. */
+  reactions: MessageReactionDto[];
+}
+
+/** Una reacción del hilo tal cual llega del servidor, sin agrupar. */
+export interface MessageReactionEntry {
+  emoji: string;
+  userId: string;
+  name: string;
+}
+
+/** Las reacciones de un emoji concreto, contadas para quien las mira. */
+export interface MessageReactionDto {
+  emoji: string;
+  count: number;
+  /** true si quien mira es uno de los que ha reaccionado. */
+  mine: boolean;
+  /** Quiénes han reaccionado, para el tooltip. */
+  names: string[];
+}
+
+/** Emojis del atajo de reacción, los que se ofrecen sin abrir el selector. */
+export const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "🙏", "🎉"];
+
+/**
+ * Agrupa por emoji conservando el orden de llegada. Lo usan el servidor al
+ * responder y el cliente al recibir el evento del socket, para que las
+ * reacciones se vean igual vengan por donde vengan.
+ */
+export function groupReactions(entries: MessageReactionEntry[], viewerId: string): MessageReactionDto[] {
+  const byEmoji = new Map<string, MessageReactionDto>();
+  for (const entry of entries) {
+    const group = byEmoji.get(entry.emoji) ?? { emoji: entry.emoji, count: 0, mine: false, names: [] };
+    group.count += 1;
+    group.names.push(entry.name);
+    if (entry.userId === viewerId) group.mine = true;
+    byEmoji.set(entry.emoji, group);
+  }
+  return [...byEmoji.values()];
 }
 
 /**
@@ -588,6 +637,13 @@ export const deleteMessageSchema = z.object({
   messageId: z.string().min(1),
 });
 export type DeleteMessageInput = z.infer<typeof deleteMessageSchema>;
+
+/** Alterna la reacción: la pone si no estaba y la quita si ya era tuya. */
+export const reactToMessageSchema = z.object({
+  messageId: z.string().min(1),
+  emoji: z.string().min(1).max(16),
+});
+export type ReactToMessageInput = z.infer<typeof reactToMessageSchema>;
 
 /** Respuesta de los eventos de socket que pueden fallar (editar y borrar). */
 export interface MessageActionAck {

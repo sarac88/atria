@@ -8,10 +8,43 @@ import { useConversations, useMessages } from "@/lib/api/messaging";
 import { EmojiPicker } from "@/components/messaging/EmojiPicker";
 import { MessageRow, useNowTick } from "@/components/messaging/MessageRow";
 import { useSocket } from "@/components/messaging/SocketProvider";
+import type { ConversationOriginDto } from "@/lib/types";
+
+/**
+ * Etiqueta de la clase de la que salió el hilo. Aquí se mezclan conversaciones
+ * de todas las clases, así que sin ella no se sabe a qué asignatura contestas.
+ */
+function OriginTag({ origin, tone }: { origin: ConversationOriginDto | null; tone: "light" | "dark" }) {
+  if (!origin) return null;
+  const onDark = tone === "dark";
+  return (
+    <span
+      title={`Conversación de ${origin.className}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        maxWidth: "100%",
+        minWidth: 0,
+        height: 18,
+        padding: "0 8px",
+        borderRadius: "var(--radius-pill)",
+        fontSize: 11,
+        fontWeight: 700,
+        lineHeight: 1,
+        background: onDark ? "rgba(255,255,255,.14)" : "var(--surface-sunken)",
+        color: onDark ? "rgba(255,255,255,.85)" : "var(--text-body)",
+      }}
+    >
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: origin.color, flexShrink: 0 }} />
+      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{origin.className}</span>
+    </span>
+  );
+}
 
 export function Messages({ embedded = false }: { embedded?: boolean }) {
   const qc = useQueryClient();
-  const { sendMessage, editMessage, deleteMessage } = useSocket();
+  const { sendMessage, editMessage, deleteMessage, reactToMessage } = useSocket();
   const { data: conversations } = useConversations();
   const [active, setActive] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -86,6 +119,11 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
                     <span style={{ fontSize: 11.5, color: on ? "var(--primary-600)" : "rgba(255,255,255,.5)", flexShrink: 0 }}>{m.time}</span>
                   </div>
                   <div style={{ fontSize: 12.5, color: on ? "var(--primary-700)" : m.unread ? "#fff" : "rgba(255,255,255,.6)", fontWeight: m.unread ? 600 : 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{m.last}</div>
+                  {m.origin ? (
+                    <div style={{ marginTop: 5, display: "flex" }}>
+                      <OriginTag origin={m.origin} tone={on ? "light" : "dark"} />
+                    </div>
+                  ) : null}
                 </div>
                 {m.unread ? <span style={{ alignSelf: "center", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: on ? "var(--brand-primary)" : "var(--brand-accent)", color: on ? "#fff" : "var(--primary-700)", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{m.unread}</span> : null}
               </button>
@@ -98,9 +136,12 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: "1px solid var(--border-subtle)", background: "var(--surface-card)" }}>
               <Avatar name={activeConv.name} size="sm" />
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{activeConv.name}</div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{activeConv.role}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{activeConv.role}</span>
+                  <OriginTag origin={activeConv.origin} tone="light" />
+                </div>
               </div>
               <Icon name="ellipsis-vertical" size={20} color="var(--text-muted)" />
             </div>
@@ -116,6 +157,7 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
                   maxWidth="70%"
                   onEdit={editMessage}
                   onDelete={deleteMessage}
+                  onReact={reactToMessage}
                   bubbleStyle={{
                     padding: "11px 15px",
                     borderRadius: c.from === "me" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",

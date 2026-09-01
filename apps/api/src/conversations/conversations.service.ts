@@ -11,7 +11,12 @@ const VISIBLE = { deletedAt: null };
 const PARTICIPANT_INCLUDE = {
   participants: { include: { user: { select: { id: true, name: true, role: true } } } },
   messages: { where: VISIBLE, orderBy: { createdAt: "desc" as const }, take: 1 },
+  // Para etiquetar en Mensajes de qué clase sale cada hilo.
+  class: { select: { id: true, name: true, color: true } },
 };
+
+/** Las reacciones viajan con el nombre de quien las puso, para el tooltip. */
+const REACTION_INCLUDE = { user: { select: { id: true, name: true } } };
 
 @Injectable()
 export class ConversationsService {
@@ -51,6 +56,7 @@ export class ConversationsService {
     const messages = await this.prisma.message.findMany({
       where: { ...VISIBLE, conversationId },
       orderBy: { createdAt: "asc" },
+      include: { reactions: { include: REACTION_INCLUDE, orderBy: { createdAt: "asc" } } },
     });
     // Marcar como leída al abrir.
     await this.prisma.conversationParticipant.update({
