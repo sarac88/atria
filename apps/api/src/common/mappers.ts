@@ -266,6 +266,7 @@ export function toModuleDto(m: ModuleWithResources): ModuleDto {
     id: m.id,
     title: m.title,
     description: m.description,
+    coverUrl: m.coverUrl,
     done: m.done,
     items: m.resources.map((r) => ({ id: r.id, type: r.type, label: r.label, meta: r.meta, state: r.state, url: r.url })),
     sessions: m.sessions.map(toOnlineSessionDto),

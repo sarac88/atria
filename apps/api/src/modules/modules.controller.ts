@@ -30,7 +30,7 @@ import {
 import { CurrentUser, type AuthUser } from "../auth/decorators";
 import { ClassMembershipGuard, JwtAuthGuard } from "../auth/guards";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
-import { resourceUploadOptions } from "../common/uploads";
+import { imageUploadOptions, resourceUploadOptions } from "../common/uploads";
 import { ModulesService } from "./modules.service";
 import { LinkPreviewService } from "./link-preview.service";
 
@@ -69,6 +69,22 @@ export class ModulesController {
   @Delete("modules/:id")
   deleteModule(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.modules.deleteModule(user, id);
+  }
+
+  @Post("modules/:id/cover")
+  @UseInterceptors(FileInterceptor("file", imageUploadOptions))
+  setCover(
+    @Param("id") id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthUser,
+  ) {
+    if (!file) throw new BadRequestException("No se ha recibido ninguna imagen.");
+    return this.modules.setCover(user, id, file);
+  }
+
+  @Delete("modules/:id/cover")
+  clearCover(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.modules.clearCover(user, id);
   }
 
   /** Portada (og:image) de un enlace, para la miniatura de la card. */

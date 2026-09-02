@@ -67,6 +67,37 @@ export class ModulesService {
     return this.moduleDto(moduleId);
   }
 
+  /** POST /modules/:id/cover — guarda la cabecera de la intro y descarta la anterior. */
+  async setCover(user: AuthUser, moduleId: string, file: Express.Multer.File): Promise<ModuleDto> {
+    const prev = await this.assertModuleOwner(user, moduleId);
+    await this.prisma.module.update({ where: { id: moduleId }, data: { coverUrl: uploadUrl(file.filename) } });
+    await this.removeCoverFile(prev.coverUrl);
+    return this.moduleDto(moduleId);
+  }
+
+  /** DELETE /modules/:id/cover — quita la cabecera. */
+  async clearCover(user: AuthUser, moduleId: string): Promise<ModuleDto> {
+    const prev = await this.assertModuleOwner(user, moduleId);
+    await this.prisma.module.update({ where: { id: moduleId }, data: { coverUrl: "" } });
+    await this.removeCoverFile(prev.coverUrl);
+    return this.moduleDto(moduleId);
+  }
+
+  /** Comprueba que la unidad existe y es del docente dueño de la clase. */
+  private async assertModuleOwner(user: AuthUser, moduleId: string): Promise<{ coverUrl: string }> {
+    const mod = await this.prisma.module.findUnique({ where: { id: moduleId }, select: { classId: true, coverUrl: true } });
+    if (!mod) throw new NotFoundException();
+    await this.assertClassOwner(user, mod.classId);
+    return { coverUrl: mod.coverUrl };
+  }
+
+  /** Las cabeceras no pasan por la tabla File: se borran del disco a mano. */
+  private async removeCoverFile(coverUrl: string): Promise<void> {
+    const key = coverUrl.startsWith("/uploads/") ? coverUrl.slice("/uploads/".length) : "";
+    if (!key) return;
+    await unlink(join(UPLOADS_DIR, key)).catch(() => undefined);
+  }
+
   /**
    * Borra la unidad. Los recursos caen por cascada (limpiamos sus ficheros a mano)
    * y las actividades se quedan sin unidad, no se borran.
@@ -74,7 +105,7 @@ export class ModulesService {
   async deleteModule(user: AuthUser, moduleId: string): Promise<{ id: string }> {
     const mod = await this.prisma.module.findUnique({
       where: { id: moduleId },
-      select: { classId: true, resources: { select: { fileId: true, file: { select: { key: true } } } } },
+      select: { classId: true, coverUrl: true, resources: { select: { fileId: true, file: { select: { key: true } } } } },
     });
     if (!mod) throw new NotFoundException();
     await this.assertClassOwner(user, mod.classId);
@@ -85,6 +116,7 @@ export class ModulesService {
       await this.prisma.file.delete({ where: { id: f.id } }).catch(() => undefined);
       if (f.key) await unlink(join(UPLOADS_DIR, f.key)).catch(() => undefined);
     }
+    await this.removeCoverFile(mod.coverUrl);
 
     return { id: moduleId };
   }

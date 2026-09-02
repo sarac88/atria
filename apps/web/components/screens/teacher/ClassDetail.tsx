@@ -409,7 +409,13 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
                 <span style={{ flex: 1 }} />
                 {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
               </div>
-              <UnitDescription text={current.description} />
+              <UnitDescription
+                text={current.description}
+                coverUrl={current.coverUrl}
+                classId={classId}
+                moduleId={current.id !== NONE_UNIT ? current.id : undefined}
+                canEdit={current.id !== NONE_UNIT}
+              />
             </>
           )}
           {current.id !== NONE_UNIT ? (
@@ -555,9 +561,13 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
                   ) : (
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {m.description.trim()
-                          ? <UnitDescription text={m.description} />
-                          : <p style={{ margin: "0 0 18px", fontSize: 13, color: "var(--text-muted)" }}>Sin descripción.</p>}
+                        <UnitDescription
+                          text={m.description}
+                          coverUrl={m.coverUrl}
+                          classId={classId}
+                          moduleId={m.id}
+                          canEdit
+                        />
                       </div>
                       <UnitEditButton onClick={() => setEditing(m.id)} />
                     </div>

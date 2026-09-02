@@ -48,11 +48,11 @@ enum SubmissionStatus {
 }
 
 model User {
-  id                 String       @id @default(cuid())
+  id                 String                    @id @default(cuid())
   name               String
-  email              String       @unique
+  email              String                    @unique
   passwordHash       String
-  role               Role         @default(alumno)
+  role               Role                      @default(alumno)
   avatarUrl          String?
   hashedRefreshToken String?
   ownedClasses       Class[]                   @relation("ClassOwner")
@@ -86,32 +86,32 @@ model Notification {
 }
 
 model Class {
-  id            String         @id @default(cuid())
-  name          String
-  code          String
-  room          String         @default("")
-  subject       String         @default("")
-  color         String         @default("var(--primary-500)")
-  icon          String         @default("academic-cap")
+  id             String            @id @default(cuid())
+  name           String
+  code           String
+  room           String            @default("")
+  subject        String            @default("")
+  color          String            @default("var(--primary-500)")
+  icon           String            @default("academic-cap")
   /// Ilustración de la miniatura ("art", "math"…), o "" para el par color + icono.
-  thumb         String         @default("")
-  status        ClassStatus    @default(draft)
-  progress      Float          @default(0)
-  nextSession   String         @default("Sin programar")
-  desc          String         @default("")
-  coverUrl      String         @default("")
-  studentsCount Int            @default(0)
-  openActivities Int           @default(0)
-  pending       Int            @default(0)
-  ownerId       String
-  owner         User           @relation("ClassOwner", fields: [ownerId], references: [id])
-  enrollments   Enrollment[]
-  invitations   ClassInvitation[]
-  modules       Module[]
-  activities    Activity[]
-  conversations Conversation[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  thumb          String            @default("")
+  status         ClassStatus       @default(draft)
+  progress       Float             @default(0)
+  nextSession    String            @default("Sin programar")
+  desc           String            @default("")
+  coverUrl       String            @default("")
+  studentsCount  Int               @default(0)
+  openActivities Int               @default(0)
+  pending        Int               @default(0)
+  ownerId        String
+  owner          User              @relation("ClassOwner", fields: [ownerId], references: [id])
+  enrollments    Enrollment[]
+  invitations    ClassInvitation[]
+  modules        Module[]
+  activities     Activity[]
+  conversations  Conversation[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }
 
 model Enrollment {
@@ -156,6 +156,8 @@ model Module {
   classId     String
   title       String
   description String          @default("")
+  /// Cabecera de la introducción de la unidad, o "" mientras no se sube ninguna.
+  coverUrl    String          @default("")
   position    Int             @default(0)
   done        Boolean         @default(false)
   class       Class           @relation(fields: [classId], references: [id], onDelete: Cascade)
@@ -296,7 +298,7 @@ model ConversationParticipant {
 }
 
 model Message {
-  id             String       @id @default(cuid())
+  id             String            @id @default(cuid())
   conversationId String
   senderId       String
   body           String
@@ -305,11 +307,11 @@ model Message {
   editedAt       DateTime?
   /// Borrado lógico: la fila se conserva pero deja de mostrarse en el hilo.
   deletedAt      DateTime?
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User         @relation(fields: [senderId], references: [id])
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User              @relation(fields: [senderId], references: [id])
   reactions      MessageReaction[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }
 
 /// Un emoji que alguien ha puesto a un mensaje. Cada persona pone como mucho

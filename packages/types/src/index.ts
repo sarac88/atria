@@ -180,6 +180,8 @@ export interface Module {
   id: string;
   title: string;
   description: string;
+  /** Cabecera de la introducción de la unidad, o "" si no tiene imagen. */
+  coverUrl: string;
   done: boolean;
   items: ModuleItem[];
   sessions: OnlineSessionDto[];

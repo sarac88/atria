@@ -203,6 +203,27 @@ export function useUpdateModule(classId: string) {
   });
 }
 
+/** Cabecera de la introducción de una unidad: sube y reemplaza la imagen. */
+export function useUploadModuleCover(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { moduleId: string; file: File }) => {
+      const form = new FormData();
+      form.append("file", v.file);
+      return apiFetch<Module>(`/modules/${v.moduleId}/cover`, { method: "POST", body: form });
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
+export function useClearModuleCover(classId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (moduleId: string) => apiFetch<Module>(`/modules/${moduleId}/cover`, { method: "DELETE" }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["modules", classId] }),
+  });
+}
+
 export function useDeleteModule(classId: string) {
   const qc = useQueryClient();
   return useMutation({

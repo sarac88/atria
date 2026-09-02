@@ -137,7 +137,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
                 <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{curMod.title}</h3>
                 {curMod.id !== NONE_UNIT ? <Chip>{curMod.items.length} recursos</Chip> : null}
               </div>
-              <UnitDescription text={curMod.description} />
+              <UnitDescription text={curMod.description} coverUrl={curMod.coverUrl} />
               {curMod.id !== NONE_UNIT && curMod.sessions.length ? (
                 <>
                   <div style={SECTION_LABEL}>Sesión online</div>
