@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DataTable, Badge, Button, Icon, Avatar, Select, RichText, type Column } from "@/components/ui";
+import { DataTable, Badge, Button, Icon, Avatar, Select, RichText, HorizontalTabs, type Column } from "@/components/ui";
 import { Chip, Panel, EmptyState, ClassShell, ProgressBar } from "@/components/layout";
 import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
@@ -681,12 +681,14 @@ function ClassStudents({ klass }: { klass: ClassInfo }) {
 function OverviewActivityCard({
   activity,
   moduleLabel,
+  showModule = true,
   onOpen,
   onEdit,
   onDelete,
 }: {
   activity: Activity;
   moduleLabel: string;
+  showModule?: boolean;
   onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -781,18 +783,22 @@ function OverviewActivityCard({
           </button>
         </div>
         <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{activity.submitted}/{activity.total}</span>
-        <Badge
-          color={moduleLabel ? "draft" : "default"}
-          style={{ fontSize: 12.5, padding: "4px 10px", maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", display: "block" }}
-          title={moduleLabel || "Sin unidad"}
-        >
-          {moduleLabel || "Sin unidad"}
-        </Badge>
+        {showModule ? (
+          <Badge
+            color={moduleLabel ? "draft" : "default"}
+            style={{ fontSize: 12.5, padding: "4px 10px", maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", display: "block" }}
+            title={moduleLabel || "Sin unidad"}
+          >
+            {moduleLabel || "Sin unidad"}
+          </Badge>
+        ) : null}
         <Badge type="solid" color={activity.status[1]}>{activity.status[0]}</Badge>
       </div>
     </div>
   );
 }
+
+const ALL_ACTIVITIES = "all";
 
 function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: string) => void }) {
   const { data: activities } = useActivities(c.id);
@@ -801,6 +807,16 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
   const [detail, setDetail] = useState<Activity | null>(null);
   const [editing, setEditing] = useState<Activity | null>(null);
   const [deleting, setDeleting] = useState<Activity | null>(null);
+  const [moduleTab, setModuleTab] = useState(ALL_ACTIVITIES);
+
+  const list = activities ?? [];
+  const { units, actsOf } = buildUnits(modules ?? [], list);
+  const moduleTabs = units.filter((u) => actsOf(u.id).length > 0);
+  const showTabs = moduleTabs.length > 1;
+  const activeTab = !showTabs || moduleTab === ALL_ACTIVITIES || moduleTabs.some((u) => u.id === moduleTab)
+    ? (showTabs ? moduleTab : ALL_ACTIVITIES)
+    : ALL_ACTIVITIES;
+  const visible = activeTab === ALL_ACTIVITIES ? list : actsOf(activeTab);
 
   /** Nombre corto de la unidad; vacío si la actividad no cuelga de ninguna. */
   const moduleLabelOf = (moduleId?: string) => {
@@ -835,17 +851,38 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
           y dejaba un hueco enorme bajo el donut. Ahora se queda arriba y acompaña. */}
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 22, alignItems: "start" }} className="atria-2col">
         <Panel title="Actividades">
+          {showTabs ? (
+            <HorizontalTabs
+              value={activeTab}
+              onChange={setModuleTab}
+              aria-label="Filtrar actividades por unidad"
+              style={{ gap: 22, margin: "-4px 0 16px" }}
+              tabs={[
+                { label: "Todas", value: ALL_ACTIVITIES, count: list.length },
+                ...moduleTabs.map((u) => ({
+                  label: modParts(u.title)[0],
+                  value: u.id,
+                  count: actsOf(u.id).length,
+                })),
+              ]}
+            />
+          ) : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {(activities ?? []).map((a) => (
-              <OverviewActivityCard
-                key={a.id}
-                activity={a}
-                moduleLabel={moduleLabelOf(a.moduleId)}
-                onOpen={() => setDetail(a)}
-                onEdit={() => setEditing(a)}
-                onDelete={() => setDeleting(a)}
-              />
-            ))}
+            {visible.length === 0 ? (
+              <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay actividades.</div>
+            ) : (
+              visible.map((a) => (
+                <OverviewActivityCard
+                  key={a.id}
+                  activity={a}
+                  moduleLabel={moduleLabelOf(a.moduleId)}
+                  showModule={activeTab === ALL_ACTIVITIES}
+                  onOpen={() => setDetail(a)}
+                  onEdit={() => setEditing(a)}
+                  onDelete={() => setDeleting(a)}
+                />
+              ))
+            )}
           </div>
         </Panel>
 

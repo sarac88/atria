@@ -6,6 +6,8 @@ export interface TabItem {
   label: string;
   value: string;
   icon?: ReactNode;
+  /** Optional count shown next to the label (e.g. activities in a module). */
+  count?: number;
 }
 type TabInput = string | TabItem;
 
@@ -15,6 +17,7 @@ interface TabsProps {
   defaultValue?: string;
   onChange?: (value: string) => void;
   style?: CSSProperties;
+  "aria-label"?: string;
 }
 
 function normalize(tabs: TabInput[]): TabItem[] {
@@ -22,7 +25,7 @@ function normalize(tabs: TabInput[]): TabItem[] {
 }
 
 /** Underline navigation. Active tab gets a yellow accent underline. */
-export function HorizontalTabs({ tabs = [], value, defaultValue, onChange, style = {} }: TabsProps) {
+export function HorizontalTabs({ tabs = [], value, defaultValue, onChange, style = {}, "aria-label": ariaLabel }: TabsProps) {
   const items = normalize(tabs);
   const [internal, setInternal] = useState(defaultValue ?? items[0]?.value);
   const isControlled = value !== undefined;
@@ -32,16 +35,22 @@ export function HorizontalTabs({ tabs = [], value, defaultValue, onChange, style
     onChange?.(v);
   };
   return (
-    <div style={{ display: "flex", gap: 28, borderBottom: "1px solid var(--border-subtle)", ...style }}>
+    <div role="tablist" aria-label={ariaLabel} style={{ display: "flex", gap: 28, borderBottom: "1px solid var(--border-subtle)", overflowX: "auto", scrollbarWidth: "thin", ...style }}>
       {items.map((t) => {
         const active = t.value === current;
         return (
           <button
             key={t.value}
             type="button"
+            role="tab"
+            aria-selected={active}
             onClick={() => select(t.value)}
             style={{
               position: "relative",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              flexShrink: 0,
               border: "none",
               background: "transparent",
               cursor: "pointer",
@@ -50,10 +59,31 @@ export function HorizontalTabs({ tabs = [], value, defaultValue, onChange, style
               fontSize: 14,
               fontWeight: active ? 700 : 500,
               color: active ? "var(--brand-primary)" : "var(--text-muted)",
+              whiteSpace: "nowrap",
               transition: "color .15s ease",
             }}
           >
             {t.label}
+            {t.count != null ? (
+              <span
+                style={{
+                  minWidth: 18,
+                  height: 18,
+                  padding: "0 5px",
+                  borderRadius: 999,
+                  background: active ? "var(--primary-100)" : "var(--surface-soft)",
+                  color: active ? "var(--primary-600)" : "var(--text-muted)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  lineHeight: 1,
+                }}
+              >
+                {t.count}
+              </span>
+            ) : null}
             <span
               style={{
                 position: "absolute",
