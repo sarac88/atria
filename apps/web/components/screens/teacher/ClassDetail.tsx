@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DataTable, Badge, Button, Icon, Avatar, Select, RichText, HorizontalTabs, type Column } from "@/components/ui";
+import { DataTable, Badge, Button, Icon, Avatar, Select, HorizontalTabs, type Column } from "@/components/ui";
 import { Chip, Panel, EmptyState, ClassShell, ProgressBar } from "@/components/layout";
 import { Donut } from "@/components/charts";
 import { GradebookTable } from "./GradebookTable";
@@ -36,7 +36,6 @@ import {
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
-import { stripEmptyParagraphs } from "@/lib/rich-text";
 import type { Activity, BadgeColor, ClassInfo, Module, SubmissionDto } from "@/lib/types";
 
 const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
@@ -215,13 +214,13 @@ const UNIT_FIELD: React.CSSProperties = {
   background: "#fff",
 };
 
-/** Botón discreto para abrir la edición de una unidad. */
+/** Botón discreto para abrir la edición del título de una unidad. */
 function UnitEditButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
-      aria-label="Editar unidad"
-      title="Editar unidad"
+      aria-label="Editar título"
+      title="Editar título"
       onClick={onClick}
       style={{ width: 32, height: 32, flexShrink: 0, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "transparent", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s ease, color .15s ease" }}
       onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; e.currentTarget.style.color = "var(--primary-600)"; }}
@@ -284,26 +283,23 @@ function UnitRailItem({
   );
 }
 
-/** Formulario en línea para renombrar la unidad y editar su descripción. */
-function UnitEditForm({
+/** Formulario en línea para renombrar la unidad. */
+function UnitTitleEditForm({
   title,
-  description,
   pending,
   onSave,
   onCancel,
 }: {
   title: string;
-  description: string;
   pending?: boolean;
-  onSave: (title: string, description: string) => void;
+  onSave: (title: string) => void;
   onCancel: () => void;
 }) {
   const [val, setVal] = useState(title);
-  const [desc, setDesc] = useState(() => stripEmptyParagraphs(description));
   const commit = () => {
     const v = val.trim();
     if (!v) return;
-    onSave(v, stripEmptyParagraphs(desc).trim());
+    onSave(v);
   };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
@@ -315,13 +311,6 @@ function UnitEditForm({
         placeholder="Nombre de la unidad"
         aria-label="Nombre de la unidad"
         style={{ ...UNIT_FIELD, height: 42, padding: "0 12px", fontSize: 16, fontWeight: 700 }}
-      />
-      <RichText
-        value={desc}
-        onChange={setDesc}
-        placeholder="Descripción de la unidad (opcional)"
-        minHeight={110}
-        style={{ ["--atria-rich-gap" as string]: "16px" }}
       />
       <div style={{ display: "flex", gap: 8 }}>
         <Button size="small" variant="accent" disabled={!val.trim() || pending} onClick={commit}>Guardar</Button>
@@ -386,38 +375,35 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
       ) : current ? (
         <div key={current.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
           {editing === current.id ? (
-            <UnitEditForm
+            <UnitTitleEditForm
               title={current.title}
-              description={current.description}
               pending={updateModule.isPending}
               onCancel={() => setEditing(null)}
-              onSave={(title, description) => {
-                updateModule.mutate({ id: current.id, title, description });
+              onSave={(title) => {
+                updateModule.mutate({ id: current.id, title });
                 setEditing(null);
               }}
             />
           ) : (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <span style={{ width: 32, height: 32, borderRadius: "50%", background: current.done ? "var(--success-100)" : "var(--surface-soft)", color: current.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon name={current.done ? "check" : "book-open"} size={18} />
-                </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
-                  <h3 style={{ fontSize: 18, margin: 0 }}>{current.title}</h3>
-                  {current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
-                </span>
-                <span style={{ flex: 1 }} />
-                {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
-              </div>
-              <UnitDescription
-                text={current.description}
-                coverUrl={current.coverUrl}
-                classId={classId}
-                moduleId={current.id !== NONE_UNIT ? current.id : undefined}
-                canEdit={current.id !== NONE_UNIT}
-              />
-            </>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <span style={{ width: 32, height: 32, borderRadius: "50%", background: current.done ? "var(--success-100)" : "var(--surface-soft)", color: current.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name={current.done ? "check" : "book-open"} size={18} />
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+                <h3 style={{ fontSize: 18, margin: 0 }}>{current.title}</h3>
+                {current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+              </span>
+              <span style={{ flex: 1 }} />
+              {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
+            </div>
           )}
+          <UnitDescription
+            text={current.description}
+            coverUrl={current.coverUrl}
+            classId={classId}
+            moduleId={current.id !== NONE_UNIT ? current.id : undefined}
+            canEdit={current.id !== NONE_UNIT}
+          />
           {current.id !== NONE_UNIT ? (
             <>
               <div style={SECTION_LABEL}>Sesión online</div>
@@ -525,53 +511,56 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
         const [lead, sub] = modParts(m.title);
         return (
           <div key={m.id} style={{ background: "var(--surface-card)", boxShadow: "var(--ring-hairline), var(--shadow-md)", borderRadius: "var(--radius-xl)", overflow: "hidden" }}>
-            <button
-              type="button"
-              onClick={() => setOpen(expanded ? null : m.id)}
-              style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", textAlign: "left", border: "none", cursor: "pointer", background: "transparent", padding: "16px 20px", transition: "background .15s ease" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-            >
-              <span style={{ width: 36, height: 36, flexShrink: 0, borderRadius: "50%", background: m.done ? "var(--success-100)" : "var(--surface-soft)", color: m.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                <Icon name={m.done ? "check" : "book-open"} size={18} />
-              </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{lead}</span>
-                {sub ? <span style={{ display: "block", fontSize: 13, color: "var(--text-muted)", marginTop: 1 }}>{sub}</span> : null}
-              </span>
-              <Chip>{isNone ? `${actsOf(m.id).length} actividades` : `${m.items.length} recursos`}</Chip>
-              <span style={{ color: "var(--text-muted)", display: "inline-flex", transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "none" }}>
-                <Icon name="chevron-down" size={20} />
-              </span>
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, paddingRight: 12 }}>
+              <button
+                type="button"
+                onClick={() => setOpen(expanded ? null : m.id)}
+                style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0, textAlign: "left", border: "none", cursor: "pointer", background: "transparent", padding: "16px 8px 16px 20px", transition: "background .15s ease" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <span style={{ width: 36, height: 36, flexShrink: 0, borderRadius: "50%", background: m.done ? "var(--success-100)" : "var(--surface-soft)", color: m.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <Icon name={m.done ? "check" : "book-open"} size={18} />
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{lead}</span>
+                  {sub ? <span style={{ display: "block", fontSize: 13, color: "var(--text-muted)", marginTop: 1 }}>{sub}</span> : null}
+                </span>
+                <Chip>{isNone ? `${actsOf(m.id).length} actividades` : `${m.items.length} recursos`}</Chip>
+                <span style={{ color: "var(--text-muted)", display: "inline-flex", transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "none" }}>
+                  <Icon name="chevron-down" size={20} />
+                </span>
+              </button>
+              {!isNone ? (
+                <UnitEditButton
+                  onClick={() => {
+                    setEditing(m.id);
+                    setOpen(m.id);
+                  }}
+                />
+              ) : null}
+            </div>
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
+                {!isNone && editing === m.id ? (
+                  <UnitTitleEditForm
+                    title={m.title}
+                    pending={updateModule.isPending}
+                    onCancel={() => setEditing(null)}
+                    onSave={(title) => {
+                      updateModule.mutate({ id: m.id, title });
+                      setEditing(null);
+                    }}
+                  />
+                ) : null}
                 {!isNone ? (
-                  editing === m.id ? (
-                    <UnitEditForm
-                      title={m.title}
-                      description={m.description}
-                      pending={updateModule.isPending}
-                      onCancel={() => setEditing(null)}
-                      onSave={(title, description) => {
-                        updateModule.mutate({ id: m.id, title, description });
-                        setEditing(null);
-                      }}
-                    />
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <UnitDescription
-                          text={m.description}
-                          coverUrl={m.coverUrl}
-                          classId={classId}
-                          moduleId={m.id}
-                          canEdit
-                        />
-                      </div>
-                      <UnitEditButton onClick={() => setEditing(m.id)} />
-                    </div>
-                  )
+                  <UnitDescription
+                    text={m.description}
+                    coverUrl={m.coverUrl}
+                    classId={classId}
+                    moduleId={m.id}
+                    canEdit
+                  />
                 ) : null}
                 {!isNone ? (
                   <>

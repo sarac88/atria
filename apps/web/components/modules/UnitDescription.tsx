@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button, Icon, RichView } from "@/components/ui";
-import { useClearModuleCover, useUploadModuleCover } from "@/lib/api/classwork";
+import { Button, Icon, RichText, RichView } from "@/components/ui";
+import { useClearModuleCover, useUpdateModule, useUploadModuleCover } from "@/lib/api/classwork";
 import { resourceUrl } from "@/lib/api/client";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
 
@@ -33,7 +33,10 @@ export function UnitDescription({ text, coverUrl = "", classId, moduleId, canEdi
   const html = stripEmptyParagraphs(text);
   const [expanded, setExpanded] = useState(false);
   const [overflows, setOverflows] = useState(false);
+  const [editingText, setEditingText] = useState(false);
+  const [draft, setDraft] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
+  const updateModule = useUpdateModule(classId ?? "");
 
   // El texto puede crecer al cargar imágenes o al cambiar el ancho: medimos en vivo.
   useEffect(() => {
@@ -53,7 +56,18 @@ export function UnitDescription({ text, coverUrl = "", classId, moduleId, canEdi
   // Sin nada que enseñar ni nada que gestionar, la intro no ocupa sitio.
   if (!hasText && !cover && !manageable) return null;
 
-  const clipped = overflows && !expanded;
+  const clipped = overflows && !expanded && !editingText;
+
+  const startEdit = () => {
+    setDraft(html);
+    setEditingText(true);
+    setExpanded(true);
+  };
+  const saveText = () => {
+    if (!moduleId) return;
+    updateModule.mutate({ id: moduleId, description: stripEmptyParagraphs(draft).trim() });
+    setEditingText(false);
+  };
 
   return (
     <div
@@ -69,8 +83,30 @@ export function UnitDescription({ text, coverUrl = "", classId, moduleId, canEdi
     >
       <UnitCover cover={cover} classId={classId ?? ""} moduleId={moduleId ?? ""} manageable={manageable} />
 
-      <div style={{ maxWidth: TEXT_WIDTH, margin: "0 auto", padding: "30px 32px 28px" }}>
-        {hasText ? (
+      <div style={{ maxWidth: TEXT_WIDTH, margin: "0 auto", padding: manageable ? "12px 32px 28px" : "30px 32px 28px" }}>
+        {manageable && !editingText ? (
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+            <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={16} />} onClick={startEdit}>
+              Editar descripción
+            </Button>
+          </div>
+        ) : null}
+
+        {editingText ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <RichText
+              value={draft}
+              onChange={setDraft}
+              placeholder="Descripción de la unidad (opcional)"
+              minHeight={160}
+              style={{ ["--atria-rich-gap" as string]: "16px" }}
+            />
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button size="small" variant="accent" disabled={updateModule.isPending} onClick={saveText}>Guardar</Button>
+              <Button size="small" variant="ghost" onClick={() => setEditingText(false)}>Cancelar</Button>
+            </div>
+          </div>
+        ) : hasText ? (
           <>
             <div
               style={{
