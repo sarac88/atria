@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Select } from "@/components/ui";
+import { ClassFilter } from "@/components/classes/ClassFilter";
 import { useClasses } from "@/lib/api/classes";
 import type { ClassInfo } from "@/lib/types";
 
@@ -16,16 +16,7 @@ export function CourseFilter({
   onChange: (id: string) => void;
 }) {
   if (classes.length < 2) return null;
-  return (
-    <div style={{ width: 240 }}>
-      <Select
-        value={value}
-        onChange={onChange}
-        placeholder="Curso"
-        options={classes.map((c) => ({ label: c.name, value: c.id }))}
-      />
-    </div>
-  );
+  return <ClassFilter classes={classes} value={value} onChange={onChange} label="Curso" />;
 }
 
 /** Recuerda el curso activo y cae al primero cuando la lista cambia. */

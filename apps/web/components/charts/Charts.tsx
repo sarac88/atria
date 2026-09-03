@@ -7,6 +7,8 @@ export interface BarDatum {
   value: number;
   /** Texto completo, visible al pasar el cursor por el icono de info junto a la etiqueta. */
   hint?: string;
+  /** Color propio de la barra; si no se indica, se usa el del gráfico. */
+  color?: string;
 }
 
 export interface BarChartProps {
@@ -35,7 +37,7 @@ export function BarChart({ data, height = 150, color = "var(--brand-primary)", a
                 height: (d.value / max) * (height - 44) + "px",
                 minHeight: 4,
                 borderRadius: "6px 6px 0 0",
-                background: highlightLast && i === data.length - 1 ? accent : color,
+                background: d.color ?? (highlightLast && i === data.length - 1 ? accent : color),
                 transition: "height .5s ease",
               }}
             />

@@ -69,6 +69,7 @@ export function toClassInfo(c: ClassWithOwner, studentsCount?: number, counters?
     name: c.name,
     code: c.code,
     room: c.room,
+    subject: c.subject,
     students: studentsCount ?? c.studentsCount,
     color: c.color,
     icon: c.icon,

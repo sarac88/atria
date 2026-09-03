@@ -35,6 +35,8 @@ export interface ClassInfo {
   name: string;
   code: string;
   room: string;
+  /** Asignatura de la clase (p. ej. "Matemáticas"), o "" si no se eligió. */
+  subject: string;
   students: number;
   color: string;
   icon: string;

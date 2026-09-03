@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Select } from "@/components/ui";
 import { Page, PageHead, StatTile, EmptyState } from "@/components/layout";
+import { ClassFilter } from "@/components/classes/ClassFilter";
 import { GradebookTable } from "./GradebookTable";
 import { useClasses } from "@/lib/api/classes";
 import { useActivities, useGradebook } from "@/lib/api/classwork";
@@ -48,15 +48,7 @@ export function Gradebook() {
       <PageHead
         title="Calificaciones"
         subtitle="Libro de notas por clase y actividad"
-        actions={
-          <div style={{ width: 220 }}>
-            <Select
-              value={classId}
-              onChange={setClassId}
-              options={list.map((c) => ({ label: c.name, value: c.id }))}
-            />
-          </div>
-        }
+        actions={<ClassFilter classes={list} value={classId} onChange={setClassId} />}
       />
       <div className="atria-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18, marginBottom: 24 }}>
         <StatTile icon="star" value={stats.average} label="Media de la clase" tint="var(--primary-100)" fg="var(--primary-600)" />

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Avatar, Badge, Select } from "@/components/ui";
+import { Avatar, Badge } from "@/components/ui";
 import { Page, PageHead, StatTile, Panel, ProgressBar, EmptyState } from "@/components/layout";
+import { ClassFilter } from "@/components/classes/ClassFilter";
 import { BarChart } from "@/components/charts";
 import { useClasses } from "@/lib/api/classes";
 import { useActivities, useRoster } from "@/lib/api/classwork";
@@ -15,6 +16,18 @@ const BANDS: [string, (n: number) => boolean, string][] = [
   ["5–6.9", (n) => n >= 5 && n < 7, "var(--warning-500)"],
   ["< 5", (n) => n < 5, "var(--status-error)"],
 ];
+
+/** Cuánto del grupo ha entregado una actividad, de más a menos. Da color a su barra. */
+const LEVELS: [string, number, string][] = [
+  ["Casi todo el grupo", 0.66, "var(--info-500)"],
+  ["Parte del grupo", 0.33, "var(--warning-500)"],
+  ["Pocas entregas", 0, "var(--status-error)"],
+];
+
+const levelColor = (submitted: number, total: number) => {
+  const ratio = total ? submitted / total : 0;
+  return (LEVELS.find(([, min]) => ratio >= min) ?? LEVELS[LEVELS.length - 1])[2];
+};
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
@@ -55,7 +68,12 @@ export function Analytics() {
 
   /** Entregas recibidas por actividad, en el orden en que se publicaron. El título va en el tooltip. */
   const perActivity = useMemo(
-    () => activities.map((a, i) => ({ label: `Actividad ${i + 1}`, value: a.submitted, hint: a.title })),
+    () => activities.map((a, i) => ({
+      label: `Actividad ${i + 1}`,
+      value: a.submitted,
+      hint: a.title,
+      color: levelColor(a.submitted, a.total),
+    })),
     [activities],
   );
 
@@ -84,15 +102,7 @@ export function Analytics() {
       <PageHead
         title="Progreso del aprendizaje"
         subtitle={current ? `${current.name} · seguimiento del grupo` : "Seguimiento del grupo"}
-        actions={
-          <div style={{ width: 220 }}>
-            <Select
-              value={classId}
-              onChange={setClassId}
-              options={list.map((c) => ({ label: c.name, value: c.id }))}
-            />
-          </div>
-        }
+        actions={<ClassFilter classes={list} value={classId} onChange={setClassId} />}
       />
       <div className="atria-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18, marginBottom: 24 }}>
         <StatTile icon="grid" value={stats.progress} label="Progreso del grupo" tint="var(--primary-100)" fg="var(--primary-600)" />
@@ -104,8 +114,16 @@ export function Analytics() {
         <Panel title="Entregas por actividad">
           {perActivity.length ? (
             <>
-              <BarChart data={perActivity} minBarWidth={78} />
-              <p style={{ fontSize: 12.5, color: "var(--text-muted)", margin: "14px 0 0" }}>
+              <BarChart data={perActivity} minBarWidth={78} highlightLast={false} />
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, marginTop: 14 }}>
+                {LEVELS.map(([label, , color]) => (
+                  <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-muted)" }}>
+                    <span aria-hidden style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <p style={{ fontSize: 12.5, color: "var(--text-muted)", margin: "8px 0 0" }}>
                 Entregas recibidas en cada actividad publicada, sobre {roster.length} {roster.length === 1 ? "alumno" : "alumnos"}.
               </p>
             </>

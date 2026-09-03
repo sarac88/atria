@@ -34,7 +34,8 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
   const [thumb, setThumb] = useState<ClassThumbId | "">(isClassThumb(klass?.thumb) ? klass.thumb : "");
   // Con qué se dibuja la miniatura: una ilustración o el par color + icono.
   const [thumbMode, setThumbMode] = useState<"image" | "icon">(klass?.thumb ? "image" : "icon");
-  const [subj, setSubj] = useState<number | null>(null);
+  const initSubject = klass?.subject ? subjects.findIndex(([, label]) => label === klass.subject) : -1;
+  const [subj, setSubj] = useState<number | null>(initSubject >= 0 ? initSubject : null);
   const [name, setName] = useState(klass?.name ?? "");
   const [code, setCode] = useState(klass && klass.code !== "—" ? klass.code : "");
   const [room, setRoom] = useState(klass?.room ?? "");

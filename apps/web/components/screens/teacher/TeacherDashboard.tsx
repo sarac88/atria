@@ -7,6 +7,7 @@ import { ClassThumb } from "@/components/classes/ClassThumb";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { useConversations } from "@/lib/api/messaging";
 import { useNotifications } from "@/lib/api/notifications";
+import { classSubtitle } from "@/lib/class-label";
 import { firstName } from "@/lib/session";
 import type { ClassInfo, NotificationType } from "@/lib/types";
 
@@ -73,7 +74,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
                 <Card
                   key={c.id}
                   title={c.name}
-                  subtitle={c.room ? `${c.code} · ${c.room}` : c.code}
+                  subtitle={classSubtitle(c)}
                   interactive
                   media={<ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={46} />}
                   onClick={() => onOpenClass(c)}

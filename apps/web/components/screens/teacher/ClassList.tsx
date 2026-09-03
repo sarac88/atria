@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Badge, Icon } from "@/components/ui";
 import { Page, PageHead, Chip } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
+import { classSubtitle } from "@/lib/class-label";
 import type { ClassInfo } from "@/lib/types";
 
 function CardAction({ icon, label, danger, onClick }: { icon: string; label: string; danger?: boolean; onClick: (e: React.MouseEvent) => void }) {
@@ -44,7 +45,7 @@ function ClassCard({ c, onOpen, onEdit, onDelete }: { c: ClassInfo; onOpen: () =
       <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "15px 5px 5px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 24, lineHeight: 1.2, color: "var(--text-strong)" }}>{c.name}</span>
-          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 16, lineHeight: 1.3, color: "var(--text-muted)" }}>{c.code + " · " + c.room}</span>
+          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 16, lineHeight: 1.3, color: "var(--text-muted)" }}>{classSubtitle(c)}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", marginTop: 4 }}>
           <Chip icon="users">{c.students} alumnos</Chip>
