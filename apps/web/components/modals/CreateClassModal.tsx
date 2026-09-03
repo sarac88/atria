@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input, RichText, Button, Icon, Switch } from "@/components/ui";
+import { Input, Button, Icon, Switch } from "@/components/ui";
 import { Modal } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { useCreateClass, useUpdateClass } from "@/lib/api/classes";
@@ -39,7 +39,6 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
   const [name, setName] = useState(klass?.name ?? "");
   const [code, setCode] = useState(klass && klass.code !== "—" ? klass.code : "");
   const [room, setRoom] = useState(klass?.room ?? "");
-  const [desc, setDesc] = useState(klass?.desc ?? "");
   const [publish, setPublish] = useState(klass ? klass.status[0] !== "Borrador" : true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,16 +57,16 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
       // El color y el icono se guardan siempre (los usan el calendario y los
       // chips); `thumb` decide sólo qué se ve en la miniatura.
       thumb: thumbMode === "image" ? thumb : "",
-      desc: desc.trim(),
       publish,
     };
     try {
       if (editing) {
         // En edición sólo enviamos la asignatura si se ha elegido, para no borrarla.
+        // La descripción se edita en «Sobre el curso», no aquí.
         const cls = await update.mutateAsync(subj != null ? { ...base, subject: subjects[subj][1] } : base);
         onDone(cls.id);
       } else {
-        const cls = await create.mutateAsync({ ...base, subject: subj != null ? subjects[subj][1] : "" });
+        const cls = await create.mutateAsync({ ...base, desc: "", subject: subj != null ? subjects[subj][1] : "" });
         onDone(cls.id);
       }
     } catch {
@@ -171,13 +170,6 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
             })}
           </div>
         </div>
-        <RichText
-          label="Descripción"
-          minHeight={130}
-          value={desc}
-          onChange={setDesc}
-          placeholder="Breve descripción del temario y objetivos."
-        />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)" }}>Publicar de inmediato</div>

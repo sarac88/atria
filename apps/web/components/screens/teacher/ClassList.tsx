@@ -44,8 +44,8 @@ function ClassCard({ c, onOpen, onEdit, onDelete }: { c: ClassInfo; onOpen: () =
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "15px 5px 5px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 24, lineHeight: 1.2, color: "var(--text-strong)" }}>{c.name}</span>
-          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 16, lineHeight: 1.3, color: "var(--text-muted)" }}>{classSubtitle(c)}</span>
+          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 20, lineHeight: 1.2, color: "var(--text-strong)" }}>{c.name}</span>
+          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 14, lineHeight: 1.3, color: "var(--text-muted)" }}>{classSubtitle(c)}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", marginTop: 4 }}>
           <Chip icon="users">{c.students} alumnos</Chip>
@@ -97,8 +97,8 @@ function CreateClassCard({ onClick }: { onClick: () => void }) {
         <Icon name="plus" size={40} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "15px 5px 5px" }}>
-        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 24, lineHeight: 1.2, color: hovered ? "var(--brand-primary)" : "var(--text-strong)", transition: "color .18s ease" }}>Crear clase</span>
-        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 16, lineHeight: 1.3, color: "var(--text-muted)" }}>Añade una nueva clase</span>
+        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 20, lineHeight: 1.2, color: hovered ? "var(--brand-primary)" : "var(--text-strong)", transition: "color .18s ease" }}>Crear clase</span>
+        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 14, lineHeight: 1.3, color: "var(--text-muted)" }}>Añade una nueva clase</span>
       </div>
     </button>
   );

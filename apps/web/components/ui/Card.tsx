@@ -93,12 +93,12 @@ export function Card({
         {title || subtitle ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {title ? (
-              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 24, lineHeight: 1.2, color: "var(--text-strong)" }}>
+              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: 20, lineHeight: 1.2, color: "var(--text-strong)" }}>
                 {title}
               </span>
             ) : null}
             {subtitle ? (
-              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 16, lineHeight: 1.3, color: "var(--text-muted)" }}>
+              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 14, lineHeight: 1.3, color: "var(--text-muted)" }}>
                 {subtitle}
               </span>
             ) : null}

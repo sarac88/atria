@@ -1,10 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, Icon, RichView } from "@/components/ui";
+import { Button, Icon, RichText, RichView } from "@/components/ui";
 import { Chip } from "@/components/layout";
-import { CreateClassModal } from "@/components/modals/CreateClassModal";
-import { useClearClassCover, useUploadClassCover } from "@/lib/api/classes";
+import { useClearClassCover, useUpdateClass, useUploadClassCover } from "@/lib/api/classes";
 import { resourceUrl } from "@/lib/api/client";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
 import type { ClassInfo } from "@/lib/types";
@@ -51,13 +50,17 @@ export const RAIL_DIVIDER: React.CSSProperties = { height: 1, background: "var(-
 
 /**
  * Ficha «Sobre el curso»: la portada flota a la derecha (media columna) y la
- * descripción la rodea. El docente puede subir/quitar la imagen y editar el texto.
+ * descripción la rodea. El docente puede subir/quitar la imagen y editar título
+ * y texto en el mismo sitio.
  * `embedded`: sin tarjeta propia, para ir dentro del panel de Módulos.
  */
 export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: boolean; embedded?: boolean }) {
   const uploadCover = useUploadClassCover(c.id);
   const clearCover = useClearClassCover(c.id);
+  const updateClass = useUpdateClass(c.id);
   const [editing, setEditing] = useState(false);
+  const [draftName, setDraftName] = useState(c.name);
+  const [draftDesc, setDraftDesc] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -65,6 +68,24 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
   const busy = uploadCover.isPending || clearCover.isPending;
   const cover = c.coverUrl ? resourceUrl(c.coverUrl) : null;
   const desc = stripEmptyParagraphs(c.desc);
+
+  const startEdit = () => {
+    setDraftName(c.name);
+    setDraftDesc(desc);
+    setError(null);
+    setEditing(true);
+  };
+  const saveEdit = () => {
+    const name = draftName.trim();
+    if (!name) return;
+    updateClass.mutate(
+      { name, desc: stripEmptyParagraphs(draftDesc).trim() },
+      {
+        onSuccess: () => setEditing(false),
+        onError: () => setError("No se pudo guardar. Inténtalo de nuevo."),
+      },
+    );
+  };
 
   const pickFile = async (f: File | null) => {
     // El input conserva el valor tras elegir: sin limpiarlo, volver a escoger el
@@ -97,13 +118,57 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <h2 style={{ fontSize: embedded ? 21 : 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
-        {canEdit ? (
-          <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={() => setEditing(true)}>
-            Editar
-          </Button>
-        ) : null}
+        {editing ? (
+          <input
+            autoFocus
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Escape") setEditing(false); }}
+            placeholder="Nombre de la clase"
+            aria-label="Nombre de la clase"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              height: 42,
+              padding: "0 12px",
+              border: "none",
+              borderRadius: "var(--radius-sm)",
+              boxShadow: "inset 0 0 0 1px var(--border-default)",
+              fontFamily: "var(--font-sans)",
+              fontSize: embedded ? 18 : 22,
+              fontWeight: 700,
+              color: "var(--text-strong)",
+              background: "#fff",
+            }}
+          />
+        ) : (
+          <>
+            <h2 style={{ fontSize: embedded ? 21 : 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
+            {canEdit ? (
+              <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEdit}>
+                Editar
+              </Button>
+            ) : null}
+          </>
+        )}
       </div>
+
+      {editing ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
+          <RichText
+            value={draftDesc}
+            onChange={setDraftDesc}
+            placeholder="Qué se trabaja en este curso, objetivos y cómo se organiza."
+            minHeight={160}
+          />
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button size="small" variant="accent" disabled={!draftName.trim() || updateClass.isPending} onClick={saveEdit}>
+              {updateClass.isPending ? "Guardando…" : "Guardar"}
+            </Button>
+            <Button size="small" variant="ghost" onClick={() => setEditing(false)}>Cancelar</Button>
+          </div>
+        </div>
+      ) : null}
 
       {/* Portada: flota a la derecha y el texto la rodea (ancho y márgenes en globals.css). */}
       <div
@@ -206,13 +271,13 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
       </div>
 
       {/* Texto: fluye alrededor de la portada */}
-      {desc.trim() ? (
+      {!editing && desc.trim() ? (
         <RichView html={desc} style={{ fontSize: 15, marginTop: 0 }} />
-      ) : (
+      ) : !editing ? (
         <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: "14px 0 0", lineHeight: 1.6 }}>
           {canEdit ? "Todavía no hay descripción. Usa «Editar» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
         </p>
-      )}
+      ) : null}
 
       {error ? (
         <div style={{ marginTop: 12, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>
@@ -226,10 +291,6 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         <Chip icon="users">{c.students} alumnos</Chip>
         <Chip icon="calendar">{c.nextSession}</Chip>
       </div>
-
-      {editing ? (
-        <CreateClassModal klass={c} onClose={() => setEditing(false)} onDone={() => setEditing(false)} />
-      ) : null}
     </section>
   );
 }
