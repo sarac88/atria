@@ -100,6 +100,8 @@ model Class {
   nextSession    String            @default("Sin programar")
   desc           String            @default("")
   coverUrl       String            @default("")
+  /// Posición de la portada en «Sobre el curso»: left, right o full.
+  coverAlign     String            @default("right")
   studentsCount  Int               @default(0)
   openActivities Int               @default(0)
   pending        Int               @default(0)

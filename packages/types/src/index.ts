@@ -30,6 +30,10 @@ export type ClassState = "live" | "scheduled" | "draft";
 export const CLASS_THUMBS = ["art", "history", "literature", "math", "physics", "science"] as const;
 export type ClassThumbId = (typeof CLASS_THUMBS)[number];
 
+/** Posición de la portada en la ficha «Sobre el curso». */
+export const CLASS_COVER_ALIGNS = ["left", "right", "full"] as const;
+export type ClassCoverAlign = (typeof CLASS_COVER_ALIGNS)[number];
+
 export interface ClassInfo {
   id: string;
   name: string;
@@ -56,6 +60,8 @@ export interface ClassInfo {
   desc: string;
   /** Portada del curso: ruta servida por la API, o "" si no tiene. */
   coverUrl: string;
+  /** Alineación de la portada en «Sobre el curso» (izquierda, derecha o ancho completo). */
+  coverAlign: ClassCoverAlign;
   /** Nombre del docente dueño de la clase, o "" si no se cargó la relación. */
   teacher: string;
 }
@@ -523,7 +529,9 @@ export const createClassSchema = z.object({
 });
 export type CreateClassInput = z.infer<typeof createClassSchema>;
 
-export const updateClassSchema = createClassSchema.partial();
+export const updateClassSchema = createClassSchema.partial().extend({
+  coverAlign: z.enum(CLASS_COVER_ALIGNS).optional(),
+});
 export type UpdateClassInput = z.infer<typeof updateClassSchema>;
 
 export const quizQuestionOptionSchema = z.object({

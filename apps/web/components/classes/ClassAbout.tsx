@@ -6,10 +6,32 @@ import { Chip } from "@/components/layout";
 import { useClearClassCover, useUpdateClass, useUploadClassCover } from "@/lib/api/classes";
 import { resourceUrl } from "@/lib/api/client";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
-import type { ClassInfo } from "@/lib/types";
+import type { ClassCoverAlign, ClassInfo } from "@/lib/types";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+
+const COVER_ALIGN_OPTIONS: { value: ClassCoverAlign; label: string; icon: string }[] = [
+  { value: "left", label: "Izquierda", icon: "arrow-left" },
+  { value: "right", label: "Derecha", icon: "arrow-right" },
+  { value: "full", label: "Completo", icon: "photo" },
+];
+
+const pillStyle = (on: boolean): React.CSSProperties => ({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "8px 13px",
+  border: "none",
+  borderRadius: "var(--radius-md)",
+  cursor: "pointer",
+  background: on ? "var(--primary-100)" : "var(--gray-100)",
+  boxShadow: on ? "inset 0 0 0 2px var(--brand-primary)" : "inset 0 0 0 2px var(--border-default)",
+  color: on ? "var(--primary-700)" : "var(--text-strong)",
+  fontSize: 13.5,
+  fontWeight: 600,
+  transition: "background .15s ease, box-shadow .15s ease",
+});
 
 /** Identificador del apartado «Sobre el curso» dentro del carril de Módulos. */
 export const ABOUT_UNIT = "__about__";
@@ -49,9 +71,9 @@ export function AboutRailItem({ active, onSelect }: { active: boolean; onSelect:
 export const RAIL_DIVIDER: React.CSSProperties = { height: 1, background: "var(--border-subtle)", margin: "14px 6px" };
 
 /**
- * Ficha «Sobre el curso»: la portada flota a la derecha (media columna) y la
- * descripción la rodea. El docente puede subir/quitar la imagen y editar título
- * y texto en el mismo sitio.
+ * Ficha «Sobre el curso»: portada opcional con tres posiciones (izquierda,
+ * derecha o ancho completo). El docente puede subir/quitar la imagen y editar
+ * título y texto en el mismo sitio.
  * `embedded`: sin tarjeta propia, para ir dentro del panel de Módulos.
  */
 export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: boolean; embedded?: boolean }) {
@@ -61,13 +83,17 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState(c.name);
   const [draftDesc, setDraftDesc] = useState("");
+  const [showCoverSlot, setShowCoverSlot] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const busy = uploadCover.isPending || clearCover.isPending;
+  const alignBusy = updateClass.isPending;
   const cover = c.coverUrl ? resourceUrl(c.coverUrl) : null;
+  const coverAlign = c.coverAlign ?? "right";
   const desc = stripEmptyParagraphs(c.desc);
+  const showCoverArea = !!cover || (canEdit && showCoverSlot);
 
   const startEdit = () => {
     setDraftName(c.name);
@@ -85,6 +111,19 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         onError: () => setError("No se pudo guardar. Inténtalo de nuevo."),
       },
     );
+  };
+
+  const setCoverAlign = (align: ClassCoverAlign) => {
+    if (align === coverAlign) return;
+    updateClass.mutate({ coverAlign: align });
+  };
+
+  const removeCover = () => {
+    if (cover) {
+      clearCover.mutate(undefined, { onSuccess: () => setShowCoverSlot(false) });
+    } else {
+      setShowCoverSlot(false);
+    }
   };
 
   const pickFile = async (f: File | null) => {
@@ -145,9 +184,16 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
           <>
             <h2 style={{ fontSize: embedded ? 21 : 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
             {canEdit ? (
-              <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEdit}>
-                Editar
-              </Button>
+              <>
+                <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEdit}>
+                  Editar
+                </Button>
+                {!cover && !showCoverSlot ? (
+                  <Button variant="outline" size="small" iconLeft={<Icon name="photo" size={15} />} onClick={() => setShowCoverSlot(true)}>
+                    Añadir imagen
+                  </Button>
+                ) : null}
+              </>
             ) : null}
           </>
         )}
@@ -170,111 +216,130 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         </div>
       ) : null}
 
-      {/* Portada: flota a la derecha y el texto la rodea (ancho y márgenes en globals.css). */}
-      <div
-        className="atria-about-cover"
-        onDragOver={canEdit ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}
-        onDragLeave={canEdit ? () => setDragOver(false) : undefined}
-        onDrop={canEdit ? (e) => { e.preventDefault(); setDragOver(false); void pickFile(e.dataTransfer.files?.[0] ?? null); } : undefined}
-        style={{
-          position: "relative",
-          // Proporción fija: al ser media columna, el alto sale del ancho disponible.
-          aspectRatio: "4 / 3",
-          borderRadius: "var(--radius-lg)",
-          overflow: "hidden",
-          background: "var(--surface-sunken)",
-          border: cover ? "none" : `2px dashed ${dragOver ? "var(--brand-primary)" : "var(--border-strong)"}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          padding: cover ? 0 : 16,
-          transition: "border-color .15s ease",
-        }}
-      >
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover} alt={`Portada de ${c.name}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        ) : (
-          <div style={{ color: "var(--text-muted)" }}>
-            <Icon name="photo" size={30} />
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-body)", marginTop: 8 }}>Portada del curso</div>
-            {canEdit ? (
-              <>
-                <div style={{ fontSize: 12.5, margin: "4px 0 12px" }}>Arrástrala aquí · JPG, PNG o WEBP · máx. 5 MB</div>
-                <Button variant="outline" size="small" iconLeft={<Icon name="upload" size={16} />} onClick={() => fileInput.current?.click()} disabled={busy}>
-                  {busy ? "Subiendo…" : "Subir imagen"}
-                </Button>
-              </>
-            ) : null}
-          </div>
-        )}
+      {showCoverArea ? (
+        <>
+          {canEdit ? (
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 14 }}>
+              {COVER_ALIGN_OPTIONS.map(({ value, label, icon }) => {
+                const on = coverAlign === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={on}
+                    disabled={busy || alignBusy}
+                    onClick={() => setCoverAlign(value)}
+                    style={pillStyle(on)}
+                  >
+                    <Icon name={icon} size={16} />{label}
+                  </button>
+                );
+              })}
+              <Button
+                variant="ghost"
+                size="small"
+                iconLeft={<Icon name="trash" size={15} />}
+                onClick={removeCover}
+                disabled={busy}
+                style={{ marginLeft: "auto" }}
+              >
+                Quitar
+              </Button>
+            </div>
+          ) : null}
 
-        {cover && canEdit && dragOver ? (
           <div
+            className={`atria-about-cover atria-about-cover--${coverAlign}`}
+            onDragOver={canEdit ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}
+            onDragLeave={canEdit ? () => setDragOver(false) : undefined}
+            onDrop={canEdit ? (e) => { e.preventDefault(); setDragOver(false); void pickFile(e.dataTransfer.files?.[0] ?? null); } : undefined}
             style={{
-              position: "absolute",
-              inset: 0,
+              position: "relative",
+              aspectRatio: coverAlign === "full" ? "16 / 9" : "4 / 3",
+              borderRadius: "var(--radius-lg)",
+              overflow: "hidden",
+              background: "var(--surface-sunken)",
+              border: cover ? "none" : `2px dashed ${dragOver ? "var(--brand-primary)" : "var(--border-strong)"}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(11,18,38,.55)",
-              boxShadow: "inset 0 0 0 3px var(--brand-accent)",
-              color: "#fff",
-              fontSize: 13.5,
-              fontWeight: 700,
+              textAlign: "center",
+              padding: cover ? 0 : 16,
+              transition: "border-color .15s ease",
             }}
           >
-            Suelta la imagen para cambiar la portada
+            {cover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cover} alt={`Portada de ${c.name}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            ) : (
+              <div style={{ color: "var(--text-muted)" }}>
+                <Icon name="photo" size={30} />
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-body)", marginTop: 8 }}>Portada del curso</div>
+                {canEdit ? (
+                  <>
+                    <div style={{ fontSize: 12.5, margin: "4px 0 12px" }}>Arrástrala aquí · JPG, PNG o WEBP · máx. 5 MB</div>
+                    <Button variant="outline" size="small" iconLeft={<Icon name="upload" size={16} />} onClick={() => fileInput.current?.click()} disabled={busy}>
+                      {busy ? "Subiendo…" : "Subir imagen"}
+                    </Button>
+                  </>
+                ) : null}
+              </div>
+            )}
+
+            {cover && canEdit && dragOver ? (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(11,18,38,.55)",
+                  boxShadow: "inset 0 0 0 3px var(--brand-accent)",
+                  color: "#fff",
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                }}
+              >
+                Suelta la imagen para cambiar la portada
+              </div>
+            ) : null}
+
+            {cover && canEdit ? (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: "auto 0 0 0",
+                  padding: 10,
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                  background: "linear-gradient(to top, rgba(11,18,38,.55), rgba(11,18,38,0))",
+                  pointerEvents: dragOver ? "none" : undefined,
+                }}
+              >
+                <Button
+                  variant="secondary"
+                  size="small"
+                  iconLeft={<Icon name="upload" size={15} />}
+                  onClick={() => fileInput.current?.click()}
+                  disabled={busy}
+                  style={{ background: "var(--surface-card)", color: "var(--brand-primary)", boxShadow: "var(--shadow-md)" }}
+                >
+                  {uploadCover.isPending ? "Subiendo…" : "Cambiar imagen"}
+                </Button>
+              </div>
+            ) : null}
+
+            <input ref={fileInput} type="file" accept={ACCEPT} hidden onChange={(e) => void pickFile(e.target.files?.[0] ?? null)} />
           </div>
-        ) : null}
+        </>
+      ) : null}
 
-        {cover && canEdit ? (
-          // Velo inferior + botones opacos: sobre una foto clara los botones de
-          // contorno se perdían y no se veía que la portada se puede cambiar.
-          <div
-            style={{
-              position: "absolute",
-              inset: "auto 0 0 0",
-              padding: 10,
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 8,
-              background: "linear-gradient(to top, rgba(11,18,38,.55), rgba(11,18,38,0))",
-              pointerEvents: dragOver ? "none" : undefined,
-            }}
-          >
-            <Button
-              variant="secondary"
-              size="small"
-              iconLeft={<Icon name="upload" size={15} />}
-              onClick={() => fileInput.current?.click()}
-              disabled={busy}
-              style={{ background: "var(--surface-card)", color: "var(--brand-primary)", boxShadow: "var(--shadow-md)" }}
-            >
-              {uploadCover.isPending ? "Subiendo…" : "Cambiar imagen"}
-            </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              iconLeft={<Icon name="trash" size={15} />}
-              onClick={() => clearCover.mutate()}
-              disabled={busy}
-              style={{ background: "var(--surface-card)", color: "var(--text-body)", boxShadow: "var(--shadow-md)" }}
-            >
-              Quitar
-            </Button>
-          </div>
-        ) : null}
-
-        <input ref={fileInput} type="file" accept={ACCEPT} hidden onChange={(e) => void pickFile(e.target.files?.[0] ?? null)} />
-      </div>
-
-      {/* Texto: fluye alrededor de la portada */}
       {!editing && desc.trim() ? (
-        <RichView html={desc} style={{ fontSize: 15, marginTop: 0 }} />
+        <RichView html={desc} style={{ fontSize: 15, marginTop: showCoverArea ? 0 : 14 }} />
       ) : !editing ? (
-        <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: "14px 0 0", lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: showCoverArea ? "14px 0 0" : "14px 0 0", lineHeight: 1.6 }}>
           {canEdit ? "Todavía no hay descripción. Usa «Editar» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
         </p>
       ) : null}
@@ -285,7 +350,6 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         </div>
       ) : null}
 
-      {/* clear: los datos del curso van siempre por debajo de la portada. */}
       <div style={{ clear: "both", display: "flex", flexWrap: "wrap", gap: 18, paddingTop: 18 }}>
         <Chip icon="academic-cap">{c.code}</Chip>
         <Chip icon="users">{c.students} alumnos</Chip>

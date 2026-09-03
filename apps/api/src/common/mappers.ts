@@ -82,6 +82,7 @@ export function toClassInfo(c: ClassWithOwner, studentsCount?: number, counters?
     nextSession: c.nextSession,
     desc: c.desc,
     coverUrl: c.coverUrl,
+    coverAlign: c.coverAlign === "left" || c.coverAlign === "full" ? c.coverAlign : "right",
     teacher: c.owner?.name ?? "",
   };
 }

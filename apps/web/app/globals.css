@@ -377,16 +377,27 @@ a { color: var(--text-link); }
 [data-theme="dark"] input { color: var(--text-strong); }
 [data-theme="dark"] ::placeholder { color: var(--text-muted) !important; opacity: 1; }
 
-/* Ficha «Sobre el curso»: la portada flota a la derecha y siempre ocupa la
-   mitad del ancho de la descripción, que la rodea por la izquierda. */
-.atria-about-cover {
+/* Ficha «Sobre el curso»: la portada puede flotar a izquierda o derecha (50 %)
+   o ir a ancho completo; en móvil las tres variantes ocupan el 100 %. */
+.atria-about-cover--right {
   float: right;
   width: 50%;
   margin: 14px 0 12px 22px;
 }
-/* En columnas estrechas media columna deja el texto en tiras: mejor a lo ancho. */
+.atria-about-cover--left {
+  float: left;
+  width: 50%;
+  margin: 14px 22px 12px 0;
+}
+.atria-about-cover--full {
+  float: none;
+  width: 100%;
+  margin: 14px 0 16px;
+}
 @media (max-width: 700px) {
-  .atria-about-cover {
+  .atria-about-cover--right,
+  .atria-about-cover--left,
+  .atria-about-cover--full {
     float: none;
     width: 100%;
     margin: 14px 0 16px;
