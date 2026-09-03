@@ -60,6 +60,7 @@ export function Input({
           background: disabled ? "var(--gray-100)" : "#fff",
           borderRadius: "var(--radius-sm)",
           boxShadow: `inset 0 0 0 ${focused && !error ? "1.5px" : "1px"} ${borderColor}${focused && !error ? ", var(--focus-ring)" : ""}`,
+          cursor: disabled ? "not-allowed" : undefined,
           transition: "box-shadow .15s ease",
         }}
       >
@@ -73,7 +74,7 @@ export function Input({
           onChange={onChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "var(--font-sans)", fontSize: 14, lineHeight: 1, color: "var(--text-strong)", minWidth: 0 }}
+          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "var(--font-sans)", fontSize: 14, lineHeight: 1, color: disabled ? "var(--text-muted)" : "var(--text-strong)", minWidth: 0, cursor: disabled ? "not-allowed" : "text" }}
           {...rest}
         />
         {error ? <ErrorMark /> : iconRight}

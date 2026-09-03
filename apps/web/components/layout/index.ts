@@ -16,3 +16,4 @@ export type { IllustrationProps } from "./Illustration";
 export { Shell } from "./Shell";
 export { ClassShell } from "./ClassShell";
 export type { ClassShellProps } from "./ClassShell";
+export { AccountMenu } from "./AccountMenu";

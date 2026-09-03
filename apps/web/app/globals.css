@@ -447,6 +447,7 @@ a { color: var(--text-link); }
 @media (max-width: 640px) {
   .atria-stats { grid-template-columns: repeat(2, 1fr) !important; }
   .atria-classgrid, .atria-classgrid3 { grid-template-columns: 1fr !important; }
+  .atria-account-name { display: none; }
 }
 
 /* Form-card inputs: 2px border, light-gray fill, white on hover/focus */

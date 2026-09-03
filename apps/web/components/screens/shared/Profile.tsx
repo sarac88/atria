@@ -42,7 +42,7 @@ export function Profile() {
           <div key={user?.id ?? "loading"} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
             <Input label="Nombre" defaultValue={firstName(user)} />
             <Input label="Apellidos" defaultValue={lastName(user)} />
-            <Input label="Correo electrónico" defaultValue={user?.email ?? ""} />
+            <Input label="Correo electrónico" defaultValue={user?.email ?? ""} disabled />
             <Input label="Teléfono" placeholder="+34 600 000 000" />
             <Select label="Idioma" defaultValue="es" options={[{ label: "Español (España)", value: "es" }, { label: "English", value: "en" }, { label: "Català", value: "ca" }]} />
             <Select label="Zona horaria" defaultValue="mad" options={[{ label: "Madrid (GMT+1)", value: "mad" }, { label: "Canarias (GMT)", value: "can" }]} />

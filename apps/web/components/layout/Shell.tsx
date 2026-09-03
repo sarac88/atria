@@ -5,13 +5,12 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Icon, Avatar } from "@/components/ui";
+import { Icon } from "@/components/ui";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { Messages } from "@/components/screens/shared/Messages";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
+import { AccountMenu } from "./AccountMenu";
 import { useConversations } from "@/lib/api/messaging";
-import { resourceUrl } from "@/lib/api/client";
-import { displayName, roleLabel } from "@/lib/session";
 import type { Role } from "@/lib/types";
 
 interface NavItem {
@@ -64,7 +63,7 @@ function resolveActive(pathname: string, role: Role): { active: string; title: s
 export function Shell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { role, user, logout } = useSettings();
+  const { role } = useSettings();
   const [open, setOpen] = useState(false); // mobile drawer
   const [collapsed, setCollapsed] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false); // fullscreen overlay
@@ -90,8 +89,6 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const mini = collapsed && !open;
   const nav = NAV[role] || NAV.docente;
-  const meName = displayName(user);
-  const meAvatar = user?.avatarUrl ? resourceUrl(user.avatarUrl) : undefined;
   const { active, title } = resolveActive(pathname, role);
   const { data: conversations } = useConversations();
   const unreadMessages = (conversations ?? []).reduce((n, c) => n + c.unread, 0);
@@ -103,10 +100,6 @@ export function Shell({ children }: { children: ReactNode }) {
   const openMessages = () => {
     setMessagesOpen(true);
     setOpen(false);
-  };
-  const onLogout = () => {
-    logout();
-    router.push("/login");
   };
 
   return (
@@ -174,20 +167,6 @@ export function Shell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: mini ? "center" : "flex-start", gap: 10, padding: "12px 4px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-          <Avatar name={meName} src={meAvatar} size="sm" />
-          {mini ? null : (
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meName}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{roleLabel(role)}</div>
-            </div>
-          )}
-          {mini ? null : (
-            <button onClick={onLogout} aria-label="Salir" style={{ border: "none", background: "transparent", color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "inline-flex" }}>
-              <Icon name="logout" size={18} />
-            </button>
-          )}
-        </div>
       </aside>
 
       {open ? <div onClick={() => setOpen(false)} className="atria-scrim" style={{ position: "fixed", inset: 0, background: "rgba(11,18,38,.45)", zIndex: 40 }} /> : null}
@@ -217,9 +196,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
             <NotificationsBell />
-            <button onClick={() => router.push("/perfil")} aria-label="Perfil" style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "inline-flex", borderRadius: "50%" }}>
-              <Avatar name={meName} src={meAvatar} />
-            </button>
+            <AccountMenu />
           </div>
         </header>
         <main style={{ flex: 1, overflow: "auto", padding: "clamp(16px, 2.5vw, 28px)" }}>{children}</main>
