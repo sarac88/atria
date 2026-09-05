@@ -1,14 +1,14 @@
 "use client";
 
-// Full-page class workspace navbar (no sidebar). Themed header when the class
-// uses a thumb preset; navy fallback for color + icon classes.
+// Full-page class workspace navbar (no sidebar). Header color follows the
+// class thumbnail, or the chosen color + icon pair.
 
 import type { CSSProperties, ReactNode } from "react";
 import { Icon, Badge } from "@/components/ui";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { AccountMenu } from "./AccountMenu";
-import { classThumbPreset } from "@/lib/class-thumbs";
+import { classHeaderTheme, classThumbPreset } from "@/lib/class-thumbs";
 import type { BadgeColor, ClassInfo, Role } from "@/lib/types";
 
 interface ClassTab {
@@ -55,47 +55,33 @@ export function ClassShell({
   const c = klass || {};
   const crumb = backLabel || (role === "alumno" ? "Mis cursos" : "Mis clases");
   const preset = classThumbPreset(c.thumb);
-  const themed = !!preset;
+  const theme = classHeaderTheme(c.thumb, c.color);
 
-  const headerStyle: CSSProperties = themed
-    ? {
-        position: "relative",
-        overflow: "hidden",
-        flexShrink: 0,
-        backgroundColor: preset.tint,
-        color: "var(--text-strong)",
-        padding: "0 clamp(16px, 3vw, 32px)",
-        ["--header-fg" as string]: "var(--text-strong)",
-        ["--header-muted" as string]: "rgba(30, 41, 59, 0.62)",
-        ["--header-btn-bg" as string]: "rgba(15, 23, 42, 0.10)",
-        ["--header-btn-bg-hover" as string]: "rgba(15, 23, 42, 0.18)",
-        ["--header-btn-danger-hover" as string]: "rgba(239,68,68,0.18)",
-        ["--header-danger-fg" as string]: "var(--status-error)",
-        ["--header-tab" as string]: preset.ink,
-      }
-    : {
-        flexShrink: 0,
-        background: "var(--primary-500)",
-        color: "#fff",
-        padding: "0 clamp(16px, 3vw, 32px)",
-        ["--header-fg" as string]: "#fff",
-        ["--header-muted" as string]: "rgba(255,255,255,0.6)",
-        ["--header-btn-bg" as string]: "rgba(255,255,255,0.12)",
-        ["--header-btn-bg-hover" as string]: "rgba(255,255,255,0.22)",
-        ["--header-btn-danger-hover" as string]: "rgba(239,68,68,0.35)",
-        ["--header-danger-fg" as string]: "#fecaca",
-        ["--header-tab" as string]: "var(--brand-accent)",
-      };
+  const headerStyle: CSSProperties = {
+    position: "relative",
+    overflow: "hidden",
+    flexShrink: 0,
+    backgroundColor: theme.ink,
+    color: "#fff",
+    padding: "0 clamp(16px, 3vw, 32px)",
+    ["--header-fg" as string]: "#fff",
+    ["--header-muted" as string]: "rgba(255,255,255,0.68)",
+    ["--header-btn-bg" as string]: "rgba(255,255,255,0.12)",
+    ["--header-btn-bg-hover" as string]: "rgba(255,255,255,0.22)",
+    ["--header-btn-danger-hover" as string]: "rgba(239,68,68,0.35)",
+    ["--header-danger-fg" as string]: "#fecaca",
+    ["--header-tab" as string]: theme.tint,
+  };
 
-  const backBtnBg = themed ? "rgba(15, 23, 42, 0.12)" : "rgba(255,255,255,0.10)";
-  const backBtnHover = themed ? "rgba(15, 23, 42, 0.20)" : "rgba(255,255,255,0.18)";
+  const backBtnBg = "rgba(255,255,255,0.10)";
+  const backBtnHover = "rgba(255,255,255,0.18)";
 
   const contentLayer: CSSProperties = { position: "relative", zIndex: 1 };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--surface-page)", fontFamily: "var(--font-sans)" }}>
       <header style={headerStyle}>
-        {themed ? (
+        {preset ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={preset.headerSrc}
@@ -115,16 +101,16 @@ export function ClassShell({
             {crumb}
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={themed ? "/brand/mark.svg" : "/brand/markLight.svg"} alt="Atria" style={{ width: 30, height: 30, marginLeft: 4 }} />
+          <img src="/brand/markLight.svg" alt="Atria" style={{ width: 30, height: 30, marginLeft: 4 }} />
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-            <NotificationsBell tone={themed ? "light" : "onDark"} />
-            <AccountMenu tone={themed ? "light" : "onDark"} onProfile={onProfile} onLogout={onLogout} />
+            <NotificationsBell tone="onDark" />
+            <AccountMenu tone="onDark" onProfile={onProfile} onLogout={onLogout} />
           </div>
         </div>
 
         <div style={{ ...contentLayer, display: "flex", alignItems: "center", gap: 18, padding: "4px 0 18px", flexWrap: "wrap" }}>
           {showIcon ? (
-            <span style={{ width: 52, height: 52, borderRadius: "var(--radius-lg)", overflow: "hidden", display: "inline-flex", flexShrink: 0, boxShadow: themed ? "inset 0 0 0 1px rgba(15, 23, 42, 0.12)" : "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
+            <span style={{ width: 52, height: 52, borderRadius: "var(--radius-lg)", overflow: "hidden", display: "inline-flex", flexShrink: 0, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)" }}>
               <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={28} />
             </span>
           ) : null}
@@ -148,7 +134,7 @@ export function ClassShell({
                   key={tb.value}
                   onClick={() => onTab?.(tb.value)}
                   style={{ border: "none", background: "transparent", cursor: "pointer", padding: "0 2px 12px", fontFamily: "var(--font-sans)", fontSize: 14, fontWeight: on ? 700 : 600, whiteSpace: "nowrap", color: on ? "var(--header-fg)" : "var(--header-muted)", borderBottom: "3px solid " + (on ? "var(--header-tab)" : "transparent"), transition: "color .15s ease, border-color .15s ease" }}
-                  onMouseEnter={(ev) => { if (!on) ev.currentTarget.style.color = themed ? "rgba(30, 41, 59, 0.85)" : "rgba(255,255,255,0.85)"; }}
+                  onMouseEnter={(ev) => { if (!on) ev.currentTarget.style.color = "rgba(255,255,255,0.85)"; }}
                   onMouseLeave={(ev) => { if (!on) ev.currentTarget.style.color = "var(--header-muted)"; }}
                 >
                   {tb.label}
