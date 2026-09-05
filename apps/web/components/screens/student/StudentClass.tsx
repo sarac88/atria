@@ -71,9 +71,9 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
 
   const progress = (
     <div key="prog" style={{ minWidth: 180 }}>
-      <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.82)", marginBottom: 6 }}>Tu progreso · {Math.round(progressRatio * 100)}%</div>
-      <div style={{ height: 8, background: "rgba(255,255,255,0.25)", borderRadius: 999, overflow: "hidden" }}>
-        <div style={{ width: progressRatio * 100 + "%", height: "100%", background: "#fff", borderRadius: 999 }} />
+      <div style={{ fontSize: 12.5, color: "var(--header-muted)", marginBottom: 6 }}>Tu progreso · {Math.round(progressRatio * 100)}%</div>
+      <div style={{ height: 8, background: "var(--header-btn-bg)", borderRadius: 999, overflow: "hidden" }}>
+        <div style={{ width: progressRatio * 100 + "%", height: "100%", background: "var(--header-fg)", borderRadius: 999 }} />
       </div>
     </div>
   );

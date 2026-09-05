@@ -939,9 +939,9 @@ function HeaderAction({ icon, label, danger, onClick }: { icon: string; label: s
       aria-label={label}
       title={label}
       onClick={onClick}
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "rgba(255,255,255,0.12)", color: danger ? "var(--red-200, #fecaca)" : "#fff", transition: "background .15s ease" }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = danger ? "rgba(239,68,68,0.35)" : "rgba(255,255,255,0.22)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; }}
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--header-btn-bg)", color: danger ? "var(--header-danger-fg)" : "var(--header-fg)", transition: "background .15s ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = danger ? "var(--header-btn-danger-hover)" : "var(--header-btn-bg-hover)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--header-btn-bg)"; }}
     >
       <Icon name={icon} size={18} />
     </button>
