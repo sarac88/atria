@@ -229,9 +229,9 @@ function ClassChatDock({
         style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 8px 9px 12px", background: "var(--brand-primary)", color: "#fff", cursor: "pointer", flexShrink: 0 }}
       >
         <Avatar name={thread.name} size={28} />
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{thread.name}</span>
-          <span style={{ display: "block", fontSize: 11, color: "rgba(255,255,255,.6)" }}>{thread.role}</span>
+        {/* Sólo el nombre: el papel de cada uno ya se sabe dentro de la clase. */}
+        <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {thread.name}
         </span>
         {collapsed ? <UnreadDot count={thread.unread} /> : null}
         {headerButton(collapsed ? "chevron-up" : "chevron-down", collapsed ? "Desplegar chat" : "Plegar chat", onToggleCollapse)}

@@ -173,6 +173,7 @@ function modParts(title: string): [string, string] {
 /** Ghost button that expands into a small inline text field (crear unidad/recurso). */
 function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: string) => void; pending?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState(false);
   const [val, setVal] = useState("");
   const commit = () => {
     const v = val.trim();
@@ -182,10 +183,38 @@ function AddInline({ label, onAdd, pending }: { label: string; onAdd: (value: st
     setOpen(false);
   };
   if (!open) {
+    // Mismo lenguaje que «Nueva actividad» y «Añadir recurso»: recuadro de
+    // trazos, gris en reposo y de color al pasar por encima.
+    const fg = hover ? "var(--brand-primary)" : "var(--text-muted)";
     return (
-      <Button variant="ghost" size="small" iconLeft={<Icon name="plus" size={16} />} style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => setOpen(true)}>
-        {label}
-      </Button>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onFocus={() => setHover(true)}
+        onBlur={() => setHover(false)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          width: "100%",
+          marginTop: 10,
+          padding: "9px 14px",
+          textAlign: "left",
+          cursor: "pointer",
+          borderRadius: "var(--radius-md)",
+          border: `2px dashed ${hover ? "var(--brand-primary)" : "var(--border-strong)"}`,
+          background: hover ? "var(--state-hover-tint)" : "transparent",
+          transition: "background .15s ease, border-color .15s ease, color .15s ease",
+        }}
+      >
+        {/* El disco repite el de las unidades, para que el botón siga la lista. */}
+        <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: hover ? "color-mix(in srgb, var(--brand-primary) 12%, transparent)" : "var(--surface-sunken)", color: fg, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s ease, color .15s ease" }}>
+          <Icon name="plus" size={16} />
+        </span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: fg, fontFamily: "var(--font-sans)", transition: "color .15s ease" }}>{label}</span>
+      </button>
     );
   }
   return (
