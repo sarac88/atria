@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { openClassThreadSchema, type OpenClassThreadInput } from "@atria/types";
 import { CurrentUser, type AuthUser } from "../auth/decorators";
 import { JwtAuthGuard } from "../auth/guards";
@@ -33,5 +33,17 @@ export class ConversationsController {
   @Get(":id/messages")
   messages(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.conversations.getMessages(user.userId, id);
+  }
+
+  /** Vacía el hilo sólo para quien lo pide; el otro conserva su copia. */
+  @Post(":id/clear")
+  clear(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.conversations.clear(user.userId, id);
+  }
+
+  /** Saca el hilo de la lista de quien lo pide; reaparece si le vuelven a escribir. */
+  @Delete(":id")
+  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.conversations.remove(user.userId, id);
   }
 }

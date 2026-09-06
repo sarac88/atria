@@ -291,6 +291,12 @@ model ConversationParticipant {
   conversationId String
   userId         String
   lastReadAt     DateTime?
+  /// Vaciar la conversación: quien lo pide deja de ver lo anterior a esta fecha,
+  /// pero el otro conserva su copia intacta.
+  clearedAt      DateTime?
+  /// Eliminar el chat: además de vaciarlo, el hilo desaparece de su lista hasta
+  /// que le vuelvan a escribir.
+  hiddenAt       DateTime?
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())

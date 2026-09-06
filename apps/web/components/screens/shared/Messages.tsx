@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, Icon } from "@/components/ui";
 import { Page, PageHead } from "@/components/layout";
 import { useConversations, useMessages } from "@/lib/api/messaging";
+import { ConversationMenu } from "@/components/messaging/ConversationMenu";
 import { EmojiPicker } from "@/components/messaging/EmojiPicker";
 import { MessageRow, useNowTick } from "@/components/messaging/MessageRow";
 import { useSocket } from "@/components/messaging/SocketProvider";
@@ -48,13 +49,31 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
   const { data: conversations } = useConversations();
   const [active, setActive] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  // Hilos que se acaban de eliminar: se ocultan ya, sin esperar a que vuelva la
+  // lista del servidor, para que no parpadee el que ya no está.
+  const [removed, setRemoved] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const now = useNowTick();
 
+  const list = (conversations ?? []).filter((c) => !removed.includes(c.id));
+
+  // Cuando el servidor confirma la baja se olvida la marca, para que el hilo
+  // pueda reaparecer si el otro vuelve a escribir.
   useEffect(() => {
-    if (!active && conversations && conversations.length) setActive(conversations[0].id);
-  }, [conversations, active]);
+    if (!conversations) return;
+    setRemoved((ids) => ids.filter((id) => conversations.some((c) => c.id === id)));
+  }, [conversations]);
+
+  // Siempre hay un hilo abierto mientras quede alguno, también después de
+  // eliminar el que estaba a la vista.
+  useEffect(() => {
+    if (list.length === 0) {
+      if (active) setActive(null);
+      return;
+    }
+    if (!active || !list.some((c) => c.id === active)) setActive(list[0].id);
+  }, [list, active]);
 
   const { data: msgs } = useMessages(active ?? undefined);
 
@@ -71,7 +90,7 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [msgs, active]);
 
-  const activeConv = conversations?.find((c) => c.id === active);
+  const activeConv = list.find((c) => c.id === active);
 
   const onSend = () => {
     const body = draft.trim();
@@ -94,12 +113,12 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
           </div>
         </div>
         <div style={{ overflow: "auto", flex: 1 }}>
-          {conversations && conversations.length === 0 ? (
+          {conversations && list.length === 0 ? (
             <p style={{ margin: 0, padding: "18px 16px", fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,.65)" }}>
               Todavía no tienes conversaciones. Escribe a un alumno desde el chat de su clase y el hilo aparecerá aquí.
             </p>
           ) : null}
-          {(conversations ?? []).map((m) => {
+          {list.map((m) => {
             const on = m.id === active;
             return (
               <button
@@ -143,7 +162,12 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
                   <OriginTag origin={activeConv.origin} tone="light" />
                 </div>
               </div>
-              <Icon name="ellipsis-vertical" size={20} color="var(--text-muted)" />
+              <ConversationMenu
+                conversationId={activeConv.id}
+                name={activeConv.name}
+                // Se aparta al momento; el efecto de arriba abre el siguiente.
+                onDeleted={() => setRemoved((ids) => [...ids, activeConv.id])}
+              />
             </div>
             <div ref={scrollRef} style={{ flex: 1, overflow: "auto", padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
               {msgs && msgs.length === 0 ? (

@@ -17,6 +17,36 @@ export function useMessages(conversationId?: string) {
   });
 }
 
+/**
+ * Vaciar y eliminar sólo afectan a quien las pide, así que basta con refrescar
+ * lo que se pinta: el hilo abierto, la lista de Mensajes y el panel de la clase.
+ */
+function useConversationAction(action: (conversationId: string) => Promise<unknown>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: action,
+    onSuccess: (_data, conversationId) => {
+      void qc.invalidateQueries({ queryKey: ["messages", conversationId] });
+      void qc.invalidateQueries({ queryKey: ["conversations"] });
+      void qc.invalidateQueries({ queryKey: ["classChat"] });
+    },
+  });
+}
+
+/** Deja el hilo en blanco para quien lo pide; el otro conserva su copia. */
+export function useClearConversation() {
+  return useConversationAction((conversationId) =>
+    apiFetch<{ ok: true }>(`/conversations/${conversationId}/clear`, { method: "POST" }),
+  );
+}
+
+/** Saca el hilo de la lista de quien lo pide; reaparece si le vuelven a escribir. */
+export function useDeleteConversation() {
+  return useConversationAction((conversationId) =>
+    apiFetch<{ ok: true }>(`/conversations/${conversationId}`, { method: "DELETE" }),
+  );
+}
+
 /** Hilos 1:1 del chat de la clase: todos los alumnos (docente) o el docente (alumno). */
 export function useClassChat(classId?: string) {
   return useQuery({

@@ -10,7 +10,6 @@ const VISIBLE = { deletedAt: null };
 
 const PARTICIPANT_INCLUDE = {
   participants: { include: { user: { select: { id: true, name: true, role: true } } } },
-  messages: { where: VISIBLE, orderBy: { createdAt: "desc" as const }, take: 1 },
   // Para etiquetar en Mensajes de qué clase sale cada hilo.
   class: { select: { id: true, name: true, color: true } },
 };
@@ -18,9 +17,53 @@ const PARTICIPANT_INCLUDE = {
 /** Las reacciones viajan con el nombre de quien las puso, para el tooltip. */
 const REACTION_INCLUDE = { user: { select: { id: true, name: true } } };
 
+/**
+ * Vaciar y eliminar son decisiones de cada uno: se guardan en su fila de
+ * participante y sólo recortan lo que ve quien las tomó, nunca el hilo del
+ * otro. De ahí que todas las consultas partan de este corte en vez de leer los
+ * mensajes tal cual.
+ */
+type Cuts = { clearedAt: Date | null; hiddenAt: Date | null };
+
+const latest = (...dates: (Date | null | undefined)[]): Date | null => {
+  const real = dates.filter((d): d is Date => !!d);
+  return real.length ? new Date(Math.max(...real.map((d) => d.getTime()))) : null;
+};
+
+/** Desde cuándo cuenta el hilo para este participante, o null si lo ve entero. */
+const cutoffOf = (p: Cuts): Date | null => latest(p.clearedAt, p.hiddenAt);
+
+/** Filtro de mensajes visibles para un participante concreto. */
+function visibleFor(p: Cuts) {
+  const cutoff = cutoffOf(p);
+  return cutoff ? { ...VISIBLE, createdAt: { gt: cutoff } } : { ...VISIBLE };
+}
+
 @Injectable()
 export class ConversationsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /** El último mensaje que este participante todavía ve, o null si no le queda ninguno. */
+  private lastVisible(conversationId: string, p: Cuts) {
+    return this.prisma.message.findFirst({
+      where: { conversationId, ...visibleFor(p) },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  /** No leídos del participante, descontando lo que él mismo vació. */
+  private countUnread(conversationId: string, userId: string, p: Cuts & { lastReadAt: Date | null }) {
+    // Un único `createdAt`: el corte y la última lectura se funden en el mayor.
+    const since = latest(cutoffOf(p), p.lastReadAt);
+    return this.prisma.message.count({
+      where: {
+        ...VISIBLE,
+        conversationId,
+        senderId: { not: userId },
+        ...(since ? { createdAt: { gt: since } } : {}),
+      },
+    });
+  }
 
   async findAll(userId: string): Promise<ConversationDto[]> {
     const parts = await this.prisma.conversationParticipant.findMany({
@@ -30,21 +73,21 @@ export class ConversationsService {
 
     const withMeta = await Promise.all(
       parts.map(async (p) => {
-        const unread = await this.prisma.message.count({
-          where: {
-            ...VISIBLE,
-            conversationId: p.conversationId,
-            senderId: { not: userId },
-            ...(p.lastReadAt ? { createdAt: { gt: p.lastReadAt } } : {}),
-          },
-        });
-        const lastAt = p.conversation.messages[0]?.createdAt ?? p.conversation.createdAt;
-        return { conversation: p.conversation, unread, lastAt };
+        const [last, unread] = await Promise.all([
+          this.lastVisible(p.conversationId, p),
+          this.countUnread(p.conversationId, userId, p),
+        ]);
+        // El hilo eliminado desaparece de la lista, y vuelve solo si le escriben.
+        if (p.hiddenAt && !last) return null;
+        const lastAt = last?.createdAt ?? p.conversation.createdAt;
+        // El mapper lee el último mensaje de `messages`, ya recortado aquí.
+        return { conversation: { ...p.conversation, messages: last ? [last] : [] }, unread, lastAt };
       }),
     );
 
-    withMeta.sort((a, b) => b.lastAt.getTime() - a.lastAt.getTime());
-    return withMeta.map((x) => toConversationDto(x.conversation, userId, x.unread));
+    const visible = withMeta.filter((x): x is NonNullable<typeof x> => !!x);
+    visible.sort((a, b) => b.lastAt.getTime() - a.lastAt.getTime());
+    return visible.map((x) => toConversationDto(x.conversation, userId, x.unread));
   }
 
   async getMessages(userId: string, conversationId: string): Promise<MessageDto[]> {
@@ -54,7 +97,7 @@ export class ConversationsService {
     if (!part) throw new ForbiddenException();
 
     const messages = await this.prisma.message.findMany({
-      where: { ...VISIBLE, conversationId },
+      where: { conversationId, ...visibleFor(part) },
       orderBy: { createdAt: "asc" },
       include: { reactions: { include: REACTION_INCLUDE, orderBy: { createdAt: "asc" } } },
     });
@@ -107,8 +150,7 @@ export class ConversationsService {
     const existing = await this.prisma.conversation.findMany({
       where: { classId, type: "direct", participants: { some: { userId: user.userId } } },
       include: {
-        participants: { select: { userId: true, lastReadAt: true } },
-        messages: { where: VISIBLE, orderBy: { createdAt: "desc" }, take: 1 },
+        participants: { select: { userId: true, lastReadAt: true, clearedAt: true, hiddenAt: true } },
       },
     });
     // Indexado por el otro participante para casarlo con la lista de peers.
@@ -123,16 +165,18 @@ export class ConversationsService {
         const conv = byPeer.get(peer.id);
         const base = { userId: peer.id, name: peer.name, role: ROLE_LABEL[peer.role] ?? "" };
         if (!conv) return { ...base, conversationId: null, last: "", time: "", unread: 0 };
-        const mine = conv.participants.find((p) => p.userId === user.userId);
-        const unread = await this.prisma.message.count({
-          where: {
-            ...VISIBLE,
-            conversationId: conv.id,
-            senderId: { not: user.userId },
-            ...(mine?.lastReadAt ? { createdAt: { gt: mine.lastReadAt } } : {}),
-          },
-        });
-        const last = conv.messages[0];
+        // Sin fila propia no debería llegar aquí, pero el hilo se ve entero.
+        const mine = conv.participants.find((p) => p.userId === user.userId) ?? {
+          lastReadAt: null,
+          clearedAt: null,
+          hiddenAt: null,
+        };
+        // Un hilo vaciado o eliminado se queda en blanco aquí: la fila del alumno
+        // no desaparece del panel, porque la lista es el alumnado de la clase.
+        const [last, unread] = await Promise.all([
+          this.lastVisible(conv.id, mine),
+          this.countUnread(conv.id, user.userId, mine),
+        ]);
         return {
           ...base,
           conversationId: conv.id,
@@ -177,5 +221,47 @@ export class ConversationsService {
       select: { id: true },
     });
     return { conversationId: created.id };
+  }
+
+  // ---- Vaciar y eliminar ---------------------------------------------------
+  //
+  // Las dos son personales: mueven el corte de quien las pide y no tocan ni un
+  // mensaje, así que el otro sigue viendo la conversación entera. Nadie puede
+  // borrarle a otro lo que ya leyó, que en una clase es prueba de lo hablado.
+
+  /** Comprueba que quien pide participa en el hilo. */
+  private async participantOf(userId: string, conversationId: string) {
+    const part = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!part) throw new ForbiddenException();
+    return part;
+  }
+
+  /** POST /conversations/:id/clear — deja el hilo en blanco para quien lo pide. */
+  async clear(userId: string, conversationId: string): Promise<{ ok: true }> {
+    await this.participantOf(userId, conversationId);
+    const now = new Date();
+    await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      // Al no quedar nada por ver, tampoco quedan no leídos.
+      data: { clearedAt: now, lastReadAt: now },
+    });
+    return { ok: true };
+  }
+
+  /**
+   * DELETE /conversations/:id — saca el hilo de la lista de quien lo pide. No
+   * se borra la fila: el otro sigue teniéndolo, y si vuelve a escribir la
+   * conversación reaparece con los mensajes nuevos.
+   */
+  async remove(userId: string, conversationId: string): Promise<{ ok: true }> {
+    await this.participantOf(userId, conversationId);
+    const now = new Date();
+    await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { clearedAt: now, hiddenAt: now, lastReadAt: now },
+    });
+    return { ok: true };
   }
 }

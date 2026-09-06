@@ -8,6 +8,7 @@ export function ConfirmDialog({
   title,
   message,
   confirmLabel = "Eliminar",
+  busyLabel = "Eliminando…",
   cancelLabel = "Cancelar",
   danger = true,
   onConfirm,
@@ -16,6 +17,8 @@ export function ConfirmDialog({
   title: string;
   message: React.ReactNode;
   confirmLabel?: string;
+  /** Texto mientras se completa, para las acciones que no son un borrado. */
+  busyLabel?: string;
   cancelLabel?: string;
   danger?: boolean;
   onConfirm: () => Promise<void> | void;
@@ -39,7 +42,7 @@ export function ConfirmDialog({
     <>
       <Button variant="outline" onClick={onClose} disabled={busy}>{cancelLabel}</Button>
       <Button variant={danger ? "danger" : "accent"} onClick={confirm} disabled={busy}>
-        {busy ? "Eliminando…" : confirmLabel}
+        {busy ? busyLabel : confirmLabel}
       </Button>
     </>
   );
