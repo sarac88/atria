@@ -1,0 +1,96 @@
+# Despliegue de producción en una sola máquina (EC2).
+#
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# El nombre de proyecto es distinto al de docker-compose.yml (el de desarrollo)
+# para que no compartan contenedores ni volúmenes por error.
+#
+# No hay Redis: sólo lo usaba el adaptador de Socket.IO para sincronizar varias
+# instancias de la API, y aquí sólo hay una. Sin REDIS_URL, el adaptador usa el
+# de memoria (ver apps/api/src/messaging/redis-io.adapter.ts).
+name: atria-prod
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?falta DOMAIN en .env.prod}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Los certificados viven aquí: sin este volumen, cada reinicio pediría
+      # uno nuevo y Let's Encrypt acabaría aplicando límites de uso.
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+      - api
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Se hornea en el bundle: si cambia, hay que reconstruir la imagen.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?falta NEXT_PUBLIC_API_URL en .env.prod}
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "3001"
+    environment:
+      DATABASE_URL: postgresql://atria:${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD}@postgres:5432/atria?schema=public
+      PORT: "3001"
+      APP_URL: ${APP_URL:?falta APP_URL en .env.prod}
+      CORS_ORIGIN: ${APP_URL}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?falta JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?falta JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      # Detrás de Caddy siempre se sirve por HTTPS.
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-2525}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-Atria <no-reply@atria.edu>}
+    volumes:
+      # Coincide con WORKDIR/uploads de la imagen. Sin esto, los ficheros
+      # subidos se perderían en cada redespliegue.
+      - atria-uploads:/app/apps/api/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: atria
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD}
+      POSTGRES_DB: atria
+    # Sin `ports`: la base de datos sólo es accesible desde la red interna de
+    # compose, nunca desde internet.
+    volumes:
+      - atria-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atria -d atria"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  atria-pgdata:
+  atria-uploads:
+  caddy-data:
+  caddy-config:

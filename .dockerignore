@@ -1,0 +1,29 @@
+# Todo esto se reconstruye dentro de la imagen o no pinta nada en ella.
+node_modules
+**/node_modules
+
+# Builds locales (se recompilan en el builder).
+dist
+**/dist
+.next
+**/.next
+*.tsbuildinfo
+
+# Historia y ficheros de entorno: los secretos se inyectan por compose.
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+
+# Ficheros subidos: viven en un volumen, no en la imagen.
+apps/api/uploads
+
+# Worker de pdf.js: lo regenera el prebuild dentro de la imagen.
+apps/web/public/pdf.worker.min.mjs
+
+# Ruido del sistema y del editor.
+.DS_Store
+**/.DS_Store
+.claude
+npm-debug.log*

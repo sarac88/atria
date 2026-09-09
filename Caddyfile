@@ -1,0 +1,31 @@
+# Proxy y TLS. Caddy pide y renueva el certificado de Let's Encrypt solo,
+# siempre que DOMAIN sea un dominio real que apunte a esta máquina y los
+# puertos 80 y 443 estén abiertos.
+#
+# Para una prueba rápida en HTTP sin dominio: DOMAIN=":80" en el .env.
+# Ojo, en ese caso hay que poner también COOKIE_SECURE="false" o el login
+# no funcionará (las cookies Secure sólo viajan por HTTPS).
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Socket.IO del chat. El cliente usa path "/ws" (messaging.gateway.ts).
+	# Caddy propaga el upgrade a WebSocket sin configuración extra.
+	handle /ws* {
+		reverse_proxy api:3001
+	}
+
+	# API REST (prefijo global api/v1) y ficheros subidos, servidos como
+	# estáticos por Nest desde el volumen de uploads.
+	handle /api/* {
+		reverse_proxy api:3001
+	}
+	handle /uploads/* {
+		reverse_proxy api:3001
+	}
+
+	# Todo lo demás lo sirve Next.js.
+	handle {
+		reverse_proxy web:3000
+	}
+}

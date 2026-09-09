@@ -33,3 +33,6 @@ next-env.d.ts
 
 # pdf.js worker copiado en predev/prebuild
 apps/web/public/pdf.worker.min.mjs
+
+# entorno de producción (secretos)
+.env.prod
