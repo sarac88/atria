@@ -79,8 +79,28 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ## 5. Desplegar
 
+El repo es privado, así que la instancia necesita credenciales propias para
+clonar. Se usa una **deploy key**: una clave SSH de sólo lectura y válida
+sólo para este repo. No clones por HTTPS con usuario y token: funciona a
+mano, pero el runner del paso 7 no puede escribir la contraseña y falla con
+`could not read Username for 'https://github.com'`.
+
 ```bash
-git clone TU_REPO atria && cd atria
+ssh-keygen -t ed25519 -f ~/.ssh/atria_deploy -N "" -C "atria-deploy@ec2"
+cat ~/.ssh/atria_deploy.pub
+```
+
+Pega la clave pública en GitHub: *Settings → Deploy keys → Add deploy key*,
+**sin** marcar "Allow write access". Después:
+
+```bash
+printf 'Host github.com\n  IdentityFile ~/.ssh/atria_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config
+chmod 600 ~/.ssh/config
+ssh -T git@github.com   # responder "yes" la primera vez
+```
+
+```bash
+git clone git@github.com:sarac88/atria.git atria && cd atria
 cp .env.prod.example .env.prod
 ```
 
@@ -182,8 +202,19 @@ La semilla no se ejecuta sola. Si quieres los datos de demo:
 
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api \
-  /app/node_modules/.bin/prisma db seed --schema=./prisma/schema.prisma
+  /app/node_modules/.bin/ts-node --transpile-only prisma/seed.ts
 ```
+
+(`prisma db seed` no sirve dentro del contenedor: lanza `ts-node` por el PATH,
+donde no está, y falla con `spawn ts-node ENOENT`. `--transpile-only` evita
+necesitar el `tsconfig.json`, que no está en la imagen.)
+
+**La semilla borra todo antes de crear sus datos** (`deleteMany` sobre
+usuarios, clases, mensajes…). Ejecútala sólo con la base de datos vacía;
+relanzarla con datos reales los elimina.
+
+Todas las cuentas de la semilla usan la contraseña `atria2025`, que está
+escrita en el código. Con la app expuesta a internet, tenlo en cuenta.
 
 ### Los ficheros subidos
 
