@@ -1,0 +1,65 @@
+# Despliegue continuo: cada push a main actualiza la instancia de EC2.
+#
+# Corre en un runner autoalojado instalado en la propia instancia (ver
+# DEPLOY.md). Es la instancia la que consulta a GitHub si hay trabajo, así que
+# no hace falta abrir el puerto 22 ni guardar la clave SSH en GitHub.
+# Seguro sólo porque el repo es privado: en uno público, un pull request
+# ajeno podría ejecutar código en el servidor.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Botón "Run workflow" en la pestaña Actions, para redesplegar sin commit.
+  workflow_dispatch:
+
+# Dos pushes seguidos no construyen a la vez: el segundo espera al primero.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, ARM64]
+    timeout-minutes: 30
+    env:
+      # El despliegue vive en el clon de siempre, donde está .env.prod, no en
+      # el workspace del runner.
+      DEPLOY_DIR: /home/ubuntu/atria
+      COMPOSE: docker compose -f docker-compose.prod.yml --env-file .env.prod
+    steps:
+      - name: Actualizar el código
+        run: |
+          cd "$DEPLOY_DIR"
+          # --ff-only: si alguien tocó ficheros versionados en el servidor,
+          # falla en vez de mezclar cambios a ciegas.
+          git pull --ff-only origin main
+
+      - name: Comprobar la configuración
+        run: |
+          cd "$DEPLOY_DIR"
+          test -f .env.prod || { echo "Falta .env.prod en $DEPLOY_DIR"; exit 1; }
+          $COMPOSE config -q
+
+      - name: Construir y levantar
+        run: |
+          cd "$DEPLOY_DIR"
+          $COMPOSE up -d --build
+
+      - name: Verificar que todo está en marcha
+        run: |
+          cd "$DEPLOY_DIR"
+          sleep 15
+          running=$($COMPOSE ps --status running --services | sort | tr '\n' ' ')
+          echo "En marcha: $running"
+          for s in api caddy postgres web; do
+            echo "$running" | grep -qw "$s" || {
+              echo "El servicio $s no está en marcha"
+              $COMPOSE logs --tail=50 "$s"
+              exit 1
+            }
+          done
+
+      - name: Limpiar imágenes huérfanas
+        # Sólo las que ya no usa ningún contenedor; nunca volúmenes.
+        run: docker image prune -f

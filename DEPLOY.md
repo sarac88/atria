@@ -84,10 +84,26 @@ git clone TU_REPO atria && cd atria
 cp .env.prod.example .env.prod
 ```
 
-Rellena `.env.prod`. Genera los secretos de verdad:
+Rellena `.env.prod`. Ninguna variable puede quedarse vacía: compose trata la
+cadena vacía igual que la ausencia de valor y aborta.
+
+La contraseña de Postgres, en hexadecimal — va dentro de la URL de conexión y
+los `/` y `+` de base64 la romperían:
+
+```bash
+openssl rand -hex 24
+```
+
+Los dos secretos JWT, uno distinto cada uno:
 
 ```bash
 openssl rand -base64 32
+```
+
+Antes de desplegar, comprobar que no falta nada (no imprime los secretos):
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod config >/dev/null && echo "Config OK"
 ```
 
 Luego:
@@ -110,6 +126,53 @@ En el navegador: entra, crea una clase, sube un PDF y **abre el chat** para
 confirmar que los mensajes llegan en tiempo real.
 
 ---
+
+## 7. Despliegue automático (GitHub Actions)
+
+Cada push a `main` actualiza el servidor (`.github/workflows/deploy.yml`).
+El workflow corre en un **runner autoalojado** instalado en la instancia: es
+ella la que consulta a GitHub, así que no se abre ningún puerto. Esto sólo es
+seguro porque el repo es privado.
+
+Instalación, una sola vez:
+
+1. En GitHub: *Settings → Actions → Runners → New self-hosted runner*,
+   con **Linux** y **ARM64**.
+2. En la instancia, ejecuta los comandos que te muestra la página
+   (descarga + `./config.sh`) dentro de `~/actions-runner`. Acepta los
+   valores por defecto.
+3. En lugar de `./run.sh`, instálalo como servicio para que sobreviva a los
+   reinicios:
+
+```bash
+cd ~/actions-runner && sudo ./svc.sh install ubuntu && sudo ./svc.sh start
+```
+
+En *Settings → Actions → Runners* tiene que aparecer como **Idle**.
+
+El despliegue usa el clon de `~/atria` (donde está `.env.prod`). No edites
+ficheros versionados en el servidor: el `git pull --ff-only` fallaría a
+propósito. Para redesplegar sin commit: pestaña *Actions → Deploy → Run
+workflow*.
+
+## 8. Acceso a la base de datos con TablePlus
+
+Postgres sólo escucha en `127.0.0.1` de la instancia; se entra por túnel SSH.
+**No abras el 5432 en el grupo de seguridad.**
+
+Nueva conexión → PostgreSQL:
+
+| Campo | Valor |
+|---|---|
+| Host / Port | `127.0.0.1` / `5432` |
+| User | `atria` |
+| Password | el `POSTGRES_PASSWORD` de `.env.prod` |
+| Database | `atria` |
+| Over SSH | activado: servidor `54.220.183.94`, puerto `22`, usuario `ubuntu`, clave: tu `.pem` |
+
+Para ver la contraseña en la instancia: `grep POSTGRES_PASSWORD ~/atria/.env.prod`.
+
+Son los datos de producción: cuidado al editar a mano.
 
 ## Notas
 

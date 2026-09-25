@@ -79,8 +79,11 @@ services:
       POSTGRES_USER: atria
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD}
       POSTGRES_DB: atria
-    # Sin `ports`: la base de datos sólo es accesible desde la red interna de
-    # compose, nunca desde internet.
+    # Publicado sólo en 127.0.0.1 de la instancia: accesible por túnel SSH
+    # (TablePlus "Over SSH"), nunca desde internet. No abrir el 5432 en el
+    # grupo de seguridad.
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - atria-pgdata:/var/lib/postgresql/data
     healthcheck:
