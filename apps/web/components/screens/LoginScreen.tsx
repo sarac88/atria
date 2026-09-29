@@ -25,7 +25,7 @@ export function LoginScreen({
           <div style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-lg)", padding: "36px 36px 32px", boxSizing: "border-box" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/wordmark.svg" alt="Atria" style={{ height: 44 }} />
+              <img src="/brand/wordmark.svg" alt="Atria" style={{ height: 30 }} />
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "0 0 6px", textAlign: "center" }}>Bienvenida de nuevo. Accede a tu cuenta.</p>
             <h2 style={{ fontSize: 25, margin: "0 0 28px", textAlign: "center" }}>Inicia sesión</h2>

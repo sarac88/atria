@@ -202,12 +202,15 @@ La semilla no se ejecuta sola. Si quieres los datos de demo:
 
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api \
-  /app/node_modules/.bin/ts-node --transpile-only prisma/seed.ts
+  /app/node_modules/.bin/ts-node --transpile-only \
+  -O '{"module":"commonjs","moduleResolution":"node"}' prisma/seed.ts
 ```
 
 (`prisma db seed` no sirve dentro del contenedor: lanza `ts-node` por el PATH,
-donde no está, y falla con `spawn ts-node ENOENT`. `--transpile-only` evita
-necesitar el `tsconfig.json`, que no está en la imagen.)
+donde no está, y falla con `spawn ts-node ENOENT`. Y como el `tsconfig.json`
+no está en la imagen, hay que pasarle a `ts-node` las opciones de compilación
+con `-O`; sin ellas aplica unos valores por defecto que chocan con esta
+versión de TypeScript y falla con `TS5109`.)
 
 **La semilla borra todo antes de crear sus datos** (`deleteMany` sobre
 usuarios, clases, mensajes…). Ejecútala sólo con la base de datos vacía;

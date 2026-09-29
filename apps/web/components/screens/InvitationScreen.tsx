@@ -12,7 +12,7 @@ function InvitationCard({ children }: { children: ReactNode }) {
         <div style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-lg)", padding: "36px 36px 32px", boxSizing: "border-box" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/wordmark.svg" alt="Atria" style={{ height: 40 }} />
+            <img src="/brand/wordmark.svg" alt="Atria" style={{ height: 30 }} />
           </div>
           {children}
         </div>

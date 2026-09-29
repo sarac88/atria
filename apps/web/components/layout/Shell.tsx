@@ -112,12 +112,12 @@ export function Shell({ children }: { children: ReactNode }) {
         {mini ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "4px 4px 24px" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/markLight.svg" alt="Atria" style={{ width: 34, height: 34 }} />
+            <img src="/brand/markLight.svg" alt="Atria" style={{ width: 44, height: 44 }} />
           </div>
         ) : (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 0, padding: "4px 8px 24px" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/wordmarkLight.svg" alt="Atria" style={{ height: 45 }} />
+            <img src="/brand/wordmarkLight.svg" alt="Atria" style={{ height: 30 }} />
           </div>
         )}
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
