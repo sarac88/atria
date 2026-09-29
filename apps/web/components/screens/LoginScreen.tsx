@@ -19,62 +19,50 @@ export function LoginScreen({
     onLogin(String(fd.get("email") ?? ""), String(fd.get("password") ?? ""));
   };
   return (
-    <div style={{ minHeight: "100%", height: "100%", overflow: "hidden", fontFamily: "var(--font-sans)", background: "var(--surface-page)", display: "flex" }}>
-      <div style={{ flex: 1, height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, boxSizing: "border-box" }}>
-        <div style={{ width: "100%", maxWidth: 400 }}>
-          <div style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-lg)", padding: "36px 36px 32px", boxSizing: "border-box" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/wordmark.svg" alt="Atria" style={{ height: 30 }} />
-            </div>
-            <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "0 0 6px", textAlign: "center" }}>Bienvenida de nuevo. Accede a tu cuenta.</p>
-            <h2 style={{ fontSize: 25, margin: "0 0 28px", textAlign: "center" }}>Inicia sesión</h2>
-            <form ref={formRef} onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <Input label="Correo electrónico" name="email" type="email" placeholder="elena.ruiz@atria.edu" defaultValue="elena.ruiz@atria.edu" />
-              <Input label="Contraseña" name="password" type="password" placeholder="••••••••" defaultValue="atria2025" iconRight={<Icon name="eye" size={18} color="var(--text-muted)" />} />
-              {error ? <div style={{ fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Checkbox label="Recuérdame" defaultChecked />
-                <a href="#" onClick={(e) => e.preventDefault()} style={{ fontSize: 13, fontWeight: 600, color: "var(--text-link)" }}>¿Olvidaste tu contraseña?</a>
-              </div>
-              <Button variant="accent" type="submit" disabled={pending} style={{ width: "100%" }}>{pending ? "Entrando…" : "Iniciar sesión"}</Button>
-            </form>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
-              <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
-              <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>o</span>
-              <div style={{ flex: 1, height: 1, background: "var(--border-subtle)" }} />
-            </div>
-            <Button variant="outline" style={{ width: "100%" }} onClick={() => formRef.current?.requestSubmit()}>Acceder con cuenta del centro</Button>
-          </div>
-          <p style={{ textAlign: "center", fontSize: 13.5, color: "var(--text-muted)", marginTop: 24 }}>¿No tienes cuenta? <a href="#" onClick={(e) => e.preventDefault()} style={{ fontWeight: 700, color: "var(--text-link)" }}>Solicita acceso</a></p>
-        </div>
-      </div>
-      <div className="atria-login-brand" style={{ width: 380, flexShrink: 0, background: "var(--primary-500)", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100%", height: "100%", overflow: "hidden", fontFamily: "var(--font-sans)", background: "var(--surface-card)", display: "flex" }}>
+      <div className="atria-login-brand" style={{ flex: "1.4 1 0", minWidth: 0, background: "var(--primary-500)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", padding: "56px 64px 44px", boxSizing: "border-box", color: "#fff" }}>
         <style>{`
           @media (prefers-reduced-motion: no-preference) {
-            .atria-amark { transform-box: fill-box; transform-origin: center; animation: atriaBob 7s ease-in-out infinite; }
-            @keyframes atriaBob { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-16px) rotate(2.4deg); } }
-            .atria-curve { animation: atriaShimmer 9s ease-in-out infinite; }
-            @keyframes atriaShimmer { 0%,100% { opacity: var(--c0); } 50% { opacity: var(--c1); } }
-            .atria-orb1 { transform-box: view-box; animation: atriaOrb1 13s ease-in-out infinite; }
-            @keyframes atriaOrb1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-28px,24px); } }
-            .atria-orb2 { transform-box: view-box; animation: atriaOrb2 15s ease-in-out infinite; }
-            @keyframes atriaOrb2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(22px,-26px) scale(1.08); } }
+            .atria-login-patio { animation: atriaPatioBob 4s ease-in-out infinite; }
+            @keyframes atriaPatioBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
           }
         `}</style>
-        <svg viewBox="0 0 380 900" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" style={{ display: "block" }}>
-          <circle cx="300" cy="70" r="300" fill="#ffffff" opacity="0.045" className="atria-orb1" />
-          <path d="M-50 80 C 120 230, 270 230, 440 100" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeDasharray="3 14" strokeLinecap="round" opacity="0.4" className="atria-curve" style={{ ["--c0" as string]: 0.4, ["--c1" as string]: 0.18 } as React.CSSProperties} />
-          <path d="M-50 830 C 120 690, 270 690, 440 820" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeDasharray="3 14" strokeLinecap="round" opacity="0.32" className="atria-curve" style={{ ["--c0" as string]: 0.32, ["--c1" as string]: 0.14, animationDelay: "-5s" } as React.CSSProperties} />
-          <circle cx="330" cy="840" r="180" fill="var(--primary-200)" opacity="0.28" className="atria-orb2" />
-          <g transform="translate(10 250) scale(1.5)">
-            <g className="atria-amark">
-              <path d="M120,44.877l-70.083,148.411" fill="none" stroke="#FBF7EF" strokeWidth="28.86" strokeLinecap="round" />
-              <path d="M120,44.877l70.083,148.411" fill="none" stroke="#FBF7EF" strokeWidth="28.86" strokeLinecap="round" />
-              <path d="M82.897,141.756l74.206,0" fill="none" stroke="var(--yellow-500)" strokeWidth="24.74" strokeLinecap="round" />
-            </g>
+        {/* Patio de fondo, recortado por la esquina inferior derecha */}
+        <svg className="atria-login-patio" viewBox="18 30.5 64 59.5" aria-hidden style={{ position: "absolute", right: -40, bottom: -150, width: 620, height: "auto", pointerEvents: "none" }}>
+          {/* La opacidad va en el grupo para que el cruce del marco y la barra no se sume */}
+          <g opacity="0.1">
+            <rect x="23" y="35.5" width="49" height="49" rx="16" fill="none" stroke="#ffffff" strokeWidth="10" />
+            <path d="M77 30.5V90" fill="none" stroke="#ffffff" strokeWidth="10" />
           </g>
+          <rect x="39.5" y="52" width="16" height="16" rx="2" fill="var(--yellow-500)" fillOpacity="0.12" />
         </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/wordmarkLight.svg" alt="Atria" style={{ height: 34, alignSelf: "flex-start", position: "relative" }} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", maxWidth: 560 }}>
+          <h1 style={{ fontSize: 52, lineHeight: 1.12, fontWeight: 700, margin: "0 0 22px", color: "#fff" }}>Enseña, gestiona y conecta en un solo lugar.</h1>
+          <p style={{ fontSize: 17, lineHeight: 1.6, margin: 0, color: "rgba(255,255,255,.78)" }}>Crea clases, organiza actividades y sigue el progreso de cada alumno desde un panel claro y sencillo.</p>
+        </div>
+        <p style={{ fontSize: 13.5, margin: 0, color: "rgba(255,255,255,.6)", position: "relative" }}>© {new Date().getFullYear()} Atria LMS</p>
+      </div>
+      <div style={{ flex: "1 1 0", minWidth: 0, height: "100%", overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, boxSizing: "border-box", background: "var(--surface-card)" }}>
+        <div style={{ width: "100%", maxWidth: 400 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/mark.svg" alt="Atria" style={{ width: 64, height: 64, display: "block", margin: "0 0 28px -8px" }} />
+          <h2 style={{ fontSize: 30, margin: "0 0 8px" }}>Inicia sesión</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Bienvenida de nuevo. Accede a tu cuenta.</p>
+          <form ref={formRef} onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <Input label="Correo electrónico" name="email" type="email" placeholder="elena.ruiz@atria.edu" defaultValue="elena.ruiz@atria.edu" />
+            <Input label="Contraseña" name="password" type="password" placeholder="••••••••" defaultValue="atria2025" iconRight={<Icon name="eye" size={18} color="var(--text-muted)" />} />
+            {error ? <div style={{ fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Checkbox label="Recuérdame" defaultChecked />
+              <a href="#" onClick={(e) => e.preventDefault()} style={{ fontSize: 13, fontWeight: 600, color: "var(--text-link)" }}>¿Olvidaste tu contraseña?</a>
+            </div>
+            <Button variant="primary" type="submit" disabled={pending} style={{ width: "100%" }}>{pending ? "Entrando…" : "Iniciar sesión"}</Button>
+          </form>
+          <Button variant="outline" style={{ width: "100%", marginTop: 14 }} onClick={() => formRef.current?.requestSubmit()}>Acceder con cuenta del centro</Button>
+          <p style={{ textAlign: "center", fontSize: 13.5, color: "var(--text-muted)", marginTop: 28 }}>¿No tienes cuenta? <a href="#" onClick={(e) => e.preventDefault()} style={{ fontWeight: 700, color: "var(--text-link)" }}>Solicita acceso</a></p>
+        </div>
       </div>
     </div>
   );
