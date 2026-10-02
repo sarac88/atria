@@ -135,11 +135,11 @@ export function ProgressBar({ value, color = "var(--brand-primary)", height = 8,
  * `plain` quita la tarjeta, para usarlo dentro de un panel que ya la tiene;
  * `compact` (implica `plain`) es la versión pequeña para paneles estrechos.
  */
-export function EmptyState({ illo = "learning", title, text, action, plain = false, compact = false }: { illo?: IllustrationProps["name"] | EmptyArtName; title?: ReactNode; text?: ReactNode; action?: ReactNode; plain?: boolean; compact?: boolean }) {
+export function EmptyState({ illo = "learning", title, text, action, plain = false, compact = false, artSize }: { illo?: IllustrationProps["name"] | EmptyArtName; title?: ReactNode; text?: ReactNode; action?: ReactNode; plain?: boolean; compact?: boolean; artSize?: number }) {
   const card: CSSProperties = plain || compact ? {} : { background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)" };
   return (
     <div style={{ ...card, padding: compact ? "8px 16px 16px" : "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: compact ? 8 : 16 }}>
-      {isEmptyArt(illo) ? <EmptyArt name={illo} size={compact ? 170 : 180} /> : <Illustration name={illo} size={compact ? 150 : 160} />}
+      {isEmptyArt(illo) ? <EmptyArt name={illo} size={artSize ?? (compact ? 170 : 180)} /> : <Illustration name={illo} size={compact ? 150 : 160} />}
       <div>
         {title ? <h3 style={{ fontSize: compact ? 15 : 19, margin: 0 }}>{title}</h3> : null}
         {text ? <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "8px auto 0", maxWidth: 380 }}>{text}</p> : null}

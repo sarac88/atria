@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui";
+import { EmptyState } from "@/components/layout/primitives";
 import { useDeleteNotification, useMarkAllRead, useMarkRead, useNotifications } from "@/lib/api/notifications";
 import type { NotificationDto, NotificationType } from "@/lib/types";
 
@@ -99,7 +100,7 @@ export function NotificationsBell({ tone = "light" }: { tone?: "light" | "onDark
               </div>
               <div style={{ maxHeight: "min(60vh, 420px)", overflow: "auto" }}>
                 {items.length === 0 ? (
-                  <div style={{ padding: "28px 16px", textAlign: "center", fontSize: 13.5, color: "var(--text-muted)" }}>No tienes notificaciones.</div>
+                  <div style={{ paddingTop: 16 }}><EmptyState compact artSize={96} illo="sin-notificaciones" text="No tienes notificaciones." /></div>
                 ) : (
                   items.map((n) => {
                     const meta = TYPE_META[n.type] ?? TYPE_META.system;
