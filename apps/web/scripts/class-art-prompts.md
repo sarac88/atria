@@ -57,6 +57,12 @@ clutter`.
 | art-1 | Arte | `#B03A6A` | a painter's palette, two brushes and a paint tube |
 | art-2 | Arte | `#B5462C` | a small easel with an abstract canvas and a jar of brushes |
 | art-3 | Arte | `#3D5A99` | a clay vase, a sketchbook and colored pencils |
+| social-1 | Ciencias sociales | `#7C4A6E` | a small bar chart card, a short stack of gold coins and a piggy bank |
+| social-2 | Ciencias sociales | `#4E5BA6` | a small classical courthouse building, balance scales and a ballot box |
+| social-3 | Ciencias sociales | `#8A5A1F` | a folded newspaper, a megaphone and two empty speech bubbles |
+| computing-1 | Informática | `#263238` | an open laptop whose screen shows a few colored horizontal bars like code lines, a computer mouse and a coffee mug |
+| computing-2 | Informática | `#5E35B1` | a small friendly robot, a microchip with circuit traces and a gear |
+| computing-3 | Informática | `#00695C` | a cloud icon linked by dotted lines to a small server rack and a smartphone |
 
 Todos los fondos dan ≥ 5:1 de contraste con texto blanco.
 

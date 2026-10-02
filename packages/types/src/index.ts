@@ -35,6 +35,8 @@ export const CLASS_THUMBS = [
   "literature-1", "literature-2", "literature-3",
   "history-1", "history-2", "history-3",
   "art-1", "art-2", "art-3",
+  "social-1", "social-2", "social-3",
+  "computing-1", "computing-2", "computing-3",
 ] as const;
 export type ClassThumbId = (typeof CLASS_THUMBS)[number];
 

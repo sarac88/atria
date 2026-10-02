@@ -5,7 +5,7 @@
 
 import { CLASS_THUMBS, type ClassThumbId } from "@atria/types";
 
-export type ClassThumbSubject = "math" | "science" | "physics" | "literature" | "history" | "art";
+export type ClassThumbSubject = "math" | "science" | "physics" | "literature" | "history" | "social" | "art" | "computing";
 
 export const CLASS_THUMB_SUBJECTS: { id: ClassThumbSubject; label: string }[] = [
   { id: "math", label: "Matemáticas" },
@@ -13,7 +13,9 @@ export const CLASS_THUMB_SUBJECTS: { id: ClassThumbSubject; label: string }[] = 
   { id: "physics", label: "Física y Química" },
   { id: "literature", label: "Lengua" },
   { id: "history", label: "Historia" },
+  { id: "social", label: "Ciencias sociales" },
   { id: "art", label: "Arte" },
+  { id: "computing", label: "Informática" },
 ];
 
 export interface ClassThumbPreset {
@@ -34,6 +36,8 @@ const BACKGROUNDS: Record<ClassThumbId, string> = {
   "literature-1": "#6847a6", "literature-2": "#8b3234", "literature-3": "#295b62",
   "history-1": "#9d4f28", "history-2": "#704729", "history-3": "#435e3b",
   "art-1": "#b34024", "art-2": "#b2326c", "art-3": "#395898",
+  "social-1": "#79446d", "social-2": "#4b59a6", "social-3": "#844f1b",
+  "computing-1": "#222f38", "computing-2": "#5f36b3", "computing-3": "#01665d",
 };
 
 const SUBJECT_LABEL = new Map(CLASS_THUMB_SUBJECTS.map((s) => [s.id, s.label]));

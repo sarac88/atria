@@ -125,7 +125,7 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
 
           {thumbMode === "image" ? (
             <>
-              <div role="tablist" aria-label="Asignatura de la ilustración" style={{ display: "flex", gap: 20, overflowX: "auto", borderBottom: "1px solid var(--border-default)", marginBottom: 12 }}>
+              <div role="tablist" aria-label="Asignatura de la ilustración" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
                 {CLASS_THUMB_SUBJECTS.map((sj) => {
                   const on = gallery === sj.id;
                   return (
@@ -135,7 +135,7 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
                       role="tab"
                       aria-selected={on}
                       onClick={() => setGallery(sj.id)}
-                      style={{ border: "none", background: "transparent", cursor: "pointer", padding: "4px 1px 9px", marginBottom: -1, fontFamily: "var(--font-sans)", fontSize: 13.5, fontWeight: on ? 700 : 600, whiteSpace: "nowrap", color: on ? "var(--text-strong)" : "var(--text-muted)", borderBottom: "3px solid " + (on ? "var(--brand-primary)" : "transparent"), transition: "color .15s ease, border-color .15s ease" }}
+                      style={{ border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: "var(--radius-pill)", fontFamily: "var(--font-sans)", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", background: on ? "var(--primary-100)" : "transparent", boxShadow: on ? "inset 0 0 0 1.5px var(--brand-primary)" : "inset 0 0 0 1px var(--border-default)", color: on ? "var(--primary-700)" : "var(--text-muted)", transition: "background .15s ease, box-shadow .15s ease, color .15s ease" }}
                     >
                       {sj.label}
                     </button>
