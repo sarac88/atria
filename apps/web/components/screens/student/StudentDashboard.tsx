@@ -75,7 +75,7 @@ export function StudentDashboard({ classes, onOpenClass, onNav }: { classes: Cla
             ))}
           </div>
         ) : (
-          <EmptyState illo="empty-classes" title="Aún no estás en ningún curso" text="Cuando te matriculen en un curso aparecerá aquí." />
+          <EmptyState illo="sin-cursos" title="Aún no estás en ningún curso" text="Cuando te matriculen en un curso aparecerá aquí." />
         )}
       </div>
       <Panel title="Próximas entregas">

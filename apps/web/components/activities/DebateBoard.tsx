@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Avatar, Badge, Button, Icon, RichView } from "@/components/ui";
+import { EmptyArt } from "@/components/layout";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { useCreateDebatePost, useDebateThread, useDeleteDebatePost } from "@/lib/api/classwork";
 import { ApiError } from "@/lib/api/client";
@@ -583,7 +584,8 @@ export function DebateBoard({
             />
           ))
         : canSeeOthers ? (
-            <div style={{ fontSize: 14, color: "var(--text-muted)", textAlign: "center", padding: "32px 20px" }}>
+            <div style={{ fontSize: 14, color: "var(--text-muted)", textAlign: "center", padding: "32px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+              <EmptyArt name="sin-debates" size={150} />
               Todavía no hay intervenciones. Abre tú el debate.
             </div>
           ) : null}

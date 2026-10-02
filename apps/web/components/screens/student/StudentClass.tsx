@@ -186,7 +186,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
           </Panel>
         ) : (
           <EmptyState
-            illo="empty-submissions"
+            illo="todo-hecho"
             title="No tienes tareas abiertas"
             text="Cuando tu profesora publique una actividad aparecerá aquí."
           />
@@ -202,7 +202,7 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
         ) : null
       ) : (
         <EmptyState
-          illo="empty-messages"
+          illo="foro-tranquilo"
           title="El foro está tranquilo"
           text="Cuando tu profesora abra un debate aparecerá aquí para que participes."
         />

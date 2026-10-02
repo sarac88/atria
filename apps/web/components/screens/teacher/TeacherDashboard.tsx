@@ -89,7 +89,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
             </div>
           ) : (
             <EmptyState
-              illo="empty-classes"
+              illo="sin-clases"
               title="Todavía no tienes clases"
               text="Crea tu primera clase para empezar a publicar contenido y actividades."
               action={<Button variant="accent" onClick={onCreate} iconLeft={<Icon name="plus" size={16} />}>Crear clase</Button>}
@@ -118,7 +118,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
                 })}
               </div>
             ) : (
-              <div style={{ fontSize: 13.5, color: "var(--text-muted)", padding: "10px 14px" }}>Todavía no hay actividad en tus clases.</div>
+              <EmptyState compact illo="foro-tranquilo" text="Todavía no hay actividad en tus clases." />
             )}
           </Panel>
 
@@ -145,7 +145,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>No tienes entregas esperando nota.</div>
+              <EmptyState compact illo="todo-hecho" text="No tienes entregas esperando nota." />
             )}
           </Panel>
         </div>

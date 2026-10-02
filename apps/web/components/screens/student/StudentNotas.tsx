@@ -52,7 +52,7 @@ export function StudentNotas() {
         <StudentGradesTable key={classId} rows={rows} title={current?.name ?? "Mis notas"} />
       ) : !isLoading ? (
         <EmptyState
-          illo="empty-submissions"
+          illo="sin-notas"
           title={classes.length ? "Aún no tienes notas en este curso" : "Aún no tienes notas"}
           text="Cuando entregues una actividad y tu profesorado la califique, la verás aquí."
         />

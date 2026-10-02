@@ -676,7 +676,7 @@ function ClassStudents({ klass }: { klass: ClassInfo }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {rows.length === 0 ? (
         <EmptyState
-          illo="learning"
+          illo="sin-alumnos"
           title="Todavía no hay alumnos en la clase"
           text="Invítalos por correo: recibirán un enlace para unirse y aparecerán aquí en cuanto lo acepten. Puedes invitar a varios a la vez."
           action={
@@ -1062,7 +1062,15 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
             }
           />
         ) : null}
-        {tab === "entregas" ? (
+        {tab === "entregas" && activities && activities.length === 0 ? (
+          <EmptyState
+            illo="sin-notas"
+            title="Aún no hay actividades"
+            text="Crea una actividad y aquí verás las entregas de tus alumnos."
+            action={<Button variant="accent" iconLeft={<Icon name="plus" />} onClick={() => onNewActivity(c)}>Nueva actividad</Button>}
+          />
+        ) : null}
+        {tab === "entregas" && activities?.length ? (
           <div
             style={{
               borderRadius: "var(--radius-xl)",
@@ -1076,20 +1084,30 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
               value={activityId}
               onChange={setActivityId}
             />
-            <DataTable
-              title={selectedActivity?.title ?? "Entregas"}
-              rowKey="id"
-              columns={subCols}
-              rows={rows}
-              selectable={false}
-              style={{ boxShadow: "none", borderRadius: 0 }}
-              toolbar={
-                <>
-                  <Chip icon="document-add">{porRevisar} por revisar</Chip>
-                  <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
-                </>
-              }
-            />
+            {subs && rows.length === 0 ? (
+              // Hay una fila por alumno matriculado, entregue o no: vacía es que no hay alumnos.
+              <EmptyState
+                plain
+                illo="sin-alumnos"
+                title="Todavía no hay alumnos en la clase"
+                text="Cuando acepten la invitación verás aquí sus entregas."
+              />
+            ) : (
+              <DataTable
+                title={selectedActivity?.title ?? "Entregas"}
+                rowKey="id"
+                columns={subCols}
+                rows={rows}
+                selectable={false}
+                style={{ boxShadow: "none", borderRadius: 0 }}
+                toolbar={
+                  <>
+                    <Chip icon="document-add">{porRevisar} por revisar</Chip>
+                    <Button size="small" variant="outline" iconLeft={<Icon name="download" size={16} />}>Exportar</Button>
+                  </>
+                }
+              />
+            )}
           </div>
         ) : null}
         {tab === "calificaciones" ? <GradebookTable data={gradebook.data} /> : null}
@@ -1106,7 +1124,7 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
             ) : null
           ) : (
             <EmptyState
-              illo="empty-messages"
+              illo="sin-debates"
               title="Aún no hay debates abiertos"
               text="Crea una actividad de tipo Debate y su hilo aparecerá aquí para que participen tus alumnos."
               action={<Button variant="accent" iconLeft={<Icon name="plus" />} onClick={() => onNewActivity(c)}>Nueva actividad</Button>}

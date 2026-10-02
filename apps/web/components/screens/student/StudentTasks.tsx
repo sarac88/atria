@@ -40,7 +40,7 @@ export function StudentTasks() {
         </Panel>
       ) : !isLoading ? (
         <EmptyState
-          illo="empty-submissions"
+          illo="todo-hecho"
           title={classes.length ? "No hay tareas en este curso" : "No tienes tareas"}
           text={
             classes.length

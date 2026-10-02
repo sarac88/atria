@@ -92,7 +92,7 @@ export function Analytics() {
     return (
       <Page>
         <PageHead title="Progreso del aprendizaje" />
-        <EmptyState illo="empty-classes" title="Todavía no tienes clases" text="Crea una clase para ver el seguimiento del grupo." />
+        <EmptyState illo="sin-clases" title="Todavía no tienes clases" text="Crea una clase para ver el seguimiento del grupo." />
       </Page>
     );
   }

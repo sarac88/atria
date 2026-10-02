@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, Icon } from "@/components/ui";
-import { Page, PageHead } from "@/components/layout";
+import { EmptyArt, Page, PageHead } from "@/components/layout";
 import { useConversations, useMessages } from "@/lib/api/messaging";
 import { ConversationMenu } from "@/components/messaging/ConversationMenu";
 import { EmojiPicker } from "@/components/messaging/EmojiPicker";
@@ -171,7 +171,10 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
             </div>
             <div ref={scrollRef} style={{ flex: 1, overflow: "auto", padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
               {msgs && msgs.length === 0 ? (
-                <p style={{ margin: "auto", fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay mensajes. Escribe el primero.</p>
+                <div style={{ margin: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                  <EmptyArt name="sin-mensajes" size={150} />
+                  <p style={{ margin: 0, fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay mensajes. Escribe el primero.</p>
+                </div>
               ) : null}
               {(msgs ?? []).map((c) => (
                 <MessageRow
@@ -214,7 +217,7 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
           </>
         ) : (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 32, textAlign: "center" }}>
-            <Icon name="chat" size={34} color="var(--text-muted)" />
+            <EmptyArt name="sin-mensajes" size={180} />
             <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>Ninguna conversación abierta</p>
             <p style={{ margin: 0, fontSize: 13.5, color: "var(--text-muted)", maxWidth: 300, lineHeight: 1.5 }}>
               Elige un hilo de la lista, o empieza uno nuevo desde el chat de una clase.

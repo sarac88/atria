@@ -13,6 +13,8 @@ export {
 } from "./primitives";
 export { Illustration } from "./Illustration";
 export type { IllustrationProps } from "./Illustration";
+export { EmptyArt } from "./EmptyArt";
+export type { EmptyArtName } from "./EmptyArt";
 export { Shell } from "./Shell";
 export { ClassShell } from "./ClassShell";
 export type { ClassShellProps } from "./ClassShell";

@@ -38,7 +38,7 @@ export function Gradebook() {
     return (
       <Page>
         <PageHead title="Calificaciones" subtitle="Libro de notas por clase y actividad" />
-        <EmptyState illo="empty-classes" title="Todavía no tienes clases" text="Crea una clase para empezar a calificar." />
+        <EmptyState illo="sin-clases" title="Todavía no tienes clases" text="Crea una clase para empezar a calificar." />
       </Page>
     );
   }
