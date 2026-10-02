@@ -5,7 +5,7 @@ import { Input, Button, Icon, Switch } from "@/components/ui";
 import { Modal } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { useCreateClass, useUpdateClass } from "@/lib/api/classes";
-import { CLASS_THUMB_PRESETS, isClassThumb, type ClassThumbId } from "@/lib/class-thumbs";
+import { CLASS_THUMB_PRESETS, CLASS_THUMB_SUBJECTS, classThumbPreset, type ClassThumbId, type ClassThumbSubject } from "@/lib/class-thumbs";
 import type { ClassInfo } from "@/lib/types";
 
 const colors: [string, string][] = [
@@ -31,7 +31,11 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
 
   const initColor = klass ? Math.max(0, colors.findIndex(([col]) => col === klass.color)) : 0;
   const [sel, setSel] = useState(initColor);
-  const [thumb, setThumb] = useState<ClassThumbId | "">(isClassThumb(klass?.thumb) ? klass.thumb : "");
+  // classThumbPreset traduce también los identificadores antiguos ("math" → "math-1").
+  const initPreset = classThumbPreset(klass?.thumb);
+  const [thumb, setThumb] = useState<ClassThumbId | "">(initPreset?.id ?? "");
+  // Pestaña de asignatura de la galería: abre en la de la ilustración elegida.
+  const [gallery, setGallery] = useState<ClassThumbSubject>(initPreset?.subject ?? CLASS_THUMB_SUBJECTS[0].id);
   // Con qué se dibuja la miniatura: una ilustración o el par color + icono.
   const [thumbMode, setThumbMode] = useState<"image" | "icon">(klass?.thumb ? "image" : "icon");
   const initSubject = klass?.subject ? subjects.findIndex(([, label]) => label === klass.subject) : -1;
@@ -109,7 +113,7 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
                     setThumbMode(mode);
                     // Entrar en «Ilustración» sin ninguna elegida deja la miniatura
                     // vacía: se preselecciona la primera para que se vea el cambio.
-                    if (mode === "image" && !thumb) setThumb(CLASS_THUMB_PRESETS[0].id);
+                    if (mode === "image" && !thumb) setThumb(CLASS_THUMB_PRESETS.find((t) => t.subject === gallery)!.id);
                   }}
                   style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 13px", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: on ? "var(--primary-100)" : "var(--gray-100)", boxShadow: on ? "inset 0 0 0 2px var(--brand-primary)" : "inset 0 0 0 2px var(--border-default)", color: on ? "var(--primary-700)" : "var(--text-strong)", fontSize: 13.5, fontWeight: 600, transition: "background .15s ease, box-shadow .15s ease" }}
                 >
@@ -120,25 +124,44 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
           </div>
 
           {thumbMode === "image" ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-              {CLASS_THUMB_PRESETS.map((t) => {
-                const on = thumb === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    title={t.label}
-                    aria-label={t.label}
-                    aria-pressed={on}
-                    onClick={() => setThumb(t.id)}
-                    style={{ padding: 0, border: "none", cursor: "pointer", borderRadius: "var(--radius-md)", overflow: "hidden", background: t.tint, aspectRatio: "16 / 9", boxShadow: on ? "0 0 0 3px var(--surface-card), 0 0 0 5px var(--brand-primary)" : "var(--ring-hairline)", transition: "box-shadow .15s ease" }}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={t.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              <div role="tablist" aria-label="Asignatura de la ilustración" style={{ display: "flex", gap: 20, overflowX: "auto", borderBottom: "1px solid var(--border-default)", marginBottom: 12 }}>
+                {CLASS_THUMB_SUBJECTS.map((sj) => {
+                  const on = gallery === sj.id;
+                  return (
+                    <button
+                      key={sj.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => setGallery(sj.id)}
+                      style={{ border: "none", background: "transparent", cursor: "pointer", padding: "4px 1px 9px", marginBottom: -1, fontFamily: "var(--font-sans)", fontSize: 13.5, fontWeight: on ? 700 : 600, whiteSpace: "nowrap", color: on ? "var(--text-strong)" : "var(--text-muted)", borderBottom: "3px solid " + (on ? "var(--brand-primary)" : "transparent"), transition: "color .15s ease, border-color .15s ease" }}
+                    >
+                      {sj.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                {CLASS_THUMB_PRESETS.filter((t) => t.subject === gallery).map((t, i) => {
+                  const on = thumb === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      title={`${t.label} ${i + 1}`}
+                      aria-label={`${t.label}, ilustración ${i + 1}`}
+                      aria-pressed={on}
+                      onClick={() => setThumb(t.id)}
+                      style={{ padding: 0, border: "none", cursor: "pointer", borderRadius: "var(--radius-md)", overflow: "hidden", background: t.bg, aspectRatio: "16 / 9", boxShadow: on ? "0 0 0 3px var(--surface-card), 0 0 0 5px var(--brand-primary)" : "var(--ring-hairline)", transition: "box-shadow .15s ease" }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={t.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "right center", display: "block" }} />
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           ) : (
             <div style={{ display: "flex", gap: 10 }}>
               {colors.map(([col, ic], i) => (

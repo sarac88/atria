@@ -34,7 +34,8 @@ export function ClassThumb({
       <img
         src={preset.src}
         alt={name ? `Miniatura de ${name}` : ""}
-        style={{ ...base, objectFit: "cover", background: preset.tint }}
+        // Los objetos van a la derecha: al recortar se pierde fondo liso, no dibujo.
+        style={{ ...base, objectFit: "cover", objectPosition: "right center", background: preset.bg }}
       />
     );
   }

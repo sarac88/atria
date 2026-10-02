@@ -24,10 +24,18 @@ export type ClassState = "live" | "scheduled" | "draft";
 
 /**
  * Ilustraciones que puede llevar la miniatura de una clase. Se guarda el
- * identificador, no la ruta: la imagen vive en el frontend (public/thumbs) y así
- * se puede reemplazar sin tocar la base de datos.
+ * identificador, no la ruta: la imagen vive en el frontend (public/class-art) y así
+ * se puede reemplazar sin tocar la base de datos. Las clases antiguas pueden
+ * guardar sólo la asignatura ("math"); el frontend las lee como su variante -1.
  */
-export const CLASS_THUMBS = ["art", "history", "literature", "math", "physics", "science"] as const;
+export const CLASS_THUMBS = [
+  "math-1", "math-2", "math-3",
+  "science-1", "science-2", "science-3",
+  "physics-1", "physics-2", "physics-3",
+  "literature-1", "literature-2", "literature-3",
+  "history-1", "history-2", "history-3",
+  "art-1", "art-2", "art-3",
+] as const;
 export type ClassThumbId = (typeof CLASS_THUMBS)[number];
 
 /** Posición de la portada en la ficha «Sobre el curso». */

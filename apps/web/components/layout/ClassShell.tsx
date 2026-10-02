@@ -11,6 +11,8 @@ import { AccountMenu } from "./AccountMenu";
 import { classHeaderTheme, classThumbPreset } from "@/lib/class-thumbs";
 import type { BadgeColor, ClassInfo, Role } from "@/lib/types";
 
+const HEADER_ART_MASK = "linear-gradient(to right, transparent 0, #000 20%, #000 90%, transparent 100%)";
+
 interface ClassTab {
   label: string;
   value: string;
@@ -82,12 +84,16 @@ export function ClassShell({
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--surface-page)", fontFamily: "var(--font-sans)" }}>
       <header style={headerStyle}>
         {preset ? (
+          // La cabecera lleva el mismo color liso que el fondo de la imagen, así
+          // que puede colocarse donde sea sin que se vea el borde; el degradado de
+          // la máscara tapa la pequeña diferencia de tono que deja la compresión.
+          // Queda a la izquierda de la campana y la cuenta para no pisarlas.
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={preset.headerSrc}
+            src={preset.src}
             alt=""
             aria-hidden="true"
-            style={{ position: "absolute", top: 16, right: "calc(clamp(16px, 3vw, 32px) + 220px)", height: "calc(100% - 32px)", width: "auto", maxWidth: "36%", objectFit: "contain", objectPosition: "right center", pointerEvents: "none", userSelect: "none" }}
+            style={{ position: "absolute", top: 0, right: "calc(clamp(16px, 3vw, 32px) + 190px)", height: "100%", width: "auto", maxWidth: "50%", objectFit: "contain", objectPosition: "right center", maskImage: HEADER_ART_MASK, WebkitMaskImage: HEADER_ART_MASK, pointerEvents: "none", userSelect: "none" }}
           />
         ) : null}
         <div style={{ ...contentLayer, display: "flex", alignItems: "center", gap: 14, height: 60 }}>
