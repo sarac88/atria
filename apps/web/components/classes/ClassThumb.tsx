@@ -3,14 +3,17 @@
 import type { CSSProperties } from "react";
 import { Icon } from "@/components/ui";
 import { classThumbPreset } from "@/lib/class-thumbs";
+import { resourceUrl } from "@/lib/api/client";
 
 /**
- * Miniatura de una clase: la ilustración elegida o, si no hay ninguna, el par
+ * Miniatura de una clase: la imagen del resumen si se pasa `cover` (sólo lo
+ * hacen las tarjetas), si no la ilustración elegida y, si tampoco hay, el par
  * color + icono de siempre. Rellena el hueco que le den (las tarjetas ya fijan
  * alto y recorte), así que se ve igual en el listado, el panel y el modal.
  */
 export function ClassThumb({
   thumb,
+  cover,
   color,
   icon,
   name,
@@ -18,6 +21,8 @@ export function ClassThumb({
   style,
 }: {
   thumb?: string;
+  /** Imagen subida en el resumen de la clase; manda sobre la ilustración. */
+  cover?: string;
   color?: string;
   icon?: string;
   /** Nombre de la clase, para el texto alternativo de la ilustración. */
@@ -27,6 +32,13 @@ export function ClassThumb({
 }) {
   const preset = classThumbPreset(thumb);
   const base: CSSProperties = { width: "100%", height: "100%", display: "block", ...style };
+
+  if (cover) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={resourceUrl(cover)} alt={name ? `Imagen de ${name}` : ""} style={{ ...base, objectFit: "cover", objectPosition: "center" }} />
+    );
+  }
 
   if (preset) {
     return (

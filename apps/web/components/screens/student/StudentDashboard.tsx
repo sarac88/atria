@@ -71,7 +71,7 @@ export function StudentDashboard({ classes, onOpenClass, onNav }: { classes: Cla
         {classes.length ? (
           <div className="atria-classgrid3" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
             {classes.slice(0, 4).map((c) => (
-              <Card key={c.id} title={c.name} subtitle={c.code} interactive media={<ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={46} />} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
+              <Card key={c.id} title={c.name} subtitle={c.code} interactive media={<ClassThumb thumb={c.thumb} cover={c.coverUrl} color={c.color} icon={c.icon} name={c.name} iconSize={46} />} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
             ))}
           </div>
         ) : (

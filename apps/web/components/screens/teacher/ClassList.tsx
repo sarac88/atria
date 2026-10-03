@@ -33,7 +33,7 @@ function ClassCard({ c, onOpen, onEdit, onDelete }: { c: ClassInfo; onOpen: () =
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--ring-hairline), var(--shadow-md)"; e.currentTarget.style.transform = "none"; }}
     >
       <div style={{ position: "relative", borderRadius: "var(--radius-md)", overflow: "hidden", height: 170, background: "var(--surface-sunken)" }}>
-        <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={48} />
+        <ClassThumb thumb={c.thumb} cover={c.coverUrl} color={c.color} icon={c.icon} name={c.name} iconSize={48} />
         {hasActions ? (
           <div style={{ position: "absolute", top: 10, right: 10, display: "flex", alignItems: "center", gap: 8 }}>
             {onEdit ? <CardAction icon="pencil" label="Editar clase" onClick={(e) => { e.stopPropagation(); onEdit(); }} /> : null}

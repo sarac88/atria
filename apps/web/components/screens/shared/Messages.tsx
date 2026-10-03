@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, Icon } from "@/components/ui";
-import { EmptyArt, Page, PageHead } from "@/components/layout";
+import { EmptyArt } from "@/components/layout";
 import { useConversations, useMessages } from "@/lib/api/messaging";
 import { ConversationMenu } from "@/components/messaging/ConversationMenu";
 import { EmojiPicker } from "@/components/messaging/EmojiPicker";
@@ -15,9 +15,8 @@ import type { ConversationOriginDto } from "@/lib/types";
  * Etiqueta de la clase de la que salió el hilo. Aquí se mezclan conversaciones
  * de todas las clases, así que sin ella no se sabe a qué asignatura contestas.
  */
-function OriginTag({ origin, tone }: { origin: ConversationOriginDto | null; tone: "light" | "dark" }) {
+function OriginTag({ origin }: { origin: ConversationOriginDto | null }) {
   if (!origin) return null;
-  const onDark = tone === "dark";
   return (
     <span
       title={`Conversación de ${origin.className}`}
@@ -33,8 +32,8 @@ function OriginTag({ origin, tone }: { origin: ConversationOriginDto | null; ton
         fontSize: 11,
         fontWeight: 700,
         lineHeight: 1,
-        background: onDark ? "rgba(255,255,255,.14)" : "var(--surface-sunken)",
-        color: onDark ? "rgba(255,255,255,.85)" : "var(--text-body)",
+        background: "var(--surface-sunken)",
+        color: "var(--text-body)",
       }}
     >
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: origin.color, flexShrink: 0 }} />
@@ -43,7 +42,7 @@ function OriginTag({ origin, tone }: { origin: ConversationOriginDto | null; ton
   );
 }
 
-export function Messages({ embedded = false }: { embedded?: boolean }) {
+export function Messages() {
   const qc = useQueryClient();
   const { sendMessage, editMessage, deleteMessage, reactToMessage } = useSocket();
   const { data: conversations } = useConversations();
@@ -100,21 +99,23 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
     }
   };
 
-  const card = (
+  return (
     <div
       className="atria-msg"
-      style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: "var(--surface-card)", borderRadius: embedded ? 0 : "var(--radius-xl)", boxShadow: embedded ? "none" : "var(--ring-hairline), var(--shadow-md)", overflow: "hidden", height: embedded ? "100%" : 560 }}
+      // Llena el área bajo la barra superior, para que el hilo y el redactor
+      // queden siempre a la vista sin scroll de página.
+      style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: "var(--surface-card)", overflow: "hidden" }}
     >
-      <div style={{ borderRight: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", minHeight: 0, background: "var(--primary-500)" }}>
-        <div style={{ padding: 14, borderBottom: "1px solid rgba(255,255,255,.12)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, height: 38, padding: "0 12px", background: "rgba(255,255,255,.1)", borderRadius: "var(--radius-pill)" }}>
-            <Icon name="search" size={16} color="rgba(255,255,255,.6)" />
-            <input placeholder="Buscar conversación…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13.5, width: "100%", color: "#fff", fontFamily: "var(--font-sans)" }} />
+      <div style={{ borderRight: "1px solid var(--border-subtle)", display: "flex", flexDirection: "column", minHeight: 0, background: "var(--surface-card)" }}>
+        <div style={{ padding: 14, borderBottom: "1px solid var(--border-subtle)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, height: 38, padding: "0 12px", background: "var(--surface-sunken)", borderRadius: "var(--radius-pill)" }}>
+            <Icon name="search" size={16} color="var(--text-muted)" />
+            <input placeholder="Buscar conversación…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13.5, width: "100%", color: "var(--text-strong)", fontFamily: "var(--font-sans)" }} />
           </div>
         </div>
         <div style={{ overflow: "auto", flex: 1 }}>
           {conversations && list.length === 0 ? (
-            <p style={{ margin: 0, padding: "18px 16px", fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,.65)" }}>
+            <p style={{ margin: 0, padding: "18px 16px", fontSize: 13, lineHeight: 1.5, color: "var(--text-muted)" }}>
               Todavía no tienes conversaciones. Escribe a un alumno desde el chat de su clase y el hilo aparecerá aquí.
             </p>
           ) : null}
@@ -124,27 +125,27 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
               <button
                 key={m.id}
                 onClick={() => setActive(m.id)}
-                style={{ display: "flex", gap: 12, width: "100%", textAlign: "left", padding: "13px 16px", border: "none", borderBottom: "1px solid rgba(255,255,255,.1)", cursor: "pointer", background: on ? "var(--primary-100)" : "transparent", transition: "background .12s ease" }}
-                onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = "rgba(255,255,255,.08)"; }}
+                style={{ display: "flex", gap: 12, width: "100%", textAlign: "left", padding: "13px 16px", border: "none", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", background: on ? "var(--primary-100)" : "transparent", transition: "background .12s ease" }}
+                onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = "var(--state-hover-tint)"; }}
                 onMouseLeave={(e) => { if (!on) e.currentTarget.style.background = "transparent"; }}
               >
                 <span style={{ position: "relative" }}>
                   <Avatar name={m.name} size="md" />
-                  {m.channel ? <span style={{ position: "absolute", bottom: -2, right: -2, width: 16, height: 16, borderRadius: "50%", background: "var(--brand-accent)", color: "var(--primary-700)", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--primary-500)" }}><Icon name="users" size={9} /></span> : null}
+                  {m.channel ? <span style={{ position: "absolute", bottom: -2, right: -2, width: 16, height: 16, borderRadius: "50%", background: "var(--brand-accent)", color: "var(--primary-700)", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--surface-card)" }}><Icon name="users" size={9} /></span> : null}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: on ? "var(--primary-700)" : "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.name}</span>
-                    <span style={{ fontSize: 11.5, color: on ? "var(--primary-600)" : "rgba(255,255,255,.5)", flexShrink: 0 }}>{m.time}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: on ? "var(--primary-700)" : "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.name}</span>
+                    <span style={{ fontSize: 11.5, color: on ? "var(--primary-600)" : "var(--text-muted)", flexShrink: 0 }}>{m.time}</span>
                   </div>
-                  <div style={{ fontSize: 12.5, color: on ? "var(--primary-700)" : m.unread ? "#fff" : "rgba(255,255,255,.6)", fontWeight: m.unread ? 600 : 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{m.last}</div>
+                  <div style={{ fontSize: 12.5, color: on ? "var(--primary-700)" : m.unread ? "var(--text-strong)" : "var(--text-muted)", fontWeight: m.unread ? 600 : 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{m.last}</div>
                   {m.origin ? (
                     <div style={{ marginTop: 5, display: "flex" }}>
-                      <OriginTag origin={m.origin} tone={on ? "light" : "dark"} />
+                      <OriginTag origin={m.origin} />
                     </div>
                   ) : null}
                 </div>
-                {m.unread ? <span style={{ alignSelf: "center", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: on ? "var(--brand-primary)" : "var(--brand-accent)", color: on ? "#fff" : "var(--primary-700)", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{m.unread}</span> : null}
+                {m.unread ? <span style={{ alignSelf: "center", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999, background: "var(--brand-primary)", color: "#fff", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{m.unread}</span> : null}
               </button>
             );
           })}
@@ -159,7 +160,7 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
                 <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{activeConv.name}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2, minWidth: 0 }}>
                   <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{activeConv.role}</span>
-                  <OriginTag origin={activeConv.origin} tone="light" />
+                  <OriginTag origin={activeConv.origin} />
                 </div>
               </div>
               <ConversationMenu
@@ -226,13 +227,5 @@ export function Messages({ embedded = false }: { embedded?: boolean }) {
         )}
       </div>
     </div>
-  );
-
-  if (embedded) return card;
-  return (
-    <Page width={1180}>
-      <PageHead title="Mensajes" subtitle="Comunicación con alumnos y claustro" />
-      {card}
-    </Page>
   );
 }

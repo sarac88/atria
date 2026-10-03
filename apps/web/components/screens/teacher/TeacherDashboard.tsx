@@ -76,7 +76,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
                   title={c.name}
                   subtitle={classSubtitle(c)}
                   interactive
-                  media={<ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={46} />}
+                  media={<ClassThumb thumb={c.thumb} cover={c.coverUrl} color={c.color} icon={c.icon} name={c.name} iconSize={46} />}
                   onClick={() => onOpenClass(c)}
                   footer={
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
@@ -133,8 +133,8 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
                     onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--state-hover-tint)")}
                     onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
                   >
-                    <span style={{ width: 34, height: 34, flexShrink: 0, borderRadius: "var(--radius-sm)", background: c.color, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                      <Icon name={c.icon} size={17} />
+                    <span style={{ width: 34, height: 34, flexShrink: 0, borderRadius: "var(--radius-sm)", overflow: "hidden", display: "inline-flex" }}>
+                      <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={17} />
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-strong)", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</span>
