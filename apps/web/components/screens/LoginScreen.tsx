@@ -1,7 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Input, Button, Icon, Checkbox } from "@/components/ui";
+
+// Cuentas del seed (apps/api/prisma/seed.ts) para entrar en modo demo.
+const DEMO_ACCOUNTS = {
+  docente: { email: "elena.ruiz@atria.edu", password: "atria2025" },
+  alumno: { email: "marc.soler@atria.edu", password: "atria2025" },
+};
+
+type Mode = "choose" | "demo" | "login";
 
 export function LoginScreen({
   onLogin,
@@ -13,6 +21,7 @@ export function LoginScreen({
   pending?: boolean;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [mode, setMode] = useState<Mode>("choose");
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -48,20 +57,50 @@ export function LoginScreen({
         <div style={{ width: "100%", maxWidth: 400 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/mark.svg" alt="Atria" style={{ width: 64, height: 64, display: "block", margin: "0 0 28px -8px" }} />
-          <h2 style={{ fontSize: 30, margin: "0 0 8px" }}>Inicia sesión</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Bienvenida de nuevo. Accede a tu cuenta.</p>
-          <form ref={formRef} onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            <Input label="Correo electrónico" name="email" type="email" placeholder="elena.ruiz@atria.edu" defaultValue="elena.ruiz@atria.edu" />
-            <Input label="Contraseña" name="password" type="password" placeholder="••••••••" defaultValue="atria2025" iconRight={<Icon name="eye" size={18} color="var(--text-muted)" />} />
-            {error ? <div style={{ fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Checkbox label="Recuérdame" defaultChecked />
-              <a href="#" onClick={(e) => e.preventDefault()} style={{ fontSize: 13, fontWeight: 600, color: "var(--text-link)" }}>¿Olvidaste tu contraseña?</a>
-            </div>
-            <Button variant="primary" type="submit" disabled={pending} style={{ width: "100%" }}>{pending ? "Entrando…" : "Iniciar sesión"}</Button>
-          </form>
-          <Button variant="outline" style={{ width: "100%", marginTop: 14 }} onClick={() => formRef.current?.requestSubmit()}>Acceder con cuenta del centro</Button>
-          <p style={{ textAlign: "center", fontSize: 13.5, color: "var(--text-muted)", marginTop: 28 }}>¿No tienes cuenta? <a href="#" onClick={(e) => e.preventDefault()} style={{ fontWeight: 700, color: "var(--text-link)" }}>Solicita acceso</a></p>
+          {mode === "choose" ? (
+            <>
+              <h2 style={{ fontSize: 30, margin: "0 0 8px" }}>Bienvenida a Atria</h2>
+              <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Explora la plataforma con datos de ejemplo o accede con tu cuenta.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <Button variant="primary" iconLeft={<Icon name="play" size={18} />} style={{ width: "100%" }} onClick={() => setMode("demo")}>Probar demo</Button>
+                <Button variant="outline" style={{ width: "100%" }} onClick={() => setMode("login")}>Iniciar sesión</Button>
+              </div>
+            </>
+          ) : (
+            <button type="button" onClick={() => setMode("choose")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: 0, padding: 0, margin: "0 0 18px", cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: "var(--text-link)", fontFamily: "inherit" }}>
+              <Icon name="arrow-left" size={16} /> Volver
+            </button>
+          )}
+          {mode === "demo" ? (
+            <>
+              <h2 style={{ fontSize: 30, margin: "0 0 8px" }}>Probar demo</h2>
+              <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Elige con qué perfil quieres explorar Atria.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <Button variant="primary" iconLeft={<Icon name="academic-cap" size={18} />} disabled={pending} style={{ width: "100%" }} onClick={() => onLogin(DEMO_ACCOUNTS.docente.email, DEMO_ACCOUNTS.docente.password)}>Entra como profesor</Button>
+                <Button variant="outline" iconLeft={<Icon name="user" size={18} />} disabled={pending} style={{ width: "100%" }} onClick={() => onLogin(DEMO_ACCOUNTS.alumno.email, DEMO_ACCOUNTS.alumno.password)}>Entra como estudiante</Button>
+              </div>
+              {error ? <div style={{ marginTop: 18, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
+              {pending ? <p style={{ textAlign: "center", fontSize: 13.5, color: "var(--text-muted)", marginTop: 18 }}>Entrando…</p> : null}
+            </>
+          ) : null}
+          {mode === "login" ? (
+            <>
+              <h2 style={{ fontSize: 30, margin: "0 0 8px" }}>Inicia sesión</h2>
+              <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Bienvenida de nuevo. Accede a tu cuenta.</p>
+              <form ref={formRef} onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <Input label="Correo electrónico" name="email" type="email" placeholder="elena.ruiz@atria.edu" defaultValue="elena.ruiz@atria.edu" />
+                <Input label="Contraseña" name="password" type="password" placeholder="••••••••" defaultValue="atria2025" iconRight={<Icon name="eye" size={18} color="var(--text-muted)" />} />
+                {error ? <div style={{ fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <Checkbox label="Recuérdame" defaultChecked />
+                  <a href="#" onClick={(e) => e.preventDefault()} style={{ fontSize: 13, fontWeight: 600, color: "var(--text-link)" }}>¿Olvidaste tu contraseña?</a>
+                </div>
+                <Button variant="primary" type="submit" disabled={pending} style={{ width: "100%" }}>{pending ? "Entrando…" : "Iniciar sesión"}</Button>
+              </form>
+              <Button variant="outline" style={{ width: "100%", marginTop: 14 }} onClick={() => formRef.current?.requestSubmit()}>Acceder con cuenta del centro</Button>
+              <p style={{ textAlign: "center", fontSize: 13.5, color: "var(--text-muted)", marginTop: 28 }}>¿No tienes cuenta? <a href="#" onClick={(e) => e.preventDefault()} style={{ fontWeight: 700, color: "var(--text-link)" }}>Solicita acceso</a></p>
+            </>
+          ) : null}
         </div>
       </div>
     </div>
