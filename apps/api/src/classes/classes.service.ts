@@ -152,6 +152,7 @@ export class ClassesService {
         code: input.code,
         room: input.room ?? "",
         subject: input.subject ?? "",
+        stage: input.stage ?? "",
         color: input.color,
         icon: input.icon,
         thumb: input.thumb ?? "",

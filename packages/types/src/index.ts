@@ -40,6 +40,16 @@ export const CLASS_THUMBS = [
 ] as const;
 export type ClassThumbId = (typeof CLASS_THUMBS)[number];
 
+/** Etapa educativa de una clase. */
+export const CLASS_STAGES = ["primaria", "secundaria", "bachillerato", "fp"] as const;
+export type ClassStage = (typeof CLASS_STAGES)[number];
+export const CLASS_STAGE_LABEL: Record<ClassStage, string> = {
+  primaria: "Primaria",
+  secundaria: "Secundaria",
+  bachillerato: "Bachillerato",
+  fp: "Formación Profesional",
+};
+
 /** Posición de la portada en la ficha «Sobre el curso». */
 export const CLASS_COVER_ALIGNS = ["left", "right", "full"] as const;
 export type ClassCoverAlign = (typeof CLASS_COVER_ALIGNS)[number];
@@ -51,6 +61,8 @@ export interface ClassInfo {
   room: string;
   /** Asignatura de la clase (p. ej. "Matemáticas"), o "" si no se eligió. */
   subject: string;
+  /** Etapa educativa, o "" si no se eligió (clases antiguas). */
+  stage: ClassStage | "";
   students: number;
   color: string;
   icon: string;
@@ -530,6 +542,7 @@ export const createClassSchema = z.object({
   code: z.string().min(1),
   room: z.string().optional().default(""),
   subject: z.string().optional().default(""),
+  stage: z.enum(CLASS_STAGES).or(z.literal("")).optional().default(""),
   color: z.string().min(1),
   icon: z.string().min(1),
   /** "" = miniatura de color + icono; en otro caso, una de las ilustraciones. */

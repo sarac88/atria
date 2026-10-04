@@ -91,7 +91,9 @@ model Class {
   code           String
   room           String            @default("")
   subject        String            @default("")
-  color          String            @default("var(--primary-500)")
+  /// Etapa educativa: primaria, secundaria, bachillerato, fp, o "" si no se eligió.
+  stage          String            @default("")
+  color          String           @default("var(--primary-500)")
   icon           String            @default("academic-cap")
   /// Ilustración de la miniatura ("art", "math"…), o "" para el par color + icono.
   thumb          String            @default("")

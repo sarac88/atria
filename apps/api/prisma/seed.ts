@@ -9,6 +9,7 @@ interface SeedClass {
   code: string;
   room: string;
   subject: string;
+  stage: "primaria" | "secundaria" | "bachillerato" | "fp";
   students: number;
   color: string;
   icon: string;
@@ -23,12 +24,12 @@ interface SeedClass {
 }
 
 const CLASSES: SeedClass[] = [
-  { id: "calc2", name: "Cálculo II", code: "MAT-204", room: "Aula 345", subject: "Matemáticas", students: 32, color: "var(--primary-500)", icon: "academic-cap", thumb: "math-1", status: ClassStatus.live, progress: 0.62, openActivities: 4, pending: 8, nextSession: "Hoy · 10:30", desc: "Derivadas, integrales y series. Segundo cuatrimestre." },
-  { id: "arte", name: "Historia del Arte", code: "HUM-110", room: "Aula 210", subject: "Humanidades", students: 28, color: "var(--yellow-500)", icon: "book-open", thumb: "art-2", status: ClassStatus.live, progress: 0.41, openActivities: 2, pending: 3, nextSession: "Mañana · 09:00", desc: "Del Renacimiento a las vanguardias del siglo XX." },
-  { id: "bio", name: "Biología Molecular", code: "BIO-330", room: "Aula 118", subject: "Ciencias", students: 24, color: "var(--info-500)", icon: "folder", thumb: "science-1", status: ClassStatus.scheduled, progress: 0.18, openActivities: 1, pending: 0, nextSession: "Lun · 12:00", desc: "ADN, ARN y síntesis de proteínas. Laboratorio incluido." },
-  { id: "lengua", name: "Lengua y Literatura", code: "LEN-101", room: "Aula 402", subject: "Lengua", students: 30, color: "var(--success-500)", icon: "document-text", thumb: "literature-1", status: ClassStatus.live, progress: 0.74, openActivities: 3, pending: 5, nextSession: "Hoy · 13:00", desc: "Comentario de texto y narrativa contemporánea." },
-  { id: "fisica", name: "Física General", code: "FIS-205", room: "Aula 201", subject: "Ciencias", students: 26, color: "var(--primary-600)", icon: "star", thumb: "physics-1", status: ClassStatus.live, progress: 0.55, openActivities: 2, pending: 7, nextSession: "Mié · 11:00", desc: "Mecánica, termodinámica y ondas." },
-  { id: "quimica", name: "Química Orgánica", code: "QUI-212", room: "Aula 119", subject: "Ciencias", students: 22, color: "var(--warning-500)", icon: "book-open", thumb: "", status: ClassStatus.draft, progress: 0.0, openActivities: 0, pending: 0, nextSession: "Sin programar", desc: "Borrador en preparación para el próximo curso." },
+  { id: "calc2", name: "Cálculo II", code: "MAT-204", room: "Aula 345", subject: "Matemáticas", stage: "bachillerato", students: 32, color: "var(--primary-500)", icon: "academic-cap", thumb: "math-1", status: ClassStatus.live, progress: 0.62, openActivities: 4, pending: 8, nextSession: "Hoy · 10:30", desc: "Derivadas, integrales y series. Segundo cuatrimestre." },
+  { id: "arte", name: "Historia del Arte", code: "HUM-110", room: "Aula 210", subject: "Humanidades", stage: "bachillerato", students: 28, color: "var(--yellow-500)", icon: "book-open", thumb: "art-2", status: ClassStatus.live, progress: 0.41, openActivities: 2, pending: 3, nextSession: "Mañana · 09:00", desc: "Del Renacimiento a las vanguardias del siglo XX." },
+  { id: "bio", name: "Biología Molecular", code: "BIO-330", room: "Aula 118", subject: "Ciencias", stage: "bachillerato", students: 24, color: "var(--info-500)", icon: "folder", thumb: "science-1", status: ClassStatus.scheduled, progress: 0.18, openActivities: 1, pending: 0, nextSession: "Lun · 12:00", desc: "ADN, ARN y síntesis de proteínas. Laboratorio incluido." },
+  { id: "lengua", name: "Lengua y Literatura", code: "LEN-101", room: "Aula 402", subject: "Lengua", stage: "secundaria", students: 30, color: "var(--success-500)", icon: "document-text", thumb: "literature-1", status: ClassStatus.live, progress: 0.74, openActivities: 3, pending: 5, nextSession: "Hoy · 13:00", desc: "Comentario de texto y narrativa contemporánea." },
+  { id: "fisica", name: "Física General", code: "FIS-205", room: "Aula 201", subject: "Ciencias", stage: "secundaria", students: 26, color: "var(--primary-600)", icon: "star", thumb: "physics-1", status: ClassStatus.live, progress: 0.55, openActivities: 2, pending: 7, nextSession: "Mié · 11:00", desc: "Mecánica, termodinámica y ondas." },
+  { id: "quimica", name: "Química Orgánica", code: "QUI-212", room: "Aula 119", subject: "Ciencias", stage: "bachillerato", students: 22, color: "var(--warning-500)", icon: "book-open", thumb: "", status: ClassStatus.draft, progress: 0.0, openActivities: 0, pending: 0, nextSession: "Sin programar", desc: "Borrador en preparación para el próximo curso." },
 ];
 
 /** Dentro de dos días a las 17:00, para que las sesiones del seed queden a futuro. */
@@ -122,7 +123,7 @@ async function main() {
   for (const c of CLASSES) {
     await prisma.class.create({
       data: {
-        id: c.id, name: c.name, code: c.code, room: c.room, subject: c.subject,
+        id: c.id, name: c.name, code: c.code, room: c.room, subject: c.subject, stage: c.stage,
         color: c.color, icon: c.icon, thumb: c.thumb, status: c.status, progress: c.progress,
         studentsCount: c.students, openActivities: c.openActivities, pending: c.pending,
         nextSession: c.nextSession, desc: c.desc, ownerId: elena.id,

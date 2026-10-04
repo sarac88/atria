@@ -6,7 +6,7 @@ import { Modal } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { useClasses, useCreateClass, useUpdateClass } from "@/lib/api/classes";
 import { CLASS_THUMB_PRESETS, CLASS_THUMB_SUBJECTS, classThumbPreset, type ClassThumbId, type ClassThumbSubject } from "@/lib/class-thumbs";
-import type { ClassInfo } from "@/lib/types";
+import { CLASS_STAGES, CLASS_STAGE_LABEL, type ClassInfo, type ClassStage } from "@/lib/types";
 
 const colors: [string, string][] = [
   ["var(--primary-500)", "academic-cap"],
@@ -26,6 +26,13 @@ const CODE_PREFIX: Record<ClassThumbSubject, string> = {
   art: "ART",
   computing: "INF",
 };
+
+/** Etapa que más se repite entre las clases del profesor: la que se propone al crear. */
+function usualStage(classes: ClassInfo[]): ClassStage | "" {
+  const count = new Map<ClassStage, number>();
+  for (const c of classes) if (c.stage) count.set(c.stage, (count.get(c.stage) ?? 0) + 1);
+  return [...count].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
+}
 
 const firstPreset = (subject: ClassThumbSubject) => CLASS_THUMB_PRESETS.find((t) => t.subject === subject)!;
 
@@ -60,6 +67,9 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
   const [subj, setSubj] = useState<ClassThumbSubject | null>(
     CLASS_THUMB_SUBJECTS.find((sj) => sj.label === klass?.subject)?.id ?? null,
   );
+  // Al crear, si no se toca, vale la etapa habitual del profesor.
+  const [stagePick, setStage] = useState<ClassStage | "">(klass?.stage ?? "");
+  const stage = stagePick || (editing ? "" : usualStage(classes ?? []));
   const [name, setName] = useState(klass?.name ?? "");
   const [code, setCode] = useState(klass && klass.code !== "—" ? klass.code : "");
   const [room, setRoom] = useState(klass?.room ?? "");
@@ -88,6 +98,8 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
       name: name.trim(),
       code: code.trim() || "—",
       room: room.trim(),
+      // Las clases antiguas sin etapa la conservan vacía si no se elige.
+      ...(stage ? { stage } : {}),
       color: colors[sel][0],
       icon: colors[sel][1],
       // El color y el icono se guardan siempre (los usan el calendario y los
@@ -102,7 +114,7 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
         const cls = await update.mutateAsync(subj != null ? { ...base, subject: subjectLabel(subj) } : base);
         onDone(cls.id);
       } else {
-        const cls = await create.mutateAsync({ ...base, desc: "", subject: subj != null ? subjectLabel(subj) : "" });
+        const cls = await create.mutateAsync({ ...base, stage, desc: "", subject: subj != null ? subjectLabel(subj) : "" });
         onDone(cls.id);
       }
     } catch {
@@ -113,18 +125,27 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
   if (step === "subject") {
     return (
       <Modal title="Crear clase" onClose={onClose} footer={<Button variant="outline" onClick={onClose}>Cancelar</Button>} width={620}>
+        <p style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>¿En qué etapa?</p>
+        <div role="radiogroup" aria-label="Etapa" className="atria-stagegrid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 26 }}>
+          {CLASS_STAGES.map((st) => (
+            <StageButton key={st} stage={st} on={stage === st} onClick={() => setStage(st)} />
+          ))}
+        </div>
         <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>¿De qué asignatura es la clase?</p>
-        <p style={{ margin: "0 0 18px", fontSize: 13, color: "var(--text-muted)" }}>Después podrás ponerle nombre y cambiar la ilustración.</p>
-        <div className="atria-subjectgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <p style={{ margin: "0 0 18px", fontSize: 13, color: "var(--text-muted)" }}>
+          {stage ? "Después podrás ponerle nombre y cambiar la ilustración." : "Elige primero la etapa."}
+        </p>
+        <div className="atria-subjectgrid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, opacity: stage ? 1 : 0.5, transition: "opacity .15s ease" }}>
           {CLASS_THUMB_SUBJECTS.map((sj) => {
             const t = firstPreset(sj.id);
             return (
               <button
                 key={sj.id}
                 type="button"
+                disabled={!stage}
                 onClick={() => pickSubject(sj.id)}
-                style={{ padding: 0, border: "none", cursor: "pointer", borderRadius: "var(--radius-md)", overflow: "hidden", background: "var(--surface-card)", boxShadow: "var(--ring-hairline)", textAlign: "left", fontFamily: "var(--font-sans)", transition: "box-shadow .15s ease, transform .15s ease" }}
-                onMouseEnter={(ev) => { ev.currentTarget.style.boxShadow = "0 0 0 2px var(--brand-primary)"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
+                style={{ padding: 0, border: "none", cursor: stage ? "pointer" : "not-allowed", borderRadius: "var(--radius-md)", overflow: "hidden", background: "var(--surface-card)", boxShadow: "var(--ring-hairline)", textAlign: "left", fontFamily: "var(--font-sans)", transition: "box-shadow .15s ease, transform .15s ease" }}
+                onMouseEnter={(ev) => { if (!stage) return; ev.currentTarget.style.boxShadow = "0 0 0 2px var(--brand-primary)"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
                 onMouseLeave={(ev) => { ev.currentTarget.style.boxShadow = "var(--ring-hairline)"; ev.currentTarget.style.transform = "none"; }}
               >
                 <span style={{ display: "block", aspectRatio: "16 / 10", background: t.bg }}>
@@ -244,7 +265,8 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
         {!editing && subj ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "10px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-sunken)" }}>
             <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
-              Asignatura: <strong style={{ color: "var(--text-strong)" }}>{subjectLabel(subj)}</strong>
+              <strong style={{ color: "var(--text-strong)" }}>{subjectLabel(subj)}</strong>
+              {stage ? <> · {CLASS_STAGE_LABEL[stage]}</> : null}
             </span>
             <Button variant="link" size="small" onClick={() => setStep("subject")}>Cambiar</Button>
           </div>
@@ -255,6 +277,16 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
           <Input label="Código" value={code} onChange={(e) => setCode(e.target.value)} placeholder="MAT-204" />
           <Input label="Aula" value={room} onChange={(e) => setRoom(e.target.value)} placeholder="Aula 345" />
         </div>
+        {editing ? (
+          <div>
+            <label style={{ fontSize: 14, fontWeight: 500, color: "var(--text-strong)", display: "block", marginBottom: 8 }}>Etapa</label>
+            <div role="radiogroup" aria-label="Etapa" className="atria-stagegrid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+              {CLASS_STAGES.map((st) => (
+                <StageButton key={st} stage={st} on={stage === st} onClick={() => setStage(st)} />
+              ))}
+            </div>
+          </div>
+        ) : null}
         {editing ? (
           <div>
             <label style={{ fontSize: 14, fontWeight: 500, color: "var(--text-strong)", display: "block", marginBottom: 8 }}>Asignatura</label>
@@ -279,5 +311,19 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
         </div>
       </div>
     </Modal>
+  );
+}
+
+function StageButton({ stage, on, onClick }: { stage: ClassStage; on: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={on}
+      onClick={onClick}
+      style={{ padding: "10px 8px", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontFamily: "var(--font-sans)", fontSize: 13.5, fontWeight: 600, lineHeight: 1.25, background: on ? "var(--primary-100)" : "var(--gray-100)", boxShadow: on ? "inset 0 0 0 2px var(--brand-primary)" : "inset 0 0 0 2px var(--border-default)", color: on ? "var(--primary-700)" : "var(--text-strong)", transition: "background .15s ease, box-shadow .15s ease" }}
+    >
+      {CLASS_STAGE_LABEL[stage]}
+    </button>
   );
 }

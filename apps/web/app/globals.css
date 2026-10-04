@@ -459,6 +459,7 @@ a { color: var(--text-link); }
   .atria-stats { grid-template-columns: repeat(2, 1fr) !important; }
   .atria-classgrid, .atria-classgrid3 { grid-template-columns: 1fr !important; }
   .atria-subjectgrid { grid-template-columns: repeat(2, 1fr) !important; }
+  .atria-stagegrid { grid-template-columns: repeat(2, 1fr) !important; }
   .atria-account-name { display: none; }
 }
 

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Class" ADD COLUMN "stage" TEXT NOT NULL DEFAULT '';

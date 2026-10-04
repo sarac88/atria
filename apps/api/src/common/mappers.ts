@@ -18,10 +18,11 @@ import type {
   SubmissionStatus,
   User,
 } from "@prisma/client";
-import { groupReactions } from "@atria/types";
+import { CLASS_STAGES, groupReactions } from "@atria/types";
 import type {
   Activity as ActivityDto,
   ClassInfo,
+  ClassStage,
   DebatePostDto,
   ConversationDto,
   MeetingProvider,
@@ -70,6 +71,7 @@ export function toClassInfo(c: ClassWithOwner, studentsCount?: number, counters?
     code: c.code,
     room: c.room,
     subject: c.subject,
+    stage: (CLASS_STAGES as readonly string[]).includes(c.stage) ? (c.stage as ClassStage) : "",
     students: studentsCount ?? c.studentsCount,
     color: c.color,
     icon: c.icon,
