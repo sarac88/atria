@@ -253,6 +253,8 @@ model Submission {
   fileName    String?
   comment     String?
   answers     Json?
+  text        String?
+  link        String?
   activity    Activity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
   student     User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
   file        File?            @relation(fields: [fileId], references: [id])

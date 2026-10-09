@@ -79,7 +79,7 @@ export function useGradeSubmission(activityId?: string, classId?: string) {
 export function useSubmitWork(classId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { activityId: string; file?: File; fileName?: string; comment?: string; answers?: Record<string, string> }) => {
+    mutationFn: (v: { activityId: string; file?: File; fileName?: string; comment?: string; answers?: Record<string, string>; text?: string; link?: string }) => {
       if (v.file) {
         const form = new FormData();
         form.append("file", v.file);
@@ -88,7 +88,7 @@ export function useSubmitWork(classId?: string) {
       }
       return apiFetch<SubmissionDto>(`/activities/${v.activityId}/submissions`, {
         method: "POST",
-        body: JSON.stringify({ fileName: v.fileName, comment: v.comment, answers: v.answers }),
+        body: JSON.stringify({ fileName: v.fileName, comment: v.comment, answers: v.answers, text: v.text, link: v.link }),
       });
     },
     onSuccess: (_data, v) => {

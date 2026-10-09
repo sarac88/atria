@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, Icon, Badge, Textarea, RichView } from "@/components/ui";
+import { Button, Icon, Badge, Input, Textarea, RichView } from "@/components/ui";
 import { Modal, Eyebrow, ProgressBar } from "@/components/layout";
 import { QuizQuestions } from "@/components/activities/QuizQuestions";
 import { useDebateThread, useMyGrades, useSubmitWork } from "@/lib/api/classwork";
@@ -59,6 +59,8 @@ export function ActivityDetailModal({
   const questions = activity.type === "Cuestionario" ? (activity.config?.questions ?? []) : [];
   const isQuiz = questions.length > 0;
   const isDebate = activity.type === "Debate";
+  const isText = activity.format === "Texto";
+  const isLink = activity.format === "Enlace";
 
   // Para el alumno: sus propias intervenciones y respuestas, para mostrarlas en «Tu entrega».
   const { data: debateThread } = useDebateThread(!isTeacher && isDebate ? activity.id : undefined);
@@ -69,6 +71,8 @@ export function ActivityDetailModal({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [file, setFile] = useState<File | null>(null);
   const [comment, setComment] = useState("");
+  const [text, setText] = useState("");
+  const [link, setLink] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const submitRef = useRef<HTMLDivElement>(null);
@@ -95,11 +99,22 @@ export function ActivityDetailModal({
     requestAnimationFrame(() => submitRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
+  const linkValid = /^https?:\/\/\S+\.\S+/i.test(link.trim());
+  const canSubmit = isText ? text.trim() !== "" : isLink ? linkValid : !!file;
+
   const onEntregar = async () => {
-    if (!file) return;
+    if (!canSubmit) return;
     setError(null);
     try {
-      if (classId) await submit.mutateAsync({ activityId: activity.id, file, comment });
+      if (classId) {
+        await submit.mutateAsync(
+          isText
+            ? { activityId: activity.id, text, comment }
+            : isLink
+              ? { activityId: activity.id, link: link.trim(), comment }
+              : { activityId: activity.id, file: file ?? undefined, comment },
+        );
+      }
       onClose();
     } catch {
       setError("No se pudo enviar la entrega. Inténtalo de nuevo.");
@@ -140,7 +155,7 @@ export function ActivityDetailModal({
   ) : showSubmit ? (
     <>
       <Button variant="outline" onClick={onClose}>Cerrar</Button>
-      <Button variant="accent" iconLeft={<Icon name="upload" size={16} />} disabled={!file || submit.isPending} onClick={onEntregar}>{submit.isPending ? "Entregando…" : "Entregar tarea"}</Button>
+      <Button variant="accent" iconLeft={<Icon name="upload" size={16} />} disabled={!canSubmit || submit.isPending} onClick={onEntregar}>{submit.isPending ? "Entregando…" : "Entregar tarea"}</Button>
     </>
   ) : (
     <>
@@ -244,6 +259,15 @@ export function ActivityDetailModal({
           ) : (
             <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 10 }}>Entregado el {submission.date}{submission.late ? " · tarde" : ""}.</div>
           )}
+          {submission.text ? (
+            <p style={{ margin: "12px 0 0", padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)", fontSize: 14, lineHeight: 1.65, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{submission.text}</p>
+          ) : null}
+          {submission.link ? (
+            <a href={submission.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)", fontSize: 13.5, fontWeight: 600, color: "var(--primary-600)", wordBreak: "break-all" }}>
+              <Icon name="external-link" size={18} />
+              {submission.link}
+            </a>
+          ) : null}
           {isQuiz ? <QuizQuestions questions={questions} answers={submission.answers ?? {}} showCorrect /> : null}
           {isDebate ? (
             myRoots.length === 0 && myReplies.length === 0 ? (
@@ -286,28 +310,43 @@ export function ActivityDetailModal({
       ) : !isTeacher && showSubmit ? (
         <div ref={submitRef} style={{ marginTop: 22, paddingTop: 20, borderTop: "1px solid var(--border-default)" }}>
           <Eyebrow>Tu entrega</Eyebrow>
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => { e.preventDefault(); setDragOver(false); pickFile(e.dataTransfer.files?.[0] ?? null); }}
-            onClick={() => fileInput.current?.click()}
-            style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: "28px 20px", borderRadius: "var(--radius-lg)", border: `2px dashed ${dragOver ? "var(--brand-primary)" : "var(--border-default)"}`, cursor: "pointer", textAlign: "center", background: "var(--surface-soft)", transition: "border-color .15s ease" }}
-          >
-            <span style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--primary-100)", color: "var(--primary-600)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name={file ? "document-text" : "upload"} size={22} /></span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-strong)" }}>Arrastra tu archivo o haz clic para subir</span>
-            <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>PDF, DOC o DOCX · máx. 50 MB</span>
-            <input ref={fileInput} type="file" accept={ACCEPT} hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
-          </div>
-          {file ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
-              <Icon name="document-text" size={22} color="var(--primary-600)" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-strong)", wordBreak: "break-word" }}>{file.name}</div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{humanSize(file.size)}</div>
-              </div>
-              <button onClick={() => setFile(null)} aria-label="Quitar" style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-muted)", display: "inline-flex" }}><Icon name="trash" size={18} /></button>
+          {isText ? (
+            <Textarea rows={8} placeholder="Escribe aquí tu respuesta…" style={{ marginTop: 12 }} value={text} onChange={(e) => setText(e.target.value)} />
+          ) : isLink ? (
+            <Input
+              type="url"
+              placeholder="https://…"
+              style={{ marginTop: 12 }}
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              error={link.trim() && !linkValid ? "Introduce un enlace válido que empiece por http:// o https://." : undefined}
+            />
+          ) : (
+            <>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); pickFile(e.dataTransfer.files?.[0] ?? null); }}
+              onClick={() => fileInput.current?.click()}
+              style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: "28px 20px", borderRadius: "var(--radius-lg)", border: `2px dashed ${dragOver ? "var(--brand-primary)" : "var(--border-default)"}`, cursor: "pointer", textAlign: "center", background: "var(--surface-soft)", transition: "border-color .15s ease" }}
+            >
+              <span style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--primary-100)", color: "var(--primary-600)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name={file ? "document-text" : "upload"} size={22} /></span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-strong)" }}>Arrastra tu archivo o haz clic para subir</span>
+              <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>PDF, DOC o DOCX · máx. 50 MB</span>
+              <input ref={fileInput} type="file" accept={ACCEPT} hidden onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
             </div>
-          ) : null}
+            {file ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
+                <Icon name="document-text" size={22} color="var(--primary-600)" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-strong)", wordBreak: "break-word" }}>{file.name}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{humanSize(file.size)}</div>
+                </div>
+                <button onClick={() => setFile(null)} aria-label="Quitar" style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-muted)", display: "inline-flex" }}><Icon name="trash" size={18} /></button>
+              </div>
+            ) : null}
+            </>
+          )}
           {error ? <div style={{ marginTop: 14, fontSize: 13, color: "var(--status-error)", background: "var(--status-error-soft)", borderRadius: "var(--radius-sm)", padding: "9px 12px" }}>{error}</div> : null}
           <Textarea label="Comentario (opcional)" rows={3} placeholder="Añade una nota para tu profesora…" style={{ marginTop: 18 }} value={comment} onChange={(e) => setComment(e.target.value)} />
         </div>

@@ -74,9 +74,11 @@ export class ActivitiesService {
   /** POST /activities/:id/submissions — el alumno matriculado entrega (solo metadatos). */
   async submit(user: AuthUser, activityId: string, input: SubmitInput): Promise<SubmissionDto> {
     const activity = await this.assertStudentEnrolled(user, activityId);
-    // Los cuestionarios se entregan solo con respuestas, sin fichero asociado.
-    const fileName = input.fileName ?? (input.answers ? null : "entrega.pdf");
-    return this.persistSubmission(activity, user, { fileName, fileId: null, comment: input.comment, answers: input.answers });
+    const text = input.text?.trim() || null;
+    const link = input.link?.trim() || null;
+    // Cuestionarios, textos y enlaces se entregan sin fichero asociado.
+    const fileName = input.fileName ?? (input.answers || text || link ? null : "entrega.pdf");
+    return this.persistSubmission(activity, user, { fileName, fileId: null, comment: input.comment, answers: input.answers, text, link });
   }
 
   /** POST /activities/:id/submissions/upload — el alumno entrega subiendo un fichero real. */
@@ -102,7 +104,7 @@ export class ActivitiesService {
   private async persistSubmission(
     activity: Awaited<ReturnType<ActivitiesService["activityOrThrow"]>>,
     user: AuthUser,
-    data: { fileName: string | null; fileId: string | null; comment?: string; answers?: Record<string, string> },
+    data: { fileName: string | null; fileId: string | null; comment?: string; answers?: Record<string, string>; text?: string | null; link?: string | null },
   ): Promise<SubmissionDto> {
     const comment = data.comment?.trim() || null;
     const fields = {
@@ -112,6 +114,8 @@ export class ActivitiesService {
       fileId: data.fileId,
       comment,
       answers: data.answers ?? Prisma.JsonNull,
+      text: data.text ?? null,
+      link: data.link ?? null,
     };
     const sub = await this.prisma.submission.upsert({
       where: { activityId_studentId: { activityId: activity.id, studentId: user.userId } },

@@ -377,6 +377,8 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
   );
 }
 
+const FORMAT_LABELS = ["Archivo", "Texto", "Enlace", "Examen"];
+
 export function CreateActivityModal({ klass, activity, defaultModuleId, onClose, onDone }: { klass?: ClassInfo | null; activity?: Activity | null; defaultModuleId?: string; onClose: () => void; onDone: () => void }) {
   const editing = !!activity;
   const classId = klass?.id ?? activity?.classId ?? "";
@@ -387,7 +389,7 @@ export function CreateActivityModal({ klass, activity, defaultModuleId, onClose,
 
   const [step, setStep] = useState<1 | 2>(1);
   const [ty, setTy] = useState(() => (activity ? typeIndexFromLabel(activity.type) : 0));
-  const [fmt, setFmt] = useState(0);
+  const [fmt, setFmt] = useState(() => Math.max(0, FORMAT_LABELS.indexOf(activity?.format ?? "")));
   const [title, setTitle] = useState(activity?.title ?? "");
   const [moduleId, setModuleId] = useState(activity?.moduleId ?? defaultModuleId ?? "");
   const [instructions, setInstructions] = useState(activity?.desc ?? "");

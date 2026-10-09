@@ -111,6 +111,8 @@ export interface Activity {
   ungraded: number;
   status: StatusTuple;
   desc: string;
+  /** Formato de entrega: "Archivo", "Texto", "Enlace" o "Examen". */
+  format?: string;
   moduleId?: string;
   allowLate?: boolean;
   config?: ActivityConfig;
@@ -327,6 +329,10 @@ export interface SubmissionDto {
   comment?: string;
   /** Quiz answers keyed by question id (see submitSchema). */
   answers?: Record<string, string>;
+  /** Respuesta escrita (formato «Texto»). */
+  text?: string;
+  /** URL entregada (formato «Enlace»). */
+  link?: string;
 }
 
 /** A message in a debate activity's thread. Replies hang one level below a root post. */
@@ -658,6 +664,10 @@ export const submitSchema = z.object({
   comment: z.string().optional(),
   /** Quiz answers, keyed by question id: option index for choice questions, free text for short ones. */
   answers: z.record(z.string(), z.string()).optional(),
+  /** Respuesta escrita, para actividades con formato «Texto». */
+  text: z.string().optional(),
+  /** URL entregada, para actividades con formato «Enlace». */
+  link: z.string().url().optional(),
 });
 export type SubmitInput = z.infer<typeof submitSchema>;
 

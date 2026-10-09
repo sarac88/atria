@@ -111,6 +111,7 @@ export function toActivityDto(a: Activity, submitted: number, total: number, ung
     ungraded,
     status: STATUS[a.status],
     desc: a.instructions,
+    format: a.format,
     moduleId: a.moduleId ?? undefined,
     allowLate: a.allowLate,
     config: rawConfig && Object.keys(rawConfig).length ? rawConfig : undefined,
@@ -156,6 +157,8 @@ export function toSubmissionDto(s: SubmissionWithRelations): SubmissionDto {
     fileUrl: s.file ? uploadUrl(s.file.key) : undefined,
     comment: s.comment ?? undefined,
     answers: answers && Object.keys(answers).length ? answers : undefined,
+    text: s.text ?? undefined,
+    link: s.link ?? undefined,
   };
 }
 

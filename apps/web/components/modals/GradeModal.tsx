@@ -149,6 +149,13 @@ export function GradeModal({
                   <p style={{ margin: 0, fontSize: 13.5, color: "var(--text-muted)" }}>Este alumno todavía no ha participado en el debate.</p>
                 ) : null}
               </div>
+            ) : s.text ? (
+              <p style={{ margin: "12px 0 0", padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)", fontSize: 14, lineHeight: 1.7, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{s.text}</p>
+            ) : s.link ? (
+              <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, padding: "10px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)", fontSize: 13.5, fontWeight: 600, color: "var(--primary-600)", wordBreak: "break-all" }}>
+                <Icon name="external-link" size={18} />
+                {s.link}
+              </a>
             ) : fileHref ? (
               <>
                 <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)" }}>
@@ -175,7 +182,7 @@ export function GradeModal({
               </>
             ) : (
               <p style={{ margin: "12px 0 0", fontSize: 13.5, color: "var(--text-muted)" }}>
-                {s.comment ? "El alumno no ha adjuntado ningún archivo." : "Sin entrega: el alumno no ha subido archivo ni comentario."}
+                {s.comment ? "El alumno no ha adjuntado ningún archivo." : "Sin entrega: el alumno no ha entregado nada ni ha dejado comentario."}
               </p>
             )}
           </div>
