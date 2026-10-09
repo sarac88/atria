@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Avatar, Badge, Icon, Textarea, IconButton } from "@/components/ui";
+import { Button, Avatar, Badge, Icon, Textarea, IconButton, RichView } from "@/components/ui";
 import { Modal, Eyebrow } from "@/components/layout";
 import { QuizQuestions } from "@/components/activities/QuizQuestions";
 import { fileExtLabel, filePreviewUrl } from "@/lib/resources";
@@ -150,7 +150,9 @@ export function GradeModal({
                 ) : null}
               </div>
             ) : s.text ? (
-              <p style={{ margin: "12px 0 0", padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)", fontSize: 14, lineHeight: 1.7, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{s.text}</p>
+              <div style={{ marginTop: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)" }}>
+                <RichView html={s.text} lineHeight={1.7} style={{ marginTop: 0 }} />
+              </div>
             ) : s.link ? (
               <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, padding: "10px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)", fontSize: 13.5, fontWeight: 600, color: "var(--primary-600)", wordBreak: "break-all" }}>
                 <Icon name="external-link" size={18} />

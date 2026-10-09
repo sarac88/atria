@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, Icon, Badge, Input, Textarea, RichView } from "@/components/ui";
+import { Button, Icon, Badge, Input, Textarea, RichText, RichView } from "@/components/ui";
 import { Modal, Eyebrow, ProgressBar } from "@/components/layout";
 import { QuizQuestions } from "@/components/activities/QuizQuestions";
 import { useDebateThread, useMyGrades, useSubmitWork } from "@/lib/api/classwork";
@@ -260,7 +260,9 @@ export function ActivityDetailModal({
             <div style={{ fontSize: 13.5, color: "var(--text-muted)", marginTop: 10 }}>Entregado el {submission.date}{submission.late ? " · tarde" : ""}.</div>
           )}
           {submission.text ? (
-            <p style={{ margin: "12px 0 0", padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)", fontSize: 14, lineHeight: 1.65, color: "var(--text-body)", whiteSpace: "pre-wrap" }}>{submission.text}</p>
+            <div style={{ marginTop: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", background: "var(--surface-soft)", boxShadow: "var(--ring-hairline)" }}>
+              <RichView html={submission.text} lineHeight={1.65} style={{ marginTop: 0 }} />
+            </div>
           ) : null}
           {submission.link ? (
             <a href={submission.link} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-border)", fontSize: 13.5, fontWeight: 600, color: "var(--primary-600)", wordBreak: "break-all" }}>
@@ -311,7 +313,7 @@ export function ActivityDetailModal({
         <div ref={submitRef} style={{ marginTop: 22, paddingTop: 20, borderTop: "1px solid var(--border-default)" }}>
           <Eyebrow>Tu entrega</Eyebrow>
           {isText ? (
-            <Textarea rows={8} placeholder="Escribe aquí tu respuesta…" style={{ marginTop: 12 }} value={text} onChange={(e) => setText(e.target.value)} />
+            <RichText minHeight={180} placeholder="Escribe aquí tu respuesta…" style={{ marginTop: 12 }} value={text} onChange={setText} />
           ) : isLink ? (
             <Input
               type="url"

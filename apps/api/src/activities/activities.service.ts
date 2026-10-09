@@ -10,6 +10,7 @@ import type {
   UpdateActivityInput,
 } from "@atria/types";
 import { Prisma } from "@prisma/client";
+import { isBlankHtml, sanitizeRichHtml } from "../common/rich-html";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -74,7 +75,8 @@ export class ActivitiesService {
   /** POST /activities/:id/submissions — el alumno matriculado entrega (solo metadatos). */
   async submit(user: AuthUser, activityId: string, input: SubmitInput): Promise<SubmissionDto> {
     const activity = await this.assertStudentEnrolled(user, activityId);
-    const text = input.text?.trim() || null;
+    const cleanText = input.text ? sanitizeRichHtml(input.text).trim() : "";
+    const text = cleanText && !isBlankHtml(cleanText) ? cleanText : null;
     const link = input.link?.trim() || null;
     // Cuestionarios, textos y enlaces se entregan sin fichero asociado.
     const fileName = input.fileName ?? (input.answers || text || link ? null : "entrega.pdf");
