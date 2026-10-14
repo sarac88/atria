@@ -17,20 +17,22 @@ const COVER_ALIGN_OPTIONS: { value: ClassCoverAlign; label: string; icon: string
   { value: "full", label: "Completo", icon: "photo" },
 ];
 
-const pillStyle = (on: boolean): React.CSSProperties => ({
+/** Opción del control segmentado de posición de la portada. */
+const segmentStyle = (on: boolean): React.CSSProperties => ({
   display: "inline-flex",
   alignItems: "center",
-  gap: 8,
-  padding: "8px 13px",
+  gap: 6,
+  padding: "5px 10px",
   border: "none",
-  borderRadius: "var(--radius-md)",
+  borderRadius: "var(--radius-sm)",
   cursor: "pointer",
-  background: on ? "var(--primary-100)" : "var(--gray-100)",
-  boxShadow: on ? "inset 0 0 0 2px var(--brand-primary)" : "inset 0 0 0 2px var(--border-default)",
-  color: on ? "var(--primary-700)" : "var(--text-strong)",
-  fontSize: 13.5,
-  fontWeight: 600,
-  transition: "background .15s ease, box-shadow .15s ease",
+  background: on ? "var(--surface-card)" : "transparent",
+  boxShadow: on ? "var(--shadow-sm)" : "none",
+  color: on ? "var(--brand-primary)" : "var(--text-muted)",
+  fontFamily: "var(--font-sans)",
+  fontSize: 12.5,
+  fontWeight: 700,
+  transition: "background .15s ease, color .15s ease",
 });
 
 /** Identificador del apartado «Sobre el curso» dentro del carril de Módulos. */
@@ -73,14 +75,15 @@ export const RAIL_DIVIDER: React.CSSProperties = { height: 1, background: "var(-
 /**
  * Ficha «Sobre el curso»: portada opcional con tres posiciones (izquierda,
  * derecha o ancho completo). El docente puede subir/quitar la imagen y editar
- * título y texto en el mismo sitio.
+ * el título y el texto por separado en el mismo sitio.
  * `embedded`: sin tarjeta propia, para ir dentro del panel de Módulos.
  */
 export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: boolean; embedded?: boolean }) {
   const uploadCover = useUploadClassCover(c.id);
   const clearCover = useClearClassCover(c.id);
   const updateClass = useUpdateClass(c.id);
-  const [editing, setEditing] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
   const [draftName, setDraftName] = useState(c.name);
   const [draftDesc, setDraftDesc] = useState("");
   const [showCoverSlot, setShowCoverSlot] = useState(false);
@@ -95,21 +98,26 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
   const desc = stripEmptyParagraphs(c.desc);
   const showCoverArea = !!cover || (canEdit && showCoverSlot);
 
-  const startEdit = () => {
+  const startEditName = () => {
     setDraftName(c.name);
+    setError(null);
+    setEditingName(true);
+  };
+  const startEditDesc = () => {
     setDraftDesc(desc);
     setError(null);
-    setEditing(true);
+    setEditingDesc(true);
   };
-  const saveEdit = () => {
+  const onSaveError = () => setError("No se pudo guardar. Inténtalo de nuevo.");
+  const saveName = () => {
     const name = draftName.trim();
     if (!name) return;
+    updateClass.mutate({ name }, { onSuccess: () => setEditingName(false), onError: onSaveError });
+  };
+  const saveDesc = () => {
     updateClass.mutate(
-      { name, desc: stripEmptyParagraphs(draftDesc).trim() },
-      {
-        onSuccess: () => setEditing(false),
-        onError: () => setError("No se pudo guardar. Inténtalo de nuevo."),
-      },
+      { desc: stripEmptyParagraphs(draftDesc).trim() },
+      { onSuccess: () => setEditingDesc(false), onError: onSaveError },
     );
   };
 
@@ -157,49 +165,48 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        {editing ? (
-          <input
-            autoFocus
-            value={draftName}
-            onChange={(e) => setDraftName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Escape") setEditing(false); }}
-            placeholder="Nombre de la clase"
-            aria-label="Nombre de la clase"
-            style={{
-              flex: 1,
-              minWidth: 0,
-              height: 42,
-              padding: "0 12px",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              boxShadow: "inset 0 0 0 1px var(--border-default)",
-              fontFamily: "var(--font-sans)",
-              fontSize: embedded ? 18 : 22,
-              fontWeight: 700,
-              color: "var(--text-strong)",
-              background: "#fff",
-            }}
-          />
+        {editingName ? (
+          <>
+            <input
+              autoFocus
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
+              placeholder="Nombre de la clase"
+              aria-label="Nombre de la clase"
+              style={{
+                flex: 1,
+                minWidth: 200,
+                height: 42,
+                padding: "0 12px",
+                border: "none",
+                borderRadius: "var(--radius-sm)",
+                boxShadow: "inset 0 0 0 1px var(--border-default)",
+                fontFamily: "var(--font-sans)",
+                fontSize: embedded ? 18 : 22,
+                fontWeight: 700,
+                color: "var(--text-strong)",
+                background: "#fff",
+              }}
+            />
+            <Button size="small" variant="accent" disabled={!draftName.trim() || updateClass.isPending} onClick={saveName}>
+              {updateClass.isPending ? "Guardando…" : "Guardar"}
+            </Button>
+            <Button size="small" variant="ghost" onClick={() => setEditingName(false)}>Cancelar</Button>
+          </>
         ) : (
           <>
             <h2 style={{ fontSize: embedded ? 21 : 26, margin: 0, color: "var(--text-strong)", minWidth: 0 }}>{c.name}</h2>
             {canEdit ? (
-              <>
-                <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEdit}>
-                  Editar
-                </Button>
-                {!cover && !showCoverSlot ? (
-                  <Button variant="outline" size="small" iconLeft={<Icon name="photo" size={15} />} onClick={() => setShowCoverSlot(true)}>
-                    Añadir imagen
-                  </Button>
-                ) : null}
-              </>
+              <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEditName}>
+                Editar
+              </Button>
             ) : null}
           </>
         )}
       </div>
 
-      {editing ? (
+      {editingDesc ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
           <RichText
             value={draftDesc}
@@ -208,46 +215,52 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
             minHeight={160}
           />
           <div style={{ display: "flex", gap: 8 }}>
-            <Button size="small" variant="accent" disabled={!draftName.trim() || updateClass.isPending} onClick={saveEdit}>
+            <Button size="small" variant="accent" disabled={updateClass.isPending} onClick={saveDesc}>
               {updateClass.isPending ? "Guardando…" : "Guardar"}
             </Button>
-            <Button size="small" variant="ghost" onClick={() => setEditing(false)}>Cancelar</Button>
+            <Button size="small" variant="ghost" onClick={() => setEditingDesc(false)}>Cancelar</Button>
           </div>
+        </div>
+      ) : canEdit ? (
+        // Barra de edición: texto e imagen a la izquierda; posición de la portada
+        // y «Quitar» juntos a la derecha, en un control compacto.
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 14 }}>
+          <Button variant="outline" size="small" iconLeft={<Icon name="document-text" size={15} />} onClick={startEditDesc}>
+            Editar texto
+          </Button>
+          {!showCoverArea ? (
+            <Button variant="outline" size="small" iconLeft={<Icon name="photo" size={15} />} onClick={() => setShowCoverSlot(true)}>
+              Añadir imagen
+            </Button>
+          ) : (
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4 }}>
+              <div role="group" aria-label="Posición de la imagen" style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: "var(--radius-md)", background: "var(--gray-100)" }}>
+                {COVER_ALIGN_OPTIONS.map(({ value, label, icon }) => {
+                  const on = coverAlign === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={on}
+                      disabled={busy || alignBusy}
+                      onClick={() => setCoverAlign(value)}
+                      style={segmentStyle(on)}
+                    >
+                      <Icon name={icon} size={15} />{label}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button variant="ghost" size="small" iconLeft={<Icon name="trash" size={15} />} onClick={removeCover} disabled={busy}>
+                Quitar
+              </Button>
+            </div>
+          )}
         </div>
       ) : null}
 
       {showCoverArea ? (
         <>
-          {canEdit ? (
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 14 }}>
-              {COVER_ALIGN_OPTIONS.map(({ value, label, icon }) => {
-                const on = coverAlign === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={on}
-                    disabled={busy || alignBusy}
-                    onClick={() => setCoverAlign(value)}
-                    style={pillStyle(on)}
-                  >
-                    <Icon name={icon} size={16} />{label}
-                  </button>
-                );
-              })}
-              <Button
-                variant="ghost"
-                size="small"
-                iconLeft={<Icon name="trash" size={15} />}
-                onClick={removeCover}
-                disabled={busy}
-                style={{ marginLeft: "auto" }}
-              >
-                Quitar
-              </Button>
-            </div>
-          ) : null}
-
           <div
             className={`atria-about-cover atria-about-cover--${coverAlign}`}
             onDragOver={canEdit ? (e) => { e.preventDefault(); setDragOver(true); } : undefined}
@@ -336,11 +349,12 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         </>
       ) : null}
 
-      {!editing && desc.trim() ? (
-        <RichView html={desc} style={{ fontSize: 15, marginTop: showCoverArea ? 0 : 14 }} />
-      ) : !editing ? (
-        <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: showCoverArea ? "14px 0 0" : "14px 0 0", lineHeight: 1.6 }}>
-          {canEdit ? "Todavía no hay descripción. Usa «Editar» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
+      {!editingDesc && desc.trim() ? (
+        // Mismo margen que la portada flotante, para que texto e imagen arranquen a la par.
+        <RichView html={desc} style={{ fontSize: 15, marginTop: 14 }} />
+      ) : !editingDesc ? (
+        <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: "14px 0 0", lineHeight: 1.6 }}>
+          {canEdit ? "Todavía no hay descripción. Usa «Editar texto» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
         </p>
       ) : null}
 
