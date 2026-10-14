@@ -212,9 +212,15 @@ no está en la imagen, hay que pasarle a `ts-node` las opciones de compilación
 con `-O`; sin ellas aplica unos valores por defecto que chocan con esta
 versión de TypeScript y falla con `TS5109`.)
 
-**La semilla borra todo antes de crear sus datos** (`deleteMany` sobre
-usuarios, clases, mensajes…). Ejecútala sólo con la base de datos vacía;
-relanzarla con datos reales los elimina.
+La semilla restaura la demo desde `apps/api/prisma/demo/`: `data.json` (la
+foto de la base de datos) y `files/` (los ficheros subidos que usa). **Borra
+todo antes de cargarla**, tanto las tablas como el contenido de `uploads/`, así
+que relanzarla deja la demo como recién instalada. Las fechas se adelantan los
+días transcurridos desde la exportación y las invitaciones pendientes se
+renuevan, para que la demo no envejezca.
+
+Para cambiar la demo: edítala en local desde la interfaz y vuelve a hacer la
+foto con `npm run db:export-demo --workspace @atria/api`.
 
 Todas las cuentas de la semilla usan la contraseña `atria2025`, que está
 escrita en el código. Con la app expuesta a internet, tenlo en cuenta.

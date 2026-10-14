@@ -9,7 +9,8 @@
     "start:prod": "node dist/main.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:export-demo": "ts-node prisma/demo/export.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

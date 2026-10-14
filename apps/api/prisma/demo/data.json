@@ -1,0 +1,2943 @@
+{
+  "exportedAt": "2026-10-14T08:59:25.791Z",
+  "tables": {
+    "user": [
+      {
+        "id": "u-elena",
+        "name": "Elena Ruiz",
+        "email": "elena.ruiz@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "docente",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.617Z",
+        "updatedAt": "2026-10-14T08:43:56.131Z"
+      },
+      {
+        "id": "u-marc",
+        "name": "Marc Soler",
+        "email": "marc.soler@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.620Z",
+        "updatedAt": "2026-10-14T08:43:52.958Z"
+      },
+      {
+        "id": "u-admin",
+        "name": "Dirección",
+        "email": "direccion@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "admin",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.621Z",
+        "updatedAt": "2026-10-04T11:37:49.621Z"
+      },
+      {
+        "id": "cmutqyatp000yiojj14wmqidy",
+        "name": "Alba García",
+        "email": "alba.garcia@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.646Z",
+        "updatedAt": "2026-10-09T09:36:25.466Z"
+      },
+      {
+        "id": "cmutqyatu0013iojjqr7ylxky",
+        "name": "Lucía Romero",
+        "email": "lucia.romero@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.650Z",
+        "updatedAt": "2026-10-09T09:22:33.336Z"
+      },
+      {
+        "id": "cmutqyatw0016iojjx25ix8qr",
+        "name": "Iker Mendoza",
+        "email": "iker.mendoza@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.652Z",
+        "updatedAt": "2026-10-09T09:41:33.333Z"
+      },
+      {
+        "id": "cmutqyaty0019iojj8ra1olmw",
+        "name": "Nadia Khan",
+        "email": "nadia.khan@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.654Z",
+        "updatedAt": "2026-10-09T09:27:14.091Z"
+      },
+      {
+        "id": "cmutqyau0001ciojj5kkec3b4",
+        "name": "Tomás Vidal",
+        "email": "tomas.vidal@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.656Z",
+        "updatedAt": "2026-10-09T09:35:36.322Z"
+      },
+      {
+        "id": "cmutqyau2001fiojjshs62l70",
+        "name": "Sara Pons",
+        "email": "sara.pons@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.659Z",
+        "updatedAt": "2026-10-04T11:37:49.659Z"
+      },
+      {
+        "id": "cmutqyau4001iiojjf7x8kqj0",
+        "name": "Diego Lima",
+        "email": "diego.lima@atria.edu",
+        "passwordHash": "$argon2id$v=19$m=65536,t=3,p=4$ptW36TmsMVXb0CoXiHb5Fw$J/sIoS16McdIdwRPZ0aLH8Fo3/bs+jEz60f2k3tJ1us",
+        "role": "alumno",
+        "avatarUrl": null,
+        "hashedRefreshToken": null,
+        "createdAt": "2026-10-04T11:37:49.661Z",
+        "updatedAt": "2026-10-04T11:37:49.661Z"
+      }
+    ],
+    "file": [
+      {
+        "id": "cmuv67rkb00008r50c6hdlq5t",
+        "ownerId": "u-elena",
+        "key": "5b31ad95-8bff-4c03-9a3d-386102e72f90.pdf",
+        "name": "Microsoft Word - OPERACION[1]...doc - operacionesenteros2c2ba.pdf",
+        "size": 43802,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-05T11:32:51.659Z",
+        "updatedAt": "2026-10-05T11:32:51.659Z"
+      },
+      {
+        "id": "cmuv69qkt00038r502uvd1uba",
+        "ownerId": "u-elena",
+        "key": "420d9b5c-b80f-47e6-9e82-878cb6ed91db.pdf",
+        "name": "01 Apuntes Divisibilidad y numeros enteros.pdf",
+        "size": 3371882,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-05T11:34:23.693Z",
+        "updatedAt": "2026-10-05T11:34:23.693Z"
+      },
+      {
+        "id": "cmuvcv9us00088r500o9bt1xl",
+        "ownerId": "u-elena",
+        "key": "c0a55b20-7224-45b7-8469-b25c605991c4.pdf",
+        "name": "TEMA 3_Fracciones y NuÌmeros Decimales - 2315.pdf",
+        "size": 3107171,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-05T14:39:06.149Z",
+        "updatedAt": "2026-10-05T14:39:06.149Z"
+      },
+      {
+        "id": "cmuwbw0hf0004lvcqikl7nlyz",
+        "ownerId": "u-elena",
+        "key": "7d8bd882-f22c-421d-aee6-e946e0b2deb4.pdf",
+        "name": "SistemaSolarEscala.pdf",
+        "size": 1306305,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-06T06:59:27.220Z",
+        "updatedAt": "2026-10-06T06:59:27.220Z"
+      },
+      {
+        "id": "cmuwc70j60007lvcq07s5fmo8",
+        "ownerId": "u-elena",
+        "key": "1ace0377-0489-40c0-861c-9d86d0344e1b.pdf",
+        "name": "potencias_raices_notacion.pdf",
+        "size": 789603,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-06T07:08:00.499Z",
+        "updatedAt": "2026-10-06T07:08:00.499Z"
+      },
+      {
+        "id": "cmuwcu6cb000ilvcq7rtc2zm8",
+        "ownerId": "u-elena",
+        "key": "3c9c5296-ae14-48b4-9879-bb66a0a7cd26.pdf",
+        "name": "problemasEnunciado3ESO.pdf",
+        "size": 243888,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-06T07:26:01.115Z",
+        "updatedAt": "2026-10-06T07:26:01.115Z"
+      },
+      {
+        "id": "cmuwcwh44000llvcq8rf8cu31",
+        "ownerId": "u-elena",
+        "key": "87383e96-c21e-48b2-9b6f-ceccd8b4be67.pdf",
+        "name": "06 proporciones 3.pdf",
+        "size": 2883757,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-06T07:27:48.389Z",
+        "updatedAt": "2026-10-06T07:27:48.389Z"
+      },
+      {
+        "id": "cmuxzqpnt0006l02w4n697lnm",
+        "ownerId": "u-elena",
+        "key": "0e9403b1-af47-4195-9adc-c9c123617546.pdf",
+        "name": "TEMA 2 LAS VARIEDADES DE LA LENGUA - variedades-de-la-lengua.pdf",
+        "size": 674173,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-07T10:54:56.874Z",
+        "updatedAt": "2026-10-07T10:54:56.874Z"
+      },
+      {
+        "id": "cmuy0c4zm000bl02w4mcq3j37",
+        "ownerId": "u-elena",
+        "key": "854e91e9-81e6-4bfb-be35-cc3c92290436.pdf",
+        "name": "MESTER DE JUGLARIÌA Y MESTER DE CLERECIÌA.pdf",
+        "size": 130731,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-07T11:11:36.515Z",
+        "updatedAt": "2026-10-07T11:11:36.515Z"
+      },
+      {
+        "id": "cmuy0cjp1000el02wfkzoq3y2",
+        "ownerId": "u-elena",
+        "key": "d63b9e5c-71d1-4206-befd-b6a6dec90143.pdf",
+        "name": "Cantar-de-Mio-Cid.-Fragmento(1).pdf",
+        "size": 798026,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-07T11:11:55.574Z",
+        "updatedAt": "2026-10-07T11:11:55.574Z"
+      },
+      {
+        "id": "cmuy0l3q9000ll02wjwtrn3k3",
+        "ownerId": "u-elena",
+        "key": "072c5416-d9e7-4e36-b6f0-0ca304414d13.pdf",
+        "name": "sujeto_predicado_y_complementos.pdf",
+        "size": 2887201,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-07T11:18:34.785Z",
+        "updatedAt": "2026-10-07T11:18:34.785Z"
+      },
+      {
+        "id": "cmuy1b2tx000wl02w7zqir0h9",
+        "ownerId": "u-elena",
+        "key": "c8f4e7f2-cbec-479a-9e3c-810b0c2c6501.pdf",
+        "name": "Microsoft Word - texto documento secuencia 4 definitivo_con imagen.doc - literatura-xv.pdf",
+        "size": 589489,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-07T11:38:46.678Z",
+        "updatedAt": "2026-10-07T11:38:46.678Z"
+      },
+      {
+        "id": "cmuy1bxdf000zl02w7wjzbwgw",
+        "ownerId": "u-elena",
+        "key": "d7374515-b4d4-416d-a5e2-663568594be2.pdf",
+        "name": "El conde Lucanor.pdf",
+        "size": 6759274,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-07T11:39:26.260Z",
+        "updatedAt": "2026-10-07T11:39:26.260Z"
+      },
+      {
+        "id": "cmv0tges40004mkhtb9kvegyi",
+        "ownerId": "u-marc",
+        "key": "08c4c471-e2d6-4469-bbfd-e5eb0bfac29b.pdf",
+        "name": "entrega_sistema_solar_escala.pdf",
+        "size": 30095,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-09T10:22:17.044Z",
+        "updatedAt": "2026-10-09T10:22:17.044Z"
+      }
+    ],
+    "class": [
+      {
+        "id": "cmutxpzem000hbfd5yewfewkv",
+        "name": "Números para el día a día",
+        "code": "MAT-101",
+        "room": "Aula B",
+        "subject": "Matemáticas",
+        "stage": "secundaria",
+        "color": "var(--primary-500)",
+        "icon": "academic-cap",
+        "thumb": "math-1",
+        "status": "live",
+        "progress": 0,
+        "nextSession": "Sin programar",
+        "desc": "<p><span style=\"font-size: 16px;\">¿Te has preguntado alguna vez para qué sirven realmente las matemáticas? En este curso descubrirás que los números están mucho más presentes en tu vida de lo que parece.</span></p><p><span style=\"font-size: 16px;\">Aprenderás a utilizar <strong>números enteros, fracciones, potencias y proporcionalidad</strong> para resolver situaciones que puedes encontrar en tu día a día: calcular descuentos, repartir cantidades, comparar precios, trabajar con temperaturas, interpretar escalas, resolver problemas con recetas o calcular cómo cambia una cantidad.</span></p><p><span style=\"font-size: 16px;\">A través de <strong>retos, problemas y situaciones prácticas</strong>, aprenderás no solo a hacer operaciones, sino también a <strong>pensar, buscar estrategias y comprobar si tus resultados tienen sentido</strong>.</span></p><p><span style=\"font-size: 16px;\">El objetivo es que ganes confianza con las matemáticas y descubras que no se trata solo de hacer cuentas: <strong>las matemáticas son una herramienta que puedes utilizar para entender mejor el mundo y tomar decisiones.</strong></span></p><p><span style=\"font-size: 16px;\"><strong>En este curso aprenderás a:</strong></span></p><ul><li><p><span style=\"font-size: 16px;\">🔢 Manejar números positivos y negativos.</span></p></li><li><p><span style=\"font-size: 16px;\">🍕 Trabajar con fracciones y utilizarlas en situaciones reales.</span></p></li><li><p><span style=\"font-size: 16px;\">⚡ Comprender y utilizar las potencias.</span></p></li><li><p><span style=\"font-size: 16px;\">📊 Resolver problemas de proporcionalidad y porcentajes.</span></p></li><li><p><span style=\"font-size: 16px;\">🧩 Encontrar estrategias para resolver problemas.</span></p></li><li><p><span style=\"font-size: 16px;\">💡 Aplicar las matemáticas a situaciones de la vida cotidiana.</span></p></li></ul><p><span style=\"font-size: 16px;\"><strong>Prepárate para descubrir que las matemáticas están en todas partes… incluso cuando no te das cuenta.</strong></span></p>",
+        "coverUrl": "/uploads/418f9ce8-b1e7-4446-b0d9-14d342a3c5c5.png",
+        "coverAlign": "right",
+        "studentsCount": 0,
+        "openActivities": 0,
+        "pending": 0,
+        "ownerId": "u-elena",
+        "createdAt": "2026-10-04T14:47:18.908Z",
+        "updatedAt": "2026-10-06T07:08:26.179Z"
+      },
+      {
+        "id": "cmuwt820q0019lvcq40ftk1rx",
+        "name": "Juglares, cuentos y oraciones",
+        "code": "LEN-101",
+        "room": "Aula A",
+        "subject": "Lengua",
+        "stage": "secundaria",
+        "color": "var(--primary-500)",
+        "icon": "academic-cap",
+        "thumb": "literature-2",
+        "status": "live",
+        "progress": 0,
+        "nextSession": "Sin programar",
+        "desc": "<p><span style=\"font-size: 16px;\">¿Sabías que las palabras que usas cada día tienen más de mil años de historia? En este trimestre descubrirás que la lengua es la herramienta con la que piensas, te expresas y entiendes a los demás.</span></p><p><span style=\"font-size: 16px;\">Viajaremos de las lenguas que nos rodean a la Edad Media de juglares y héroes, aprenderemos a mirar las oraciones por dentro y leeremos clásicos que siguen hablando de nosotros.</span></p><p><span style=\"font-size: 16px;\">En este curso aprenderás a:</span></p><p><span style=\"font-size: 16px;\">🗺️ Valorar las lenguas y las formas de hablar de España.</span></p><p><span style=\"font-size: 16px;\">🎭 Descubrir la literatura medieval: juglares, héroes y romances.</span></p><p><span style=\"font-size: 16px;\">🧩 Analizar oraciones pieza a pieza.</span></p><p><span style=\"font-size: 16px;\">🎤 Recitar, debatir y defender tus ideas.</span></p><p><span style=\"font-size: 16px;\">✍️ Escribir textos propios con creatividad y corrección.</span></p><p><span style=\"font-size: 16px;\"><strong>Prepárate: detrás de cada palabra hay una historia… y tú también tienes muchas que contar.</strong></span></p>",
+        "coverUrl": "/uploads/edfdff11-9423-4381-b2d8-707e7400b018.png",
+        "coverAlign": "right",
+        "studentsCount": 0,
+        "openActivities": 0,
+        "pending": 0,
+        "ownerId": "u-elena",
+        "createdAt": "2026-10-06T15:04:42.554Z",
+        "updatedAt": "2026-10-06T15:07:21.214Z"
+      }
+    ],
+    "enrollment": [
+      {
+        "id": "cmutxpzem000jbfd5hmdoslq8",
+        "userId": "u-elena",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "roleInClass": "teacher",
+        "createdAt": "2026-10-04T14:47:18.908Z",
+        "updatedAt": "2026-10-04T14:47:18.908Z"
+      },
+      {
+        "id": "cmuty8j15000xbfd5hu5uljwh",
+        "userId": "u-marc",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "roleInClass": "student",
+        "createdAt": "2026-10-04T15:01:44.153Z",
+        "updatedAt": "2026-10-04T15:01:44.153Z"
+      },
+      {
+        "id": "cmuwt820q001blvcqh2in4ith",
+        "userId": "u-elena",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "roleInClass": "teacher",
+        "createdAt": "2026-10-06T15:04:42.554Z",
+        "updatedAt": "2026-10-06T15:04:42.554Z"
+      },
+      {
+        "id": "cmv0rb8c7000tligi2yesuhwv",
+        "userId": "cmutqyatu0013iojjqr7ylxky",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:22:16.183Z",
+        "updatedAt": "2026-10-09T09:22:16.183Z"
+      },
+      {
+        "id": "cmv0rgsnr000xligizz2y0czw",
+        "userId": "cmutqyaty0019iojj8ra1olmw",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:26:35.800Z",
+        "updatedAt": "2026-10-09T09:26:35.800Z"
+      },
+      {
+        "id": "cmv0rgwfq0011ligiqpxf8wsk",
+        "userId": "cmutqyaty0019iojj8ra1olmw",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:26:40.694Z",
+        "updatedAt": "2026-10-09T09:26:40.694Z"
+      },
+      {
+        "id": "cmv0rrsw90015ligi3pdkawvp",
+        "userId": "cmutqyau0001ciojj5kkec3b4",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:35:09.321Z",
+        "updatedAt": "2026-10-09T09:35:09.321Z"
+      },
+      {
+        "id": "cmv0rt4qj0019ligi4gxr0csq",
+        "userId": "cmutqyatp000yiojj14wmqidy",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:36:11.324Z",
+        "updatedAt": "2026-10-09T09:36:11.324Z"
+      },
+      {
+        "id": "cmv0rv50y001dligif5xqkv4x",
+        "userId": "cmutqyatw0016iojjx25ix8qr",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:37:45.010Z",
+        "updatedAt": "2026-10-09T09:37:45.010Z"
+      },
+      {
+        "id": "cmv0s134t001hligih9o3gd5g",
+        "userId": "u-marc",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "roleInClass": "student",
+        "createdAt": "2026-10-09T09:42:22.493Z",
+        "updatedAt": "2026-10-09T09:42:22.493Z"
+      }
+    ],
+    "classInvitation": [
+      {
+        "id": "cmuty7haz000lbfd5mnofblz6",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "email": "marc.soler@atria.edu",
+        "token": "2NMe3y6P7C7yWTyleSzLdnKzcwJfw6j_",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-11T15:00:55.259Z",
+        "acceptedAt": "2026-10-04T15:01:44.150Z",
+        "emailSentAt": "2026-10-04T15:00:56.764Z",
+        "createdAt": "2026-10-04T15:00:55.260Z",
+        "updatedAt": "2026-10-04T15:01:44.153Z"
+      },
+      {
+        "id": "cmuty7hb4000nbfd503tbad0x",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "email": "diego.lima@atria.edu",
+        "token": "ZN094WzbMZ9UNgxtqa-FU3phuTFDRHCp",
+        "status": "pending",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-21T08:59:24.582Z",
+        "acceptedAt": null,
+        "emailSentAt": "2026-10-04T15:00:56.703Z",
+        "createdAt": "2026-10-04T15:00:55.265Z",
+        "updatedAt": "2026-10-04T15:00:56.704Z"
+      },
+      {
+        "id": "cmuty7hb7000pbfd51as67hto",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "email": "sara.pons@atria.edu",
+        "token": "_F4ngmjr1d3K4_z2ZJln8ZMjMg0DdOAL",
+        "status": "pending",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-21T08:59:24.582Z",
+        "acceptedAt": null,
+        "emailSentAt": "2026-10-04T15:00:56.701Z",
+        "createdAt": "2026-10-04T15:00:55.268Z",
+        "updatedAt": "2026-10-04T15:00:56.703Z"
+      },
+      {
+        "id": "cmv0qq9420001ligisqvobj6c",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "email": "lucia.romero@atria.edu",
+        "token": "5_sSZVH8nmYPsDOfCW2HWlLYajcwHZEN",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:05:57.409Z",
+        "acceptedAt": "2026-10-09T09:22:16.179Z",
+        "emailSentAt": "2026-10-09T09:05:58.877Z",
+        "createdAt": "2026-10-09T09:05:57.410Z",
+        "updatedAt": "2026-10-09T09:22:16.183Z"
+      },
+      {
+        "id": "cmv0qq94b0003ligi91wd8ciu",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "email": "alba.garcia@atria.edu",
+        "token": "QwVv0bUtrjcgGpeouTPvCcDRjK4ee5Oe",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:05:57.419Z",
+        "acceptedAt": "2026-10-09T09:36:11.322Z",
+        "emailSentAt": "2026-10-09T09:05:58.934Z",
+        "createdAt": "2026-10-09T09:05:57.419Z",
+        "updatedAt": "2026-10-09T09:36:11.324Z"
+      },
+      {
+        "id": "cmv0qq94f0005ligi63czxeuf",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "email": "iker.mendoza@atria.edu",
+        "token": "pyjlEEO6qH_jI7T5_XZ-k_Ve3IWp1WBw",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:05:57.422Z",
+        "acceptedAt": "2026-10-09T09:37:45.008Z",
+        "emailSentAt": "2026-10-09T09:05:58.899Z",
+        "createdAt": "2026-10-09T09:05:57.423Z",
+        "updatedAt": "2026-10-09T09:37:45.010Z"
+      },
+      {
+        "id": "cmv0qq94i0007ligigbb9tjn2",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "email": "nadia.khan@atria.edu",
+        "token": "d-mbeTFRqHXh1fs6MXqvSjjVbXn0ErLs",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:05:57.426Z",
+        "acceptedAt": "2026-10-09T09:26:40.692Z",
+        "emailSentAt": "2026-10-09T09:05:58.958Z",
+        "createdAt": "2026-10-09T09:05:57.427Z",
+        "updatedAt": "2026-10-09T09:26:40.694Z"
+      },
+      {
+        "id": "cmv0qq94l0009ligix0tnxraa",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "email": "marc.soler@atria.edu",
+        "token": "E6tbJlXpZ-jhRyxDAMGroqB79UiQwwYE",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:05:57.429Z",
+        "acceptedAt": "2026-10-09T09:42:22.491Z",
+        "emailSentAt": "2026-10-09T09:05:58.908Z",
+        "createdAt": "2026-10-09T09:05:57.430Z",
+        "updatedAt": "2026-10-09T09:42:22.493Z"
+      },
+      {
+        "id": "cmv0qxjqp000lligirp4hc70d",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "email": "tomas.vidal@atria.edu",
+        "token": "Y2q-kbJJOKwKRPdBdFwyEZ8LMwLB4srJ",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:11:37.777Z",
+        "acceptedAt": "2026-10-09T09:35:09.319Z",
+        "emailSentAt": "2026-10-09T09:11:39.277Z",
+        "createdAt": "2026-10-09T09:11:37.777Z",
+        "updatedAt": "2026-10-09T09:35:09.321Z"
+      },
+      {
+        "id": "cmv0qxvlc000pligih81fpi1x",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "email": "nadia.khan@atria.edu",
+        "token": "Y3g_XR6Jn76_C6SX-zKabrTdCrxVa74n",
+        "status": "accepted",
+        "invitedById": "u-elena",
+        "expiresAt": "2026-10-16T09:11:53.135Z",
+        "acceptedAt": "2026-10-09T09:26:35.797Z",
+        "emailSentAt": "2026-10-09T09:11:54.611Z",
+        "createdAt": "2026-10-09T09:11:53.136Z",
+        "updatedAt": "2026-10-09T09:26:35.800Z"
+      }
+    ],
+    "module": [
+      {
+        "id": "cmutytdcq0011bfd59rxl240t",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "title": "Números enteros",
+        "description": "<p><span style=\"font-size: 16px;\">Temperaturas bajo cero, saldos en números rojos, plantas de un garaje: los números negativos están por todas partes. Aprenderemos a operar con ellos sin perdernos en los signos y a usar múltiplos y divisores para resolver problemas de repartos y coincidencias.</span></p>",
+        "coverUrl": "/uploads/b9e1d634-225a-4cce-8bd6-a2dc30522331.png",
+        "position": 0,
+        "done": false,
+        "createdAt": "2026-10-04T15:17:56.570Z",
+        "updatedAt": "2026-10-05T11:18:26.669Z"
+      },
+      {
+        "id": "cmutytkwq0013bfd57ny1v057",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "title": "Fracciones y decimales",
+        "description": "<p><span style=\"font-size: 16px;\">Media pizza, tres cuartos de hora, un 0,5 de descuento por kilo. En esta unidad operaremos con fracciones y decimales y los usaremos para repartir, comparar y adaptar cantidades.</span></p>",
+        "coverUrl": "/uploads/1843a73b-70e0-4218-8c32-0f46bfac4072.png",
+        "position": 1,
+        "done": false,
+        "createdAt": "2026-10-04T15:18:06.362Z",
+        "updatedAt": "2026-10-05T11:18:34.604Z"
+      },
+      {
+        "id": "cmutyts3x0015bfd5lxi8g0zh",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "title": "Potencias y raíces",
+        "description": "<p><span style=\"font-size: 16px;\">¿Cómo se escribe la distancia al Sol sin llenar una línea de ceros? Con potencias. Aprenderemos sus propiedades, la notación científica y la raíz cuadrada, y las usaremos para construir el Sistema Solar a escala.</span></p>",
+        "coverUrl": "/uploads/af70e132-e12e-4d03-87f9-ba8cf18f61e5.png",
+        "position": 2,
+        "done": false,
+        "createdAt": "2026-10-04T15:18:15.694Z",
+        "updatedAt": "2026-10-05T15:54:11.532Z"
+      },
+      {
+        "id": "cmutyu0qr0017bfd5vbnxp6vp",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "title": "Proporcionalidad y porcentajes",
+        "description": "<p><span style=\"font-size: 16px;\">¿Dos descuentos del 20 % son un 40 %? ¿Cuánto se tarda si trabaja el doble de gente? En esta unidad aprenderás a detectar cuándo dos magnitudes son proporcionales y a calcular porcentajes sin que te engañe ninguna oferta.</span></p>",
+        "coverUrl": "/uploads/8c012744-f7fc-4b20-846a-c0f7d6deedf6.png",
+        "position": 3,
+        "done": false,
+        "createdAt": "2026-10-04T15:18:26.883Z",
+        "updatedAt": "2026-10-05T11:18:59.845Z"
+      },
+      {
+        "id": "cmuwtgi4h001dlvcqe8ikxw78",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "title": "Las lenguas que nos rodean",
+        "description": "<p><span style=\"font-size: 16px;\">En España conviven varias lenguas, y el español suena distinto en Sevilla, en Bogotá o en un grupo de WhatsApp. En esta unidad descubriremos por qué ninguna forma de hablar es mejor que otra y aprenderemos a usar cada registro en su sitio.</span></p>",
+        "coverUrl": "/uploads/5b781a90-c809-4329-a72f-9c48b8c85c56.png",
+        "position": 0,
+        "done": false,
+        "createdAt": "2026-10-06T15:11:16.674Z",
+        "updatedAt": "2026-10-08T15:44:14.641Z"
+      },
+      {
+        "id": "cmuwtgxxk001flvcqtgcumksp",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "title": "Héroes y juglares: la Edad Media",
+        "description": "<p><span style=\"font-size: 16px;\">Antes de los libros impresos, las historias viajaban de plaza en plaza en boca de los juglares. Conoceremos al Cid, a los monjes que escribían en verso y los romances que se cantaban de memoria, y acabaremos recitando uno.</span></p>",
+        "coverUrl": "/uploads/6c40b676-ba4f-4d4b-8c78-a66405290954.png",
+        "position": 1,
+        "done": false,
+        "createdAt": "2026-10-06T15:11:37.161Z",
+        "updatedAt": "2026-10-08T15:46:19.419Z"
+      },
+      {
+        "id": "cmuwth29n001hlvcq3ei7keca",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "title": "La oración y sus piezas",
+        "description": "<p><span style=\"font-size: 16px;\">Una oración es como un mecanismo: cada pieza cumple una función. Aprenderemos a encontrar el sujeto y el predicado y a reconocer los complementos del verbo sin perdernos.</span></p>",
+        "coverUrl": "/uploads/5147d758-91d7-4f46-8109-4e774fe68a03.png",
+        "position": 2,
+        "done": false,
+        "createdAt": "2026-10-06T15:11:42.779Z",
+        "updatedAt": "2026-10-08T15:46:24.041Z"
+      },
+      {
+        "id": "cmuwth6bx001jlvcqsu613c6n",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "title": "Del Conde Lucanor a La Celestina",
+        "description": "<p><span style=\"font-size: 16px;\">Cuentos con moraleja, un arcipreste con mucho humor, un poema para un padre muerto y una alcahueta que lo enreda todo. Veremos cómo la literatura medieval se acerca a las personas de carne y hueso.</span></p>",
+        "coverUrl": "/uploads/56b9eae7-8304-4dfe-b4e7-9f11d1f85fbf.png",
+        "position": 3,
+        "done": false,
+        "createdAt": "2026-10-06T15:11:48.045Z",
+        "updatedAt": "2026-10-08T15:47:18.348Z"
+      }
+    ],
+    "onlineSession": [
+      {
+        "id": "cmuu090bo0019bfd5hdqe3q18",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "provider": "meet",
+        "label": "Presentación del curso y dudas",
+        "url": "https://meet.google.com/tvn-dkyn-zkk",
+        "startsAt": "2026-11-10T09:00:00.000Z",
+        "createdAt": "2026-10-04T15:58:05.796Z",
+        "updatedAt": "2026-10-04T15:58:05.796Z"
+      },
+      {
+        "id": "cmuvcu9zo00078r50is4kx9q7",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "provider": "meet",
+        "label": "Sala de dudas de fracciones",
+        "url": "https://meet.google.com/nxd-fuwd-xir",
+        "startsAt": "2026-11-17T09:00:00.000Z",
+        "createdAt": "2026-10-05T14:38:19.668Z",
+        "updatedAt": "2026-10-05T14:38:19.668Z"
+      },
+      {
+        "id": "cmuvfo3a8000i8r50ucwq9xfd",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "provider": "meet",
+        "label": "El Sistema Solar a escala: cómo empezar el proyecto",
+        "url": "https://meet.google.com/xfy-vtbb-oms",
+        "startsAt": "2026-11-24T09:00:00.000Z",
+        "createdAt": "2026-10-05T15:57:29.888Z",
+        "updatedAt": "2026-10-05T15:57:29.888Z"
+      },
+      {
+        "id": "cmuwcajg1000blvcqc8epa2ue",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "provider": "meet",
+        "label": "Tutoría de dudas antes del cuestionario",
+        "url": "https://meet.google.com/osz-pcoe-afs",
+        "startsAt": "2026-12-02T16:00:00.000Z",
+        "createdAt": "2026-10-06T07:10:44.978Z",
+        "updatedAt": "2026-10-06T07:10:44.978Z"
+      },
+      {
+        "id": "cmuxzbzqr0001l02wfoyam3mm",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "provider": "meet",
+        "label": "Presentación del curso y dudas",
+        "url": "https://meet.google.com/opg-hvjp-feo",
+        "startsAt": "2026-11-02T09:00:00.000Z",
+        "createdAt": "2026-10-07T10:43:30.099Z",
+        "updatedAt": "2026-10-07T11:00:16.000Z"
+      },
+      {
+        "id": "cmuxzzbz0000al02w81ws6eo9",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "provider": "meet",
+        "label": "Taller de romances: cómo recitar",
+        "url": "https://meet.google.com/asf-xwcn-ahr",
+        "startsAt": "2026-11-16T09:00:00.000Z",
+        "createdAt": "2026-10-07T11:01:39.036Z",
+        "updatedAt": "2026-10-07T11:01:39.036Z"
+      },
+      {
+        "id": "cmuy11f2l000tl02w9inqa9cx",
+        "moduleId": "cmuwth29n001hlvcq3ei7keca",
+        "provider": "meet",
+        "label": "Sala de dudas de sintaxis",
+        "url": "https://meet.google.com/ysi-ptxu-bjo",
+        "startsAt": "2026-11-23T09:00:00.000Z",
+        "createdAt": "2026-10-07T11:31:15.982Z",
+        "updatedAt": "2026-10-07T11:31:15.982Z"
+      },
+      {
+        "id": "cmuy13ofs000vl02w9sg715qh",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "provider": "meet",
+        "label": "Lectura dramatizada de La Celestina",
+        "url": "https://meet.google.com/iqd-sjmu-gkt",
+        "startsAt": "2026-12-07T09:00:00.000Z",
+        "createdAt": "2026-10-07T11:33:01.433Z",
+        "updatedAt": "2026-10-07T11:33:01.433Z"
+      }
+    ],
+    "resource": [
+      {
+        "id": "cmuv5x6zi000113clasdtzeig",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "type": "web",
+        "label": "Khan Academy: números negativos",
+        "meta": "",
+        "state": "",
+        "url": "https://es.khanacademy.org/math/arithmetic-home/negative-numbers",
+        "fileId": null,
+        "createdAt": "2026-10-05T11:24:38.430Z",
+        "updatedAt": "2026-10-05T11:24:38.430Z"
+      },
+      {
+        "id": "cmuv5ypw4000313clfsidkizb",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "type": "youtube",
+        "label": "Jerarquía de las operaciones paso a paso",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=XV5PiV2-91U",
+        "fileId": null,
+        "createdAt": "2026-10-05T11:25:49.588Z",
+        "updatedAt": "2026-10-05T11:25:49.588Z"
+      },
+      {
+        "id": "cmuv67rke00028r50mtt68vfc",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "type": "document-text",
+        "label": "Fichas de operaciones combinadas con soluciones",
+        "meta": "PDF · 43 KB",
+        "state": "",
+        "url": "/uploads/5b31ad95-8bff-4c03-9a3d-386102e72f90.pdf",
+        "fileId": "cmuv67rkb00008r50c6hdlq5t",
+        "createdAt": "2026-10-05T11:32:51.662Z",
+        "updatedAt": "2026-10-05T11:33:17.535Z"
+      },
+      {
+        "id": "cmuv69qku00058r50cf9qlnob",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "type": "document-text",
+        "label": "Apuntes: números enteros y divisibilidad",
+        "meta": "PDF · 3.2 MB",
+        "state": "",
+        "url": "/uploads/420d9b5c-b80f-47e6-9e82-878cb6ed91db.pdf",
+        "fileId": "cmuv69qkt00038r502uvd1uba",
+        "createdAt": "2026-10-05T11:34:23.695Z",
+        "updatedAt": "2026-10-05T11:34:23.695Z"
+      },
+      {
+        "id": "cmuvcv9uv000a8r50cm2ualzz",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "type": "document-text",
+        "label": "Operaciones con fracciones y decimales",
+        "meta": "PDF · 3.0 MB",
+        "state": "",
+        "url": "/uploads/c0a55b20-7224-45b7-8469-b25c605991c4.pdf",
+        "fileId": "cmuvcv9us00088r500o9bt1xl",
+        "createdAt": "2026-10-05T14:39:06.152Z",
+        "updatedAt": "2026-10-05T14:39:29.754Z"
+      },
+      {
+        "id": "cmuvcwqdb000c8r50s0ybnj6t",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "type": "youtube",
+        "label": "Fracción de una cantidad en 5 minutos",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=oeEjUX6R07k",
+        "fileId": null,
+        "createdAt": "2026-10-05T14:40:14.207Z",
+        "updatedAt": "2026-10-05T14:40:14.207Z"
+      },
+      {
+        "id": "cmuvcyyo6000e8r50u94z1aqe",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "type": "vimeo",
+        "label": "De decimal periódico a fracción",
+        "meta": "",
+        "state": "",
+        "url": "https://vimeo.com/132078315?fl=pl&fe=ti",
+        "fileId": null,
+        "createdAt": "2026-10-05T14:41:58.278Z",
+        "updatedAt": "2026-10-05T14:41:58.278Z"
+      },
+      {
+        "id": "cmuvd0s67000g8r50yc3jkm9b",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "type": "web",
+        "label": "Fracciones con barras y círculos",
+        "meta": "",
+        "state": "",
+        "url": "https://www.geogebra.org/m/naxkdeh3?lang=es-ES",
+        "fileId": null,
+        "createdAt": "2026-10-05T14:43:23.167Z",
+        "updatedAt": "2026-10-05T14:43:23.167Z"
+      },
+      {
+        "id": "cmuwbrqe60001lvcqtcemejan",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "type": "youtube",
+        "label": "Notación científica explicada",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=cVEO-u1xIVA",
+        "fileId": null,
+        "createdAt": "2026-10-06T06:56:07.519Z",
+        "updatedAt": "2026-10-06T06:56:07.519Z"
+      },
+      {
+        "id": "cmuwbslr50003lvcqts10xhnq",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "type": "web",
+        "label": "El Sistema Solar",
+        "meta": "",
+        "state": "",
+        "url": "https://spaceplace.nasa.gov/menu/solar-system/sp/",
+        "fileId": null,
+        "createdAt": "2026-10-06T06:56:48.162Z",
+        "updatedAt": "2026-10-06T06:56:48.162Z"
+      },
+      {
+        "id": "cmuwbw0hk0006lvcqjidmh6qf",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "type": "document-text",
+        "label": "Tabla de distancias y diámetros de los planetas",
+        "meta": "PDF · 1.2 MB",
+        "state": "",
+        "url": "/uploads/7d8bd882-f22c-421d-aee6-e946e0b2deb4.pdf",
+        "fileId": "cmuwbw0hf0004lvcqikl7nlyz",
+        "createdAt": "2026-10-06T06:59:27.225Z",
+        "updatedAt": "2026-10-06T06:59:27.225Z"
+      },
+      {
+        "id": "cmuwc70j90009lvcqvxq5tikn",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "type": "document-text",
+        "label": "Potencias, notación científica y raíces",
+        "meta": "PDF · 771 KB",
+        "state": "",
+        "url": "/uploads/1ace0377-0489-40c0-861c-9d86d0344e1b.pdf",
+        "fileId": "cmuwc70j60007lvcq07s5fmo8",
+        "createdAt": "2026-10-06T07:08:00.501Z",
+        "updatedAt": "2026-10-06T07:08:00.501Z"
+      },
+      {
+        "id": "cmuwcmdoe000dlvcqobndingn",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "youtube",
+        "label": "La regla de tres sin trucos",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=Xphb-tzJj24",
+        "fileId": null,
+        "createdAt": "2026-10-06T07:19:57.374Z",
+        "updatedAt": "2026-10-06T07:19:57.374Z"
+      },
+      {
+        "id": "cmuwcn7eu000flvcq4rkyd5r3",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "youtube",
+        "label": "Descuentos encadenados",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=wgnUNrjeRTw",
+        "fileId": null,
+        "createdAt": "2026-10-06T07:20:35.910Z",
+        "updatedAt": "2026-10-06T07:20:35.910Z"
+      },
+      {
+        "id": "cmuwcqj2q000hlvcqfa29xqc6",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "web",
+        "label": "Folleto real de supermercado para analizar",
+        "meta": "",
+        "state": "",
+        "url": "https://issuu.com/ofertassupermercados/docs/folleto-dia-del-8-septiembre-al-21-",
+        "fileId": null,
+        "createdAt": "2026-10-06T07:23:10.994Z",
+        "updatedAt": "2026-10-06T07:23:17.601Z"
+      },
+      {
+        "id": "cmuwcu6cf000klvcqvha7a1ps",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "document-text",
+        "label": "Porcentajes e índice de variación",
+        "meta": "PDF · 238 KB",
+        "state": "",
+        "url": "/uploads/3c9c5296-ae14-48b4-9879-bb66a0a7cd26.pdf",
+        "fileId": "cmuwcu6cb000ilvcq7rtc2zm8",
+        "createdAt": "2026-10-06T07:26:01.119Z",
+        "updatedAt": "2026-10-06T07:26:01.119Z"
+      },
+      {
+        "id": "cmuwcwh46000nlvcqh40cda46",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "document-text",
+        "label": "Proporcionalidad directa e inversa",
+        "meta": "PDF · 2.8 MB",
+        "state": "",
+        "url": "/uploads/87383e96-c21e-48b2-9b6f-ceccd8b4be67.pdf",
+        "fileId": "cmuwcwh44000llvcq8rf8cu31",
+        "createdAt": "2026-10-06T07:27:48.391Z",
+        "updatedAt": "2026-10-06T07:27:48.391Z"
+      },
+      {
+        "id": "cmuxzeoj70003l02wznb726ei",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "type": "youtube",
+        "label": "Las lenguas de España en un mapa",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=2sO4ezjrjDE",
+        "fileId": null,
+        "createdAt": "2026-10-07T10:45:35.539Z",
+        "updatedAt": "2026-10-07T10:45:35.539Z"
+      },
+      {
+        "id": "cmuxzfqza0005l02w0n7tvei4",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "type": "web",
+        "label": "Variedades del español",
+        "meta": "",
+        "state": "",
+        "url": "https://cvc.cervantes.es/ensenanza/biblioteca_ele/sicele/sicele03/006_matiasmonheler.htm",
+        "fileId": null,
+        "createdAt": "2026-10-07T10:46:25.366Z",
+        "updatedAt": "2026-10-07T10:46:25.366Z"
+      },
+      {
+        "id": "cmuxzqpny0008l02wq271joka",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "type": "document-text",
+        "label": "Lenguas de España y variedades del español",
+        "meta": "PDF · 658 KB",
+        "state": "",
+        "url": "/uploads/0e9403b1-af47-4195-9adc-c9c123617546.pdf",
+        "fileId": "cmuxzqpnt0006l02w4n697lnm",
+        "createdAt": "2026-10-07T10:54:56.879Z",
+        "updatedAt": "2026-10-07T10:54:56.879Z"
+      },
+      {
+        "id": "cmuy0c4zn000dl02w1r19knur",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "type": "document-text",
+        "label": "Mester de juglaría y de clerecía",
+        "meta": "PDF · 128 KB",
+        "state": "",
+        "url": "/uploads/854e91e9-81e6-4bfb-be35-cc3c92290436.pdf",
+        "fileId": "cmuy0c4zm000bl02w4mcq3j37",
+        "createdAt": "2026-10-07T11:11:36.516Z",
+        "updatedAt": "2026-10-07T11:11:36.516Z"
+      },
+      {
+        "id": "cmuy0cjp4000gl02wiypvro9g",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "type": "document-text",
+        "label": "Cantar de mio Cid, Berceo y Romancero (fragmentos)",
+        "meta": "PDF · 779 KB",
+        "state": "",
+        "url": "/uploads/d63b9e5c-71d1-4206-befd-b6a6dec90143.pdf",
+        "fileId": "cmuy0cjp1000el02wfkzoq3y2",
+        "createdAt": "2026-10-07T11:11:55.576Z",
+        "updatedAt": "2026-10-07T11:11:55.576Z"
+      },
+      {
+        "id": "cmuy0dbh6000il02wxk3q20of",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "type": "youtube",
+        "label": "Así recitaba un juglar",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=M_H0Y7T47no",
+        "fileId": null,
+        "createdAt": "2026-10-07T11:12:31.579Z",
+        "updatedAt": "2026-10-07T11:12:31.579Z"
+      },
+      {
+        "id": "cmuy0esqn000kl02w7wotnhr4",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "type": "web",
+        "label": "Romancero viejo",
+        "meta": "",
+        "state": "",
+        "url": "https://www.cervantesvirtual.com/obra-visor/romancero-viejo--0/html/fedb667c-82b1-11df-acc7-002185ce6064_2.html",
+        "fileId": null,
+        "createdAt": "2026-10-07T11:13:40.607Z",
+        "updatedAt": "2026-10-07T11:13:40.607Z"
+      },
+      {
+        "id": "cmuy0l3qa000nl02wcrtybkz8",
+        "moduleId": "cmuwth29n001hlvcq3ei7keca",
+        "type": "document-text",
+        "label": "Sujeto, predicado y complementos",
+        "meta": "PDF · 2.8 MB",
+        "state": "",
+        "url": "/uploads/072c5416-d9e7-4e36-b6f0-0ca304414d13.pdf",
+        "fileId": "cmuy0l3q9000ll02wjwtrn3k3",
+        "createdAt": "2026-10-07T11:18:34.787Z",
+        "updatedAt": "2026-10-07T11:18:34.787Z"
+      },
+      {
+        "id": "cmuy0tlvt000pl02wf43bjkmw",
+        "moduleId": "cmuwth29n001hlvcq3ei7keca",
+        "type": "youtube",
+        "label": "Cómo distinguir el CD del CI",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=F0bi99nu1MU",
+        "fileId": null,
+        "createdAt": "2026-10-07T11:25:11.562Z",
+        "updatedAt": "2026-10-07T11:25:11.562Z"
+      },
+      {
+        "id": "cmuy0xce1000rl02wb4rs5oc4",
+        "moduleId": "cmuwth29n001hlvcq3ei7keca",
+        "type": "youtube",
+        "label": "Atributo o predicativo en 5 minutos",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=b_NIr1bisUQ",
+        "fileId": null,
+        "createdAt": "2026-10-07T11:28:05.882Z",
+        "updatedAt": "2026-10-07T11:28:05.882Z"
+      },
+      {
+        "id": "cmuy1b2u1000yl02wlpdaqwdg",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "type": "document-text",
+        "label": "La literatura de los siglos XIV y XV",
+        "meta": "PDF · 576 KB",
+        "state": "",
+        "url": "/uploads/c8f4e7f2-cbec-479a-9e3c-810b0c2c6501.pdf",
+        "fileId": "cmuy1b2tx000wl02w7zqir0h9",
+        "createdAt": "2026-10-07T11:38:46.681Z",
+        "updatedAt": "2026-10-07T11:38:46.681Z"
+      },
+      {
+        "id": "cmuy1bxdh0011l02w4iedx75u",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "type": "document-text",
+        "label": "El conde Lucanor",
+        "meta": "PDF · 6.4 MB",
+        "state": "",
+        "url": "/uploads/d7374515-b4d4-416d-a5e2-663568594be2.pdf",
+        "fileId": "cmuy1bxdf000zl02w7wjzbwgw",
+        "createdAt": "2026-10-07T11:39:26.261Z",
+        "updatedAt": "2026-10-07T11:39:26.261Z"
+      },
+      {
+        "id": "cmuy1coac0013l02ws04hgfuj",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "type": "youtube",
+        "label": "Las Coplas de Jorge Manrique explicadas",
+        "meta": "",
+        "state": "",
+        "url": "https://www.youtube.com/watch?v=PE4oB4J7XnY",
+        "fileId": null,
+        "createdAt": "2026-10-07T11:40:01.140Z",
+        "updatedAt": "2026-10-07T11:40:01.140Z"
+      },
+      {
+        "id": "cmuy1e3gv0015l02wkst9oun5",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "type": "web",
+        "label": "La Celestina",
+        "meta": "",
+        "state": "",
+        "url": "https://www.cervantesvirtual.com/obra-visor/la-celestina--1/html/",
+        "fileId": null,
+        "createdAt": "2026-10-07T11:41:07.472Z",
+        "updatedAt": "2026-10-07T11:41:07.472Z"
+      }
+    ],
+    "activity": [
+      {
+        "id": "cmuwrnszi000plvcqvxhp0q3w",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "type": "cuestionario",
+        "title": "Temperaturas y saldos",
+        "instructions": "",
+        "dueAt": "2026-10-29",
+        "dueDate": null,
+        "points": 8,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "cwv1u7",
+              "kind": "multiple",
+              "text": "A las 7:00 hay −4 °C y a mediodía la temperatura sube 9 grados. ¿Qué temperatura hace?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "dgvqrv",
+                  "text": "5 °C"
+                },
+                {
+                  "id": "35liv1",
+                  "text": "−13 °C"
+                },
+                {
+                  "id": "rcgink",
+                  "text": "13 °C"
+                }
+              ]
+            },
+            {
+              "id": "m34mts",
+              "kind": "multiple",
+              "text": "Tienes 25 € en la cuenta y pagas una compra de 40 €. ¿Cuál es tu saldo? ",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "e4ykir",
+                  "text": "15 €"
+                },
+                {
+                  "id": "3vz9of",
+                  "text": "−15 €"
+                },
+                {
+                  "id": "dn8uz2",
+                  "text": "−65 €"
+                }
+              ]
+            },
+            {
+              "id": "leieo9",
+              "kind": "multiple",
+              "text": "¿Cuánto es (−3) · (−5)?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "x8uam2",
+                  "text": "−15 "
+                },
+                {
+                  "id": "c0b5ho",
+                  "text": "15"
+                },
+                {
+                  "id": "6mbztd",
+                  "text": "−8"
+                }
+              ]
+            },
+            {
+              "id": "qmoe2f",
+              "kind": "multiple",
+              "text": "¿Cuánto es (−12) : 4?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "vdb6gf",
+                  "text": "3"
+                },
+                {
+                  "id": "gil01x",
+                  "text": "−3"
+                },
+                {
+                  "id": "2ng812",
+                  "text": "−8"
+                }
+              ]
+            },
+            {
+              "id": "z2etmu",
+              "kind": "multiple",
+              "text": "Calcula 5 − 3 · (−2).",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "fyfj8c",
+                  "text": "4"
+                },
+                {
+                  "id": "tm8dvx",
+                  "text": "11"
+                },
+                {
+                  "id": "5giyvi",
+                  "text": "−1"
+                }
+              ]
+            },
+            {
+              "id": "20t04q",
+              "kind": "multiple",
+              "text": "Estás en la planta 4 de un edificio y bajas en ascensor hasta el garaje, en la planta −2. ¿Cuántas plantas has bajado?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "vdvic1",
+                  "text": "2"
+                },
+                {
+                  "id": "9lmu4j",
+                  "text": "6"
+                },
+                {
+                  "id": "yfq7dd",
+                  "text": "4"
+                }
+              ]
+            },
+            {
+              "id": "2qe5y5",
+              "kind": "multiple",
+              "text": "¿Cuál es el m.c.m. de 6 y 8?",
+              "points": 1,
+              "correct": 2,
+              "options": [
+                {
+                  "id": "8krzlo",
+                  "text": "2"
+                },
+                {
+                  "id": "jsi6fh",
+                  "text": "14"
+                },
+                {
+                  "id": "17eifh",
+                  "text": "24"
+                }
+              ]
+            },
+            {
+              "id": "oiuguy",
+              "kind": "multiple",
+              "text": "¿Cuál es el m.c.d. de 18 y 24?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "pui856",
+                  "text": "6"
+                },
+                {
+                  "id": "50rxt5",
+                  "text": "3"
+                },
+                {
+                  "id": "etwyvj",
+                  "text": "12"
+                }
+              ]
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-06T14:20:58.110Z",
+        "updatedAt": "2026-10-14T08:18:51.278Z"
+      },
+      {
+        "id": "cmuwrp83y000rlvcqvh1dk9f4",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutytdcq0011bfd59rxl240t",
+        "type": "tarea",
+        "title": "Problemas de m.c.m. y m.c.d",
+        "instructions": "<p><span style=\"font-size: 16px;\">🧩 <strong>El reto:</strong> ¿cuándo vuelven a coincidir dos cosas que se repiten? ¿Cómo repartir algo en grupos iguales sin que sobre nada? Para eso sirven el <strong>m.c.m.</strong> y el <strong>m.c.d.</strong></span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tienes que hacer:</strong> resuelve estos 6 problemas. En cada uno, explica <strong>si usas el m.c.m. o el m.c.d. y por qué</strong>.</span></p><ol><li><p><span style=\"font-size: 16px;\">🚌 Dos autobuses salen juntos a las 8:00. Uno pasa cada 12 minutos y el otro cada 18. ¿A qué hora vuelven a coincidir?</span></p></li><li><p><span style=\"font-size: 16px;\">🧱 Quieres cubrir un suelo de 360 cm × 240 cm con baldosas cuadradas, lo más grandes posible y sin cortar ninguna. ¿Qué lado tienen y cuántas necesitas?</span></p></li><li><p><span style=\"font-size: 16px;\">🍬 Tienes 24 caramelos y 36 piruletas y quieres hacer el mayor número de bolsas iguales. ¿Cuántas bolsas haces y qué lleva cada una?</span></p></li><li><p><span style=\"font-size: 16px;\">💡 Dos luces se encienden juntas. Una parpadea cada 4 segundos y la otra cada 6. ¿Cada cuánto coinciden?</span></p></li><li><p><span style=\"font-size: 16px;\">🏃 Ana da una vuelta a la pista en 3 minutos y Luis en 5. Si salen juntos, ¿cuándo vuelven a cruzarse en la salida?</span></p></li><li><p><span style=\"font-size: 16px;\">🎀 Tienes dos cintas de 30 cm y 45 cm y quieres cortarlas en trozos iguales lo más largos posible. ¿Cuánto mide cada trozo?</span></p></li></ol><p></p>",
+        "dueAt": "2026-11-05",
+        "dueDate": null,
+        "points": 10,
+        "format": "Texto",
+        "allowLate": false,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-06T14:22:04.366Z",
+        "updatedAt": "2026-10-14T08:19:14.348Z"
+      },
+      {
+        "id": "cmuwrwhrn000tlvcqp7o2p2x4",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "type": "cuestionario",
+        "title": "Fracciones en la vida diaria",
+        "instructions": "",
+        "dueAt": "2026-11-16",
+        "dueDate": null,
+        "points": 8,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "hg70i3",
+              "kind": "multiple",
+              "text": "¿Cuánto son los 3/4 de 60 €?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "45z50l",
+                  "text": "40 €"
+                },
+                {
+                  "id": "e5f1q0",
+                  "text": "45 €"
+                },
+                {
+                  "id": "cnwk54",
+                  "text": "15 €"
+                }
+              ]
+            },
+            {
+              "id": "j8yso6",
+              "kind": "multiple",
+              "text": "¿Cuánto es 1/2 + 1/3?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "cq0msp",
+                  "text": "5/6"
+                },
+                {
+                  "id": "19vxe1",
+                  "text": "2/5"
+                },
+                {
+                  "id": "682u75",
+                  "text": "1/6"
+                }
+              ]
+            },
+            {
+              "id": "gw189b",
+              "kind": "multiple",
+              "text": "¿Cuánto es 2/3 · 9/4?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "tpd4oo",
+                  "text": "3/2"
+                },
+                {
+                  "id": "tbgp3j",
+                  "text": "18/7"
+                },
+                {
+                  "id": "x1mg9b",
+                  "text": "11/7"
+                }
+              ]
+            },
+            {
+              "id": "mc1whs",
+              "kind": "multiple",
+              "text": "¿Qué fracción es mayor?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "yvlawz",
+                  "text": "3/5"
+                },
+                {
+                  "id": "angbpy",
+                  "text": "2/3"
+                },
+                {
+                  "id": "k4r4ui",
+                  "text": "7/12"
+                }
+              ]
+            },
+            {
+              "id": "5a0oim",
+              "kind": "multiple",
+              "text": "¿Qué fracción es 0,75?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "zbrsu8",
+                  "text": "3/5"
+                },
+                {
+                  "id": "110iii",
+                  "text": "3/4"
+                },
+                {
+                  "id": "tofuxh",
+                  "text": "7/5"
+                }
+              ]
+            },
+            {
+              "id": "u5tl4y",
+              "kind": "multiple",
+              "text": "¿Qué fracción es 0,333…?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "u30uhd",
+                  "text": "3/10"
+                },
+                {
+                  "id": "tbyhqp",
+                  "text": "1/3"
+                },
+                {
+                  "id": "ztfqwy",
+                  "text": "33/10"
+                }
+              ]
+            },
+            {
+              "id": "2x8tn7",
+              "kind": "multiple",
+              "text": "Tú te comes 2/8 de una pizza y tu amigo 3/8. ¿Qué fracción queda?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "n8n90p",
+                  "text": "3/8"
+                },
+                {
+                  "id": "l9u5f1",
+                  "text": "5/8"
+                },
+                {
+                  "id": "ion324",
+                  "text": "1/8"
+                }
+              ]
+            },
+            {
+              "id": "4wo0lo",
+              "kind": "multiple",
+              "text": "¿Cuánto es (1/2 + 1/4) : 3/4?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "xyit58",
+                  "text": "1"
+                },
+                {
+                  "id": "mb7gkt",
+                  "text": "3/16"
+                },
+                {
+                  "id": "f860q7",
+                  "text": "9/16"
+                }
+              ]
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-06T14:27:43.475Z",
+        "updatedAt": "2026-10-06T14:27:43.475Z"
+      },
+      {
+        "id": "cmuwryxta000vlvcqnpttak13",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutytkwq0013bfd57ny1v057",
+        "type": "tarea",
+        "title": "La receta para 10",
+        "instructions": "<p><span style=\"font-size: 16px;\">🍕 <strong>El reto:</strong> tienes una receta para <strong>4 personas</strong>, pero vienen <strong>10</strong> a comer. ¿Cuánto necesitas de cada ingrediente? Las fracciones te van a salvar la cena.</span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tienes que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">📖 Elige una <strong>receta real para 4 personas</strong>, de casa o de internet, con al menos 5 ingredientes.</span></p></li><li><p><span style=\"font-size: 16px;\">✖️ Calcula por qué número hay que multiplicar cada cantidad. <strong>Pista:</strong> 10/4 = 5/2.</span></p></li><li><p><span style=\"font-size: 16px;\">🧮 Adapta <strong>todos los ingredientes</strong>, escribiendo cada cálculo con fracciones. Ejemplo: 3/4 de vaso de leche · 5/2 = 15/8 = <strong>1 vaso y 7/8</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">🤔 Explica en dos líneas qué ingrediente fue más difícil de adaptar y por qué (huevos, pellizcos, cucharadas…).</span></p></li></ol><p><span style=\"font-size: 16px;\">⭐ <strong>Extra:</strong> si la cocinas, sube una foto del resultado.</span></p>",
+        "dueAt": "2026-11-16",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-06T14:29:37.582Z",
+        "updatedAt": "2026-10-14T08:19:40.070Z"
+      },
+      {
+        "id": "cmuws81eo000xlvcqjhg794vr",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "type": "cuestionario",
+        "title": "Propiedades de las potencias",
+        "instructions": "",
+        "dueAt": "2026-11-22",
+        "dueDate": null,
+        "points": 8,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "r1k0lf",
+              "kind": "multiple",
+              "text": "¿Cuánto es 2³ · 2⁴?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "632jmp",
+                  "text": "2⁷"
+                },
+                {
+                  "id": "26n6na",
+                  "text": " 2¹²"
+                },
+                {
+                  "id": "xzgfhx",
+                  "text": "4⁷"
+                }
+              ]
+            },
+            {
+              "id": "bado2c",
+              "kind": "multiple",
+              "text": "¿Cuánto es 5⁶ : 5²?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "be677a",
+                  "text": "5⁴"
+                },
+                {
+                  "id": "9108s2",
+                  "text": "5³"
+                },
+                {
+                  "id": "81d2i0",
+                  "text": "1³"
+                }
+              ]
+            },
+            {
+              "id": "hoggtg",
+              "kind": "multiple",
+              "text": "¿Cuánto es (3²)³?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "m5padu",
+                  "text": "3⁵"
+                },
+                {
+                  "id": "n6yyzd",
+                  "text": "3⁶"
+                },
+                {
+                  "id": "th6xrs",
+                  "text": "9⁵"
+                }
+              ]
+            },
+            {
+              "id": "pq0x3i",
+              "kind": "multiple",
+              "text": "¿Cuánto es 7⁰?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "u78c06",
+                  "text": "0"
+                },
+                {
+                  "id": "maidvo",
+                  "text": "1"
+                },
+                {
+                  "id": "6me4fe",
+                  "text": " 7"
+                }
+              ]
+            },
+            {
+              "id": "og3buc",
+              "kind": "multiple",
+              "text": "¿Cuánto es 2⁻³?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "szy1jb",
+                  "text": "−8"
+                },
+                {
+                  "id": "bca1tt",
+                  "text": "1/8"
+                },
+                {
+                  "id": "nhj0qt",
+                  "text": "−6"
+                }
+              ]
+            },
+            {
+              "id": "4x0bms",
+              "kind": "multiple",
+              "text": "La Tierra está a unos 150 000 000 km del Sol. ¿Cómo se escribe en notación científica?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "oiofpk",
+                  "text": "15 · 10⁷"
+                },
+                {
+                  "id": "yi0e5n",
+                  "text": "1,5 · 10⁸"
+                },
+                {
+                  "id": "w34lzp",
+                  "text": "1,5 · 10⁷"
+                }
+              ]
+            },
+            {
+              "id": "jyn7x2",
+              "kind": "multiple",
+              "text": "¿Cuánto es √144?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "45i6ch",
+                  "text": "12"
+                },
+                {
+                  "id": "9sbmnn",
+                  "text": "72"
+                },
+                {
+                  "id": "gn6k31",
+                  "text": "14"
+                }
+              ]
+            },
+            {
+              "id": "umfh71",
+              "kind": "multiple",
+              "text": "¿Entre qué dos números enteros está √50?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "lok6ga",
+                  "text": "6 y 7"
+                },
+                {
+                  "id": "ywvqmk",
+                  "text": "7 y 8"
+                },
+                {
+                  "id": "xui1mu",
+                  "text": "25 y 26"
+                }
+              ]
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-06T14:36:42.145Z",
+        "updatedAt": "2026-10-06T14:36:42.145Z"
+      },
+      {
+        "id": "cmuws9k7i000zlvcqwzejbd2q",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutyts3x0015bfd5lxi8g0zh",
+        "type": "proyecto",
+        "title": "El Sistema Solar a escala",
+        "instructions": "<p><span style=\"font-size: 16px;\">🪐 <strong>El reto:</strong> el Sistema Solar es tan enorme que en los libros siempre se dibuja mal. Vamos a construirlo <strong>a escala real en el patio</strong> para ver de verdad cómo es.</span></p><p><span style=\"font-size: 16px;\">👥 <strong>En grupos de 3.</strong></span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tenéis que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">📏 Medid el patio y elegid una escala para que <strong>Neptuno quepa dentro</strong>. <strong>Pista:</strong> si Neptuno queda a 45 m, cada metro del patio equivale a 10⁸ km.</span></p></li><li><p><span style=\"font-size: 16px;\">🧮 Con la tabla de distancias de los recursos, calculad <strong>en notación científica</strong> a cuántos metros del Sol va cada planeta.</span></p></li><li><p><span style=\"font-size: 16px;\">🔍 Calculad también el <strong>tamaño del Sol y de la Tierra</strong> a esa escala. ¿Qué descubrís?</span></p></li><li><p><span style=\"font-size: 16px;\">📸 Marcad las posiciones en el patio con conos, tizas o carteles y grabad un vídeo o haced fotos del montaje.</span></p></li></ol><p><span style=\"font-size: 16px;\">📄 <strong>Qué se entrega:</strong> la tabla de cálculos, las fotos o el vídeo y <strong>tres conclusiones</strong> sobre lo que os ha sorprendido.</span></p><p><span style=\"font-size: 16px;\">✅ <strong>Cómo se evalúa:</strong> escala bien elegida, cálculos con notación científica correctos, montaje fiel a los cálculos y trabajo en equipo.</span></p>",
+        "dueAt": "2026-12-09",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-06T14:37:53.166Z",
+        "updatedAt": "2026-10-06T14:37:53.166Z"
+      },
+      {
+        "id": "cmuwsjqtz0011lvcq7g8odka7",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "cuestionario",
+        "title": "Proporciones del día a día",
+        "instructions": "",
+        "dueAt": "2026-12-16",
+        "dueDate": null,
+        "points": 8,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "5a9dj2",
+              "kind": "multiple",
+              "text": "3 kg de naranjas cuestan 4,50 €. ¿Cuánto cuestan 5 kg?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "qo27a7",
+                  "text": "7,50 €"
+                },
+                {
+                  "id": "peaisb",
+                  "text": "6,00 €"
+                },
+                {
+                  "id": "ns27fu",
+                  "text": "7,00 €"
+                }
+              ]
+            },
+            {
+              "id": "orw3ei",
+              "kind": "multiple",
+              "text": "4 pintores tardan 6 días en pintar una casa. ¿Cuánto tardan 6 pintores?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "lqabuo",
+                  "text": "4 días"
+                },
+                {
+                  "id": "eypuj5",
+                  "text": "9 días"
+                },
+                {
+                  "id": "8pd4zh",
+                  "text": "5 días"
+                }
+              ]
+            },
+            {
+              "id": "ylc3h1",
+              "kind": "multiple",
+              "text": "¿Cuánto es el 20 % de 85 €?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "4nvmjf",
+                  "text": "15 €"
+                },
+                {
+                  "id": "qi0481",
+                  "text": "17 €"
+                },
+                {
+                  "id": "d39f4o",
+                  "text": "20 €"
+                }
+              ]
+            },
+            {
+              "id": "gks26p",
+              "kind": "multiple",
+              "text": "Unas zapatillas de 60 € tienen un 25 % de descuento. ¿Cuánto pagas?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "ghfjzx",
+                  "text": "35 €"
+                },
+                {
+                  "id": "bn9rg0",
+                  "text": "45 € "
+                },
+                {
+                  "id": "og660q",
+                  "text": "50 €"
+                }
+              ]
+            },
+            {
+              "id": "9vg9h1",
+              "kind": "multiple",
+              "text": "Un precio sube un 10 % y después baja un 10 %. ¿Cómo queda?",
+              "points": 1,
+              "correct": 2,
+              "options": [
+                {
+                  "id": "uesv72",
+                  "text": "Igual"
+                },
+                {
+                  "id": "2twjgd",
+                  "text": "Sube un 1 %"
+                },
+                {
+                  "id": "p68qg3",
+                  "text": "Baja un 1 %"
+                }
+              ]
+            },
+            {
+              "id": "42vcxd",
+              "kind": "multiple",
+              "text": "Se reparten 600 € de forma proporcional a 2, 3 y 5 horas de trabajo. ¿Cuánto recibe quien trabajó 5 horas?",
+              "points": 1,
+              "correct": 2,
+              "options": [
+                {
+                  "id": "367xlj",
+                  "text": "200 €"
+                },
+                {
+                  "id": "0l68a4",
+                  "text": "250 €"
+                },
+                {
+                  "id": "4tp98c",
+                  "text": "300 €"
+                }
+              ]
+            },
+            {
+              "id": "pbac3b",
+              "kind": "multiple",
+              "text": "En un mapa a escala 1:50 000, dos pueblos están a 4 cm. ¿Qué distancia real los separa?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "71pawv",
+                  "text": "20 km"
+                },
+                {
+                  "id": "oyv6qw",
+                  "text": "2 km"
+                },
+                {
+                  "id": "rp48m3",
+                  "text": "200 m"
+                }
+              ]
+            },
+            {
+              "id": "1wgdvc",
+              "kind": "multiple",
+              "text": "Un móvil cuesta 200 € sin IVA. Con un IVA del 21 %, ¿cuánto cuesta?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "xjo6hp",
+                  "text": "221 €"
+                },
+                {
+                  "id": "u10x0j",
+                  "text": "242 €"
+                },
+                {
+                  "id": "xgv67z",
+                  "text": "210 €"
+                }
+              ]
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-06T14:45:48.312Z",
+        "updatedAt": "2026-10-14T08:20:15.258Z"
+      },
+      {
+        "id": "cmuwskrba0013lvcqv21es7h4",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "debate",
+        "title": "¿Un 20 % más otro 20 % es un 40 %?",
+        "instructions": "",
+        "dueAt": "",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "debate": {
+            "minWords": 80,
+            "minReplies": 2,
+            "openingQuestion": "<p><span style=\"font-size: 16px;\">«Una tienda anuncia 20 % de descuento y otro 20 % extra en caja. ¿Es un 40 %?». Justifica tu respuesta con un ejemplo numérico y revisa el cálculo de dos compañeros. Para el cierre: 0,8 × 0,8 = 0,64, un 36 % de descuento total.</span></p>",
+            "postBeforeSeeing": true
+          }
+        },
+        "status": "live",
+        "createdAt": "2026-10-06T14:46:35.590Z",
+        "updatedAt": "2026-10-06T14:46:35.590Z"
+      },
+      {
+        "id": "cmuwsn10m0017lvcqaigvyk20",
+        "classId": "cmutxpzem000hbfd5yewfewkv",
+        "moduleId": "cmutyu0qr0017bfd5vbnxp6vp",
+        "type": "proyecto",
+        "title": "Organizamos la excursión",
+        "instructions": "<p><span style=\"font-size: 16px;\">🚌 <strong>El reto:</strong> ¡nos vamos de excursión! Pero antes hay que saber <strong>cuánto paga cada alumno</strong>. Vosotros sois el equipo que hace las cuentas.</span></p><p><span style=\"font-size: 16px;\">👥 <strong>En grupos de 3.</strong> La clase son <strong>26 alumnos y 2 profesores</strong>.</span></p><p><span style=\"font-size: 16px;\">🧾 <strong>Los datos:</strong></span></p><ul><li><p><span style=\"font-size: 16px;\">🚍 <strong>Autobús:</strong> 520 € en total, a repartir solo entre el alumnado.</span></p></li><li><p><span style=\"font-size: 16px;\">🏛️ <strong>Museo:</strong> 8 € por persona, con un <strong>15 % de descuento</strong> para grupos de más de 20. El profesorado entra gratis.</span></p></li><li><p><span style=\"font-size: 16px;\">🍽️ <strong>Comida:</strong> menú de 10 € con IVA incluido y un <strong>10 % de descuento</strong> para grupos. El centro paga los menús del profesorado.</span></p></li><li><p><span style=\"font-size: 16px;\">🎁 <strong>AMPA:</strong> aporta 104 €, que se reparten a partes iguales entre el alumnado.</span></p></li></ul><p><span style=\"font-size: 16px;\">📋 <strong>Qué tenéis que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">🧮 Calculad el <strong>precio final por alumno</strong>, explicando cada paso y usando el <strong>índice de variación</strong> en los descuentos.</span></p></li><li><p><span style=\"font-size: 16px;\">📊 Montad una <strong>hoja de cálculo</strong> con fórmulas y una gráfica de cómo se reparte el gasto.</span></p></li><li><p><span style=\"font-size: 16px;\">🗣️ Preparad una explicación oral de 2 minutos en la que <strong>hablen los tres</strong>.</span></p></li></ol>",
+        "dueAt": "2026-12-18",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-06T14:48:21.478Z",
+        "updatedAt": "2026-10-14T08:20:28.115Z"
+      },
+      {
+        "id": "cmuzfdbzw0001u1ppm2i14la6",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "type": "cuestionario",
+        "title": "Lenguas y variedades",
+        "instructions": "",
+        "dueAt": "2026-10-22",
+        "dueDate": null,
+        "points": 6,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": true,
+            "attempts": "2 intentos",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "mb7hpf",
+              "kind": "truefalse",
+              "text": "El gallego, el catalán y el euskera son lenguas cooficiales en sus comunidades. ",
+              "points": 1,
+              "correct": 0
+            },
+            {
+              "id": "2ve88p",
+              "kind": "truefalse",
+              "text": "El andaluz es una lengua distinta del castellano.",
+              "points": 1,
+              "correct": 1
+            },
+            {
+              "id": "mpsa3h",
+              "kind": "multiple",
+              "text": "¿Cuál de estas lenguas NO procede del latín? ",
+              "points": 1,
+              "correct": 2,
+              "options": [
+                {
+                  "id": "30w8ks",
+                  "text": "Gallego"
+                },
+                {
+                  "id": "qlqx3u",
+                  "text": "Catalán"
+                },
+                {
+                  "id": "msc3r6",
+                  "text": "Euskera"
+                }
+              ]
+            },
+            {
+              "id": "ovvqcg",
+              "kind": "truefalse",
+              "text": "Hay acentos más correctos que otros.",
+              "points": 1,
+              "correct": 1
+            },
+            {
+              "id": "rxurvo",
+              "kind": "multiple",
+              "text": "Hablar de forma distinta con tus amigos y en una entrevista de trabajo es cambiar de…",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "10xvxk",
+                  "text": "Dialecto"
+                },
+                {
+                  "id": "cldb33",
+                  "text": "Registro"
+                },
+                {
+                  "id": "zp4uw5",
+                  "text": "Idioma"
+                }
+              ]
+            },
+            {
+              "id": "pmr2uv",
+              "kind": "multiple",
+              "text": "¿Qué es una jerga?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "udw6pv",
+                  "text": "El lenguaje propio de un grupo social o profesional "
+                },
+                {
+                  "id": "chj9xi",
+                  "text": "Una lengua extranjera"
+                },
+                {
+                  "id": "8b2i3s",
+                  "text": "Un error de ortografía"
+                }
+              ]
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-08T11:00:12.668Z",
+        "updatedAt": "2026-10-14T08:24:43.961Z"
+      },
+      {
+        "id": "cmuzfmrdo0003u1pp15eg4rgs",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "type": "debate",
+        "title": "¿Hablan peor en algún sitio?",
+        "instructions": "",
+        "dueAt": "2026-10-29",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "debate": {
+            "minWords": 30,
+            "minReplies": 2,
+            "openingQuestion": "<p><span style=\"font-size: 16px;\"><em>Pregunta de apertura:</em> ¿Hay acentos o formas de hablar mejores que otras, o es solo un prejuicio?</span></p><p><span style=\"font-size: 16px;\">🗣️ <strong>El reto:</strong> seguro que alguna vez has oído decir que en tal sitio «hablan mal». ¿Es verdad o es un <strong>prejuicio lingüístico</strong>?</span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tienes que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">✍️ Publica tu opinión en <strong>al menos 80 palabras</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">🔍 Apóyala con <strong>un ejemplo real</strong>: un acento, una palabra o una expresión que conozcas.</span></p></li><li><p><span style=\"font-size: 16px;\">💬 Responde a <strong>dos compañeros</strong>: uno que piense como tú y otro que no.</span></p></li></ol><p><span style=\"font-size: 16px;\">🤝 <strong>Normas:</strong> respeta todas las opiniones. Se critican las ideas, <strong>nunca a las personas</strong>.</span></p><p><span style=\"font-size: 16px;\">⭐ <strong>Sin nota</strong>, pero cuenta para la participación.</span></p>",
+            "postBeforeSeeing": true
+          }
+        },
+        "status": "live",
+        "createdAt": "2026-10-08T11:07:32.509Z",
+        "updatedAt": "2026-10-14T08:24:58.303Z"
+      },
+      {
+        "id": "cmuzfotno0005u1ppcb6z5hn4",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwtgi4h001dlvcqe8ikxw78",
+        "type": "tarea",
+        "title": "Mi mapa lingüístico",
+        "instructions": "<p><span style=\"font-size: 16px;\">🗺️ <strong>El reto:</strong> cada familia guarda palabras que no salen en los libros. Hoy vas a ser <strong>lingüista por un día</strong>.</span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tienes que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">🎙️ Entrevista a un familiar o vecino de <strong>otra zona de España, de otro país hispanohablante o de otra generación</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">📝 Anota <strong>5 palabras o expresiones</strong> que use él y no tú, o que digáis de forma distinta.</span></p></li><li><p><span style=\"font-size: 16px;\">📖 Para cada una, indica <strong>qué significa, dónde se usa</strong> y si aparece en el diccionario de la RAE.</span></p></li><li><p><span style=\"font-size: 16px;\">🤔 Termina con 2 o 3 líneas: <strong>¿qué has descubierto?</strong></span></p></li></ol>",
+        "dueAt": "2026-11-13",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-08T11:09:08.773Z",
+        "updatedAt": "2026-10-14T08:25:11.905Z"
+      },
+      {
+        "id": "cmuzfrybe0007u1pppyfl8guw",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "type": "proyecto",
+        "title": "Recitamos un romance",
+        "instructions": "<p><span style=\"font-size: 16px;\">🎭 <strong>El reto:</strong> hace 600 años los romances se aprendían de memoria y se recitaban en las plazas. Ahora <strong>los juglares sois vosotros</strong>.</span></p><p><span style=\"font-size: 16px;\">👥 <strong>En grupos de 3.</strong></span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tenéis que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">📜 Elegid <strong>un romance</strong> de la antología.</span></p></li><li><p><span style=\"font-size: 16px;\">🗺️ Explicad en <strong>un minuto</strong> de qué trata y quiénes son sus personajes.</span></p></li><li><p><span style=\"font-size: 16px;\">🎤 Recitadlo <strong>de memoria</strong>, repartiendo los versos entre los tres. Podéis añadir música, gestos o vestuario.</span></p></li><li><p><span style=\"font-size: 16px;\">🎬 Grabad un audio o un vídeo de <strong>4 minutos como máximo</strong>.</span></p></li></ol><p><span style=\"font-size: 16px;\">💡 <strong>Ensayo:</strong> en el taller de romances de la semana 3 practicaremos la entonación.</span></p>",
+        "dueAt": "2026-11-23",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-08T11:11:34.778Z",
+        "updatedAt": "2026-10-08T11:11:34.778Z"
+      },
+      {
+        "id": "cmuzfxkll0009u1ppko0me66p",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwtgxxk001flvcqtgcumksp",
+        "type": "cuestionario",
+        "title": "Juglares y clérigos",
+        "instructions": "",
+        "dueAt": "2026-11-26",
+        "dueDate": null,
+        "points": 8,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "x0nwbp",
+              "kind": "truefalse",
+              "text": "El Cantar de mio Cid pertenece al mester de juglaría.",
+              "points": 1,
+              "correct": 0
+            },
+            {
+              "id": "f5l1s1",
+              "kind": "multiple",
+              "text": "¿Cómo transmitían los juglares sus obras?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "84g3lk",
+                  "text": "Por escrito, en libros"
+                },
+                {
+                  "id": "8h8bcp",
+                  "text": "De forma oral, recitándolas en plazas y castillos"
+                },
+                {
+                  "id": "m88y16",
+                  "text": "Solo dentro de los monasterios"
+                }
+              ]
+            },
+            {
+              "id": "kgo3t0",
+              "kind": "multiple",
+              "text": "¿Quién es el autor más conocido del mester de clerecía?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "mz7iyp",
+                  "text": "Jorge Manrique"
+                },
+                {
+                  "id": "26c8ql",
+                  "text": "Gonzalo de Berceo"
+                },
+                {
+                  "id": "di1vkx",
+                  "text": "Don Juan Manuel"
+                }
+              ]
+            },
+            {
+              "id": "feb60x",
+              "kind": "truefalse",
+              "text": "El mester de clerecía usaba la cuaderna vía: estrofas de cuatro versos de 14 sílabas con una misma rima consonante.",
+              "points": 1,
+              "correct": 0
+            },
+            {
+              "id": "nyshs5",
+              "kind": "multiple",
+              "text": "¿Qué le ocurre al Cid al comienzo del Cantar?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "3ou9he",
+                  "text": "El rey Alfonso VI lo destierra"
+                },
+                {
+                  "id": "9e0p52",
+                  "text": "Conquista Granada"
+                },
+                {
+                  "id": "mf0pob",
+                  "text": "Se casa con Jimena"
+                }
+              ]
+            },
+            {
+              "id": "lr05p8",
+              "kind": "truefalse",
+              "text": "Conocemos al autor del Cantar de mio Cid porque firmó la obra.",
+              "points": 1,
+              "correct": 1
+            },
+            {
+              "id": "2tu6c6",
+              "kind": "multiple",
+              "text": "¿Cómo son los versos de un romance?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "e6znhk",
+                  "text": "Octosílabos con rima asonante en los pares"
+                },
+                {
+                  "id": "pe2imj",
+                  "text": "Endecasílabos con rima consonante"
+                },
+                {
+                  "id": "zp65ua",
+                  "text": "Alejandrinos sin rima"
+                }
+              ]
+            },
+            {
+              "id": "qjh2zf",
+              "kind": "multiple",
+              "text": "¿Qué es un epíteto épico? ",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "wiosym",
+                  "text": "Una expresión que destaca una cualidad del héroe, como «el que en buena hora nació»"
+                },
+                {
+                  "id": "lestk8",
+                  "text": "Un tipo de estrofa"
+                },
+                {
+                  "id": "7c3i7a",
+                  "text": "El final de un cantar"
+                }
+              ]
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-08T11:15:56.937Z",
+        "updatedAt": "2026-10-14T08:26:18.944Z"
+      },
+      {
+        "id": "cmuzgiy1d000bu1ppynf0vnfk",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwth29n001hlvcq3ei7keca",
+        "type": "tarea",
+        "title": "Analiza 15 oraciones",
+        "instructions": "<p><span style=\"font-size: 16px;\">🧩 <strong>El reto:</strong> cada oración es un mecanismo, y tú vas a <strong>desmontarla pieza a pieza</strong>.</span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tienes que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">📘 Abre el cuaderno y analiza las <strong>oraciones 1 a 15</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">✏️ En cada una: <strong>rodea el verbo</strong>, separa <strong>sujeto y predicado</strong> con una línea, marca los sintagmas y escribe la <strong>función de cada complemento</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">💡 <strong>Truco:</strong> para encontrar el sujeto, pasa el verbo de singular a plural. La palabra que también tiene que cambiar es el <strong>núcleo del sujeto</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">❓ Marca con un interrogante las oraciones que te hayan costado: las repasaremos en la <strong>sala de dudas</strong>.</span></p></li></ol>",
+        "dueAt": "2026-11-30",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-08T11:32:34.129Z",
+        "updatedAt": "2026-10-08T11:32:34.129Z"
+      },
+      {
+        "id": "cmuzgtgd6000du1ppv2wnhged",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwth29n001hlvcq3ei7keca",
+        "type": "cuestionario",
+        "title": "Análisis de 10 oraciones, ¿qué función cumple la parte en mayúsculas?",
+        "instructions": "",
+        "dueAt": "2026-12-02",
+        "dueDate": null,
+        "points": 10,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento",
+            "timeLimitMin": 20
+          },
+          "questions": [
+            {
+              "id": "wh1n1z",
+              "kind": "multiple",
+              "text": "MI HERMANA compró pan.",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "bcrmwc",
+                  "text": "Sujeto"
+                },
+                {
+                  "id": "nqw119",
+                  "text": "Complemento directo"
+                },
+                {
+                  "id": "bx9z0i",
+                  "text": "Complemento indirecto"
+                }
+              ]
+            },
+            {
+              "id": "t8fh5p",
+              "kind": "multiple",
+              "text": "Mi hermana compró PAN.",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "458ujw",
+                  "text": "Complemento directo"
+                },
+                {
+                  "id": "mqyd1g",
+                  "text": "Complemento indirecto"
+                },
+                {
+                  "id": "izosou",
+                  "text": "Atributo"
+                }
+              ]
+            },
+            {
+              "id": "4x27mb",
+              "kind": "multiple",
+              "text": "Le di el libro A LUCÍA.",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "3dznx0",
+                  "text": "Complemento directo"
+                },
+                {
+                  "id": "xrfl6i",
+                  "text": "Complemento indirecto"
+                },
+                {
+                  "id": "u9gkv2",
+                  "text": "Complemento circunstancial"
+                }
+              ]
+            },
+            {
+              "id": "nyx56z",
+              "kind": "multiple",
+              "text": "Llegaremos MAÑANA.",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "5rq6i8",
+                  "text": "Complemento circunstancial de tiempo"
+                },
+                {
+                  "id": "ogdnd3",
+                  "text": "Complemento directo"
+                },
+                {
+                  "id": "chwbrf",
+                  "text": "Sujeto"
+                }
+              ]
+            },
+            {
+              "id": "cvzyyq",
+              "kind": "multiple",
+              "text": "Tu perro es MUY SIMPÁTICO.",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "xa3h0g",
+                  "text": "Atributo"
+                },
+                {
+                  "id": "av5jn1",
+                  "text": "Complemento predicativo"
+                },
+                {
+                  "id": "c6boqa",
+                  "text": "Complemento directo"
+                }
+              ]
+            },
+            {
+              "id": "pm8by1",
+              "kind": "multiple",
+              "text": "Los alumnos llegaron CANSADOS.",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "gzszwe",
+                  "text": "Atributo"
+                },
+                {
+                  "id": "7tb3on",
+                  "text": "Complemento predicativo"
+                },
+                {
+                  "id": "rto7k3",
+                  "text": "Complemento directo"
+                }
+              ]
+            },
+            {
+              "id": "4jjcg4",
+              "kind": "multiple",
+              "text": "Confío EN MIS AMIGOS.",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "f5q1za",
+                  "text": "Complemento circunstancial de lugar"
+                },
+                {
+                  "id": "au672b",
+                  "text": "Complemento de régimen"
+                },
+                {
+                  "id": "1exqld",
+                  "text": "Complemento indirecto"
+                }
+              ]
+            },
+            {
+              "id": "65bnk6",
+              "kind": "truefalse",
+              "text": " En «Me gustan las fresas», el sujeto es «las fresas». ",
+              "points": 1,
+              "correct": 0
+            },
+            {
+              "id": "tpee9d",
+              "kind": "truefalse",
+              "text": "El complemento directo se puede sustituir por lo, la, los o las.",
+              "points": 1,
+              "correct": 0
+            },
+            {
+              "id": "w4jy4g",
+              "kind": "truefalse",
+              "text": "En «Juan parece cansado», «cansado» es complemento predicativo.",
+              "points": 1,
+              "correct": 1
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-08T11:40:44.442Z",
+        "updatedAt": "2026-10-14T08:26:33.827Z"
+      },
+      {
+        "id": "cmuzgznu0000fu1ppw8sxhsye",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "type": "tarea",
+        "title": "Un ejemplo de Patronio para hoy",
+        "instructions": "<p><span style=\"font-size: 16px;\">📜 <strong>El reto:</strong> hace casi 700 años, Patronio aconsejaba al conde Lucanor contando cuentos. <strong>¿Funcionarían sus consejos hoy?</strong></span></p><p><span style=\"font-size: 16px;\">📋 <strong>Qué tienes que hacer:</strong></span></p><ol><li><p><span style=\"font-size: 16px;\">📖 Lee los cuentos de <em>El conde Lucanor</em> de los recursos y <strong>elige uno</strong>.</span></p></li><li><p><span style=\"font-size: 16px;\">🔄 Reescríbelo en <strong>300–400 palabras</strong> ambientado en la actualidad: el instituto, las redes sociales, el deporte…</span></p></li><li><p><span style=\"font-size: 16px;\">🧱 Mantén la <strong>estructura del original</strong>: un personaje plantea un problema, otro le responde con un cuento y le da un consejo.</span></p></li><li><p><span style=\"font-size: 16px;\">✨ Termina con una <strong>moraleja en dos versos que rimen</strong>, como hace don Juan Manuel.</span></p></li></ol>",
+        "dueAt": "2026-12-07",
+        "dueDate": null,
+        "points": 10,
+        "format": "Texto",
+        "allowLate": true,
+        "config": {},
+        "status": "live",
+        "createdAt": "2026-10-08T11:45:34.056Z",
+        "updatedAt": "2026-10-08T11:45:34.056Z"
+      },
+      {
+        "id": "cmuzh7a2h000hu1pp99k4zum7",
+        "classId": "cmuwt820q0019lvcq40ftk1rx",
+        "moduleId": "cmuwth6bx001jlvcqsu613c6n",
+        "type": "cuestionario",
+        "title": "De Juan Manuel a Fernando de Rojas",
+        "instructions": "",
+        "dueAt": "2026-12-16",
+        "dueDate": null,
+        "points": 8,
+        "format": "Archivo",
+        "allowLate": true,
+        "config": {
+          "quiz": {
+            "shuffle": false,
+            "attempts": "1 intento"
+          },
+          "questions": [
+            {
+              "id": "s3sq7q",
+              "kind": "multiple",
+              "text": "¿Quién escribió El conde Lucanor?",
+              "points": 1,
+              "correct": 0,
+              "options": [
+                {
+                  "id": "stqovk",
+                  "text": "Don Juan Manuel"
+                },
+                {
+                  "id": "p7dc72",
+                  "text": "Fernando de Rojas"
+                },
+                {
+                  "id": "slh015",
+                  "text": "Jorge Manrique"
+                }
+              ]
+            },
+            {
+              "id": "hxxh2j",
+              "kind": "truefalse",
+              "text": "En El conde Lucanor, Patronio aconseja al conde con un cuento que termina en una moraleja.",
+              "points": 1,
+              "correct": 0
+            },
+            {
+              "id": "kxw2cb",
+              "kind": "multiple",
+              "text": "¿Quién escribió el Libro de buen amor?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "kihn6l",
+                  "text": "Gonzalo de Berceo"
+                },
+                {
+                  "id": "bpxzs0",
+                  "text": "El Arcipreste de Hita"
+                },
+                {
+                  "id": "bcefzp",
+                  "text": "El Arcipreste de Hita"
+                }
+              ]
+            },
+            {
+              "id": "2djtrk",
+              "kind": "multiple",
+              "text": "Jorge Manrique escribió sus Coplas por la muerte de…",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "n7d337",
+                  "text": "su hermano"
+                },
+                {
+                  "id": "q0g6ii",
+                  "text": "su padre"
+                },
+                {
+                  "id": "fpqy7d",
+                  "text": "su rey"
+                }
+              ]
+            },
+            {
+              "id": "6v6b88",
+              "kind": "truefalse",
+              "text": "El tema principal de las Coplas es el amor.",
+              "points": 1,
+              "correct": 1
+            },
+            {
+              "id": "z1o2nl",
+              "kind": "multiple",
+              "text": "¿A quién se atribuye La Celestina?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "5fowkl",
+                  "text": "Juan Ruiz"
+                },
+                {
+                  "id": "sb44m1",
+                  "text": "Fernando de Rojas"
+                },
+                {
+                  "id": "hz1t8d",
+                  "text": "Garcilaso de la Vega"
+                }
+              ]
+            },
+            {
+              "id": "01g8yj",
+              "kind": "multiple",
+              "text": "¿Cómo se llaman los enamorados de La Celestina?",
+              "points": 1,
+              "correct": 1,
+              "options": [
+                {
+                  "id": "ekjhsb",
+                  "text": "Romeo y Julieta"
+                },
+                {
+                  "id": "7p257a",
+                  "text": "Calisto y Melibea"
+                },
+                {
+                  "id": "2adwhb",
+                  "text": "Don Quijote y Dulcinea"
+                }
+              ]
+            },
+            {
+              "id": "w7lhrd",
+              "kind": "truefalse",
+              "text": "Celestina es una alcahueta que ayuda a Calisto a conquistar a Melibea a cambio de dinero.",
+              "points": 1,
+              "correct": 0
+            }
+          ]
+        },
+        "status": "live",
+        "createdAt": "2026-10-08T11:51:29.465Z",
+        "updatedAt": "2026-10-14T08:26:51.060Z"
+      }
+    ],
+    "debatePost": [
+      {
+        "id": "cmv15nxh4000emkhtr6evzv3x",
+        "activityId": "cmuzfmrdo0003u1pp15eg4rgs",
+        "authorId": "u-marc",
+        "parentId": null,
+        "body": "En mi opinión, no hay acentos ni formas de hablar mejores o peores que otras. Cada persona habla según el lugar donde vive, su familia y las costumbres de su entorno. Creo que decir que alguien habla mal por su acento es un prejuicio, porque todos los acentos tienen el mismo valor.\n\nPor ejemplo, en Andalucía algunas personas aspiran la letra «s» al final de las palabras o no la pronuncian claramente. Eso no significa que hablen peor, sino que tienen una forma de hablar propia de su región. También hay diferencias entre el español de Madrid, Canarias o América Latina.\n\nPienso que lo importante es expresarse de manera que los demás nos entiendan y respetar las distintas formas de hablar. La diversidad lingüística es algo positivo que debemos valorar, no criticar.",
+        "createdAt": "2026-10-09T16:04:03.256Z",
+        "updatedAt": "2026-10-09T16:04:03.256Z"
+      }
+    ],
+    "submission": [
+      {
+        "id": "cmv0sbbjg001lligiqzxikkld",
+        "activityId": "cmuwrnszi000plvcqvxhp0q3w",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-09T09:50:19.948Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": {
+          "20t04q": "1",
+          "2qe5y5": "1",
+          "cwv1u7": "0",
+          "leieo9": "0",
+          "m34mts": "1",
+          "oiuguy": "2",
+          "qmoe2f": "1",
+          "z2etmu": "0"
+        },
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-09T09:50:19.949Z",
+        "updatedAt": "2026-10-09T09:50:19.949Z"
+      },
+      {
+        "id": "cmv0tdkbg0001mkht6tj4loyf",
+        "activityId": "cmuwrp83y000rlvcqvh1dk9f4",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-09T10:20:04.252Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": "He aprendido que el m.c.m. se utiliza para calcular cuándo coinciden varios acontecimientos que se repiten en el tiempo, mientras que el m.c.d. sirve para repartir o dividir cantidades en partes iguales lo más grandes posible, sin que sobre nada.",
+        "answers": null,
+        "text": "<p><strong>1. Los autobuses 🚌</strong></p><p>En este problema utilizo el <strong>m.c.m.</strong> porque quiero saber cuándo vuelven a coincidir dos autobuses que pasan cada cierto tiempo.</p><p>Descomponemos los números:</p><ul><li><p>12 = 2² × 3</p></li><li><p>18 = 2 × 3²</p></li></ul><p>m.c.m. (12, 18) = 2² × 3² = 36 minutos.</p><p>Si salen juntos a las 8:00, volverán a coincidir 36 minutos después, es decir, <strong>a las 8:36</strong>.</p><p><strong>2. Las baldosas 🧱</strong></p><p>Utilizo el <strong>m.c.d.</strong> porque necesito encontrar el mayor tamaño posible de las baldosas cuadradas para cubrir el suelo sin cortar ninguna.</p><p>Calculamos el m.c.d. de 360 y 240:</p><ul><li><p>360 = 2³ × 3² × 5</p></li><li><p>240 = 2⁴ × 3 × 5</p></li></ul><p>m.c.d. (360, 240) = 2³ × 3 × 5 = 120 cm.</p><p>Cada baldosa tendrá un lado de <strong>120 cm</strong>.</p><p>Para calcular cuántas necesito:</p><ul><li><p>360 ÷ 120 = 3 baldosas a lo largo.</p></li><li><p>240 ÷ 120 = 2 baldosas a lo ancho.</p></li></ul><p>En total: 3 × 2 = <strong>6 baldosas</strong>.</p><p><strong>3. Los caramelos y las piruletas 🍬</strong></p><p>Utilizo el <strong>m.c.d.</strong> porque quiero hacer el mayor número posible de bolsas iguales sin que sobren caramelos ni piruletas.</p><p>Calculamos:</p><p>m.c.d. (24, 36) = 12.</p><p>Puedo hacer <strong>12 bolsas iguales</strong>.</p><p>Cada bolsa tendrá:</p><ul><li><p>24 ÷ 12 = 2 caramelos.</p></li><li><p>36 ÷ 12 = 3 piruletas.</p></li></ul><p>Por tanto, cada bolsa llevará <strong>2 caramelos y 3 piruletas</strong>.</p><p><strong>4. Las luces 💡</strong></p><p>Utilizo el <strong>m.c.m.</strong> porque quiero saber cada cuánto tiempo vuelven a coincidir las dos luces.</p><p>Calculamos el m.c.m. de 4 y 6:</p><ul><li><p>4 = 2²</p></li><li><p>6 = 2 × 3</p></li></ul><p>m.c.m. (4, 6) = 2² × 3 = 12 segundos.</p><p>Las dos luces coincidirán cada <strong>12 segundos</strong>.</p><p><strong>5. Ana y Luis corriendo 🏃</strong></p><p>Utilizo el <strong>m.c.m.</strong> porque necesito calcular cuándo vuelven a coincidir en la salida después de dar vueltas a la pista.</p><p>Ana tarda 3 minutos y Luis tarda 5 minutos.</p><ul><li><p>3 = 3</p></li><li><p>5 = 5</p></li></ul><p>m.c.m. (3, 5) = 3 × 5 = 15 minutos.</p><p>Por tanto, volverán a coincidir en la salida después de <strong>15 minutos</strong>.</p><p><strong>6. Las cintas 🎀</strong></p><p>Utilizo el <strong>m.c.d.</strong> porque quiero cortar las dos cintas en trozos iguales y lo más largos posible, sin que sobre ningún trozo de cinta.</p><p>Calculamos el m.c.d. de 30 y 45:</p><ul><li><p>30 = 2 × 3 × 5</p></li><li><p>45 = 3² × 5</p></li></ul><p>m.c.d. (30, 45) = 3 × 5 = 15 cm.</p><p>Cada trozo medirá <strong>15 cm</strong>.</p><p>La cinta de 30 cm tendrá 2 trozos y la de 45 cm tendrá 3 trozos.</p>",
+        "link": null,
+        "createdAt": "2026-10-09T10:20:04.253Z",
+        "updatedAt": "2026-10-09T10:20:04.253Z"
+      },
+      {
+        "id": "cmv0tges80006mkhti9pt1iad",
+        "activityId": "cmuws9k7i000zlvcqwzejbd2q",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-09T10:22:17.047Z",
+        "fileId": "cmv0tges40004mkhtb9kvegyi",
+        "fileName": "entrega_sistema_solar_escala.pdf",
+        "comment": null,
+        "answers": null,
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-09T10:22:17.048Z",
+        "updatedAt": "2026-10-09T10:22:17.048Z"
+      },
+      {
+        "id": "cmv0to0wg000amkhtzs720ydv",
+        "activityId": "cmuzfdbzw0001u1ppm2i14la6",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-09T10:28:12.303Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": {
+          "2ve88p": "1",
+          "mb7hpf": "0",
+          "mpsa3h": "2",
+          "ovvqcg": "1",
+          "pmr2uv": "2",
+          "rxurvo": "0"
+        },
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-09T10:28:12.304Z",
+        "updatedAt": "2026-10-09T10:28:12.304Z"
+      },
+      {
+        "id": "cmv15nxhb000gmkhtqyd4bpob",
+        "activityId": "cmuzfmrdo0003u1pp15eg4rgs",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-09T16:04:03.263Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": null,
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-09T16:04:03.264Z",
+        "updatedAt": "2026-10-09T16:04:03.264Z"
+      },
+      {
+        "id": "cmv1614pj000kmkht05ue7a6z",
+        "activityId": "cmuzfxkll0009u1ppko0me66p",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-09T16:14:19.159Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": {
+          "2tu6c6": "1",
+          "f5l1s1": "1",
+          "feb60x": "0",
+          "kgo3t0": "0",
+          "lr05p8": "1",
+          "nyshs5": "0",
+          "qjh2zf": "0",
+          "x0nwbp": "0"
+        },
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-09T16:14:19.160Z",
+        "updatedAt": "2026-10-09T16:14:19.160Z"
+      }
+    ],
+    "grade": [],
+    "conversation": [],
+    "conversationParticipant": [],
+    "message": [],
+    "messageReaction": [],
+    "notification": [
+      {
+        "id": "cmutqyiu20003bfd5rik7tus4",
+        "userId": "cmutqyatp000yiojj14wmqidy",
+        "type": "deadline",
+        "title": "Plazo próximo",
+        "body": "«Proyecto: aplicación real» vence pronto",
+        "link": "/clase/calc2",
+        "entityId": "a4",
+        "readAt": null,
+        "createdAt": "2026-10-04T11:38:00.027Z",
+        "updatedAt": "2026-10-04T11:38:00.027Z"
+      },
+      {
+        "id": "cmutqyiu80007bfd5twq2qf3b",
+        "userId": "cmutqyatw0016iojjx25ix8qr",
+        "type": "deadline",
+        "title": "Plazo próximo",
+        "body": "«Proyecto: aplicación real» vence pronto",
+        "link": "/clase/calc2",
+        "entityId": "a4",
+        "readAt": null,
+        "createdAt": "2026-10-04T11:38:00.033Z",
+        "updatedAt": "2026-10-04T11:38:00.033Z"
+      },
+      {
+        "id": "cmutqyiua0009bfd5bqm59yya",
+        "userId": "cmutqyaty0019iojj8ra1olmw",
+        "type": "deadline",
+        "title": "Plazo próximo",
+        "body": "«Proyecto: aplicación real» vence pronto",
+        "link": "/clase/calc2",
+        "entityId": "a4",
+        "readAt": null,
+        "createdAt": "2026-10-04T11:38:00.035Z",
+        "updatedAt": "2026-10-04T11:38:00.035Z"
+      },
+      {
+        "id": "cmutqyiuf000dbfd5lgq9vcg7",
+        "userId": "cmutqyau2001fiojjshs62l70",
+        "type": "deadline",
+        "title": "Plazo próximo",
+        "body": "«Proyecto: aplicación real» vence pronto",
+        "link": "/clase/calc2",
+        "entityId": "a4",
+        "readAt": null,
+        "createdAt": "2026-10-04T11:38:00.039Z",
+        "updatedAt": "2026-10-04T11:38:00.039Z"
+      },
+      {
+        "id": "cmutqyiui000fbfd5ro2qane1",
+        "userId": "cmutqyau4001iiojjf7x8kqj0",
+        "type": "deadline",
+        "title": "Plazo próximo",
+        "body": "«Proyecto: aplicación real» vence pronto",
+        "link": "/clase/calc2",
+        "entityId": "a4",
+        "readAt": null,
+        "createdAt": "2026-10-04T11:38:00.042Z",
+        "updatedAt": "2026-10-04T11:38:00.042Z"
+      },
+      {
+        "id": "cmuty7hb9000rbfd59e3fpnaj",
+        "userId": "u-marc",
+        "type": "invite",
+        "title": "Invitación a Números para el día a día",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/2NMe3y6P7C7yWTyleSzLdnKzcwJfw6j_",
+        "entityId": "cmutxpzem000hbfd5yewfewkv",
+        "readAt": "2026-10-04T15:20:50.947Z",
+        "createdAt": "2026-10-04T15:00:55.269Z",
+        "updatedAt": "2026-10-04T15:20:50.948Z"
+      },
+      {
+        "id": "cmuty7hba000vbfd5bscvasea",
+        "userId": "cmutqyau2001fiojjshs62l70",
+        "type": "invite",
+        "title": "Invitación a Números para el día a día",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/_F4ngmjr1d3K4_z2ZJln8ZMjMg0DdOAL",
+        "entityId": "cmutxpzem000hbfd5yewfewkv",
+        "readAt": null,
+        "createdAt": "2026-10-04T15:00:55.269Z",
+        "updatedAt": "2026-10-04T15:00:55.269Z"
+      },
+      {
+        "id": "cmuty7hba000ubfd5hlii768y",
+        "userId": "cmutqyau4001iiojjf7x8kqj0",
+        "type": "invite",
+        "title": "Invitación a Números para el día a día",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/ZN094WzbMZ9UNgxtqa-FU3phuTFDRHCp",
+        "entityId": "cmutxpzem000hbfd5yewfewkv",
+        "readAt": null,
+        "createdAt": "2026-10-04T15:00:55.269Z",
+        "updatedAt": "2026-10-04T15:00:55.269Z"
+      },
+      {
+        "id": "cmv0qq94p000gligil7odyt0o",
+        "userId": "cmutqyatw0016iojjx25ix8qr",
+        "type": "invite",
+        "title": "Invitación a Juglares, cuentos y oraciones",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/pyjlEEO6qH_jI7T5_XZ-k_Ve3IWp1WBw",
+        "entityId": "cmuwt820q0019lvcq40ftk1rx",
+        "readAt": "2026-10-09T09:37:43.647Z",
+        "createdAt": "2026-10-09T09:05:57.432Z",
+        "updatedAt": "2026-10-09T09:37:43.648Z"
+      },
+      {
+        "id": "cmv0qq94p000iligi5fxmtbpr",
+        "userId": "u-marc",
+        "type": "invite",
+        "title": "Invitación a Juglares, cuentos y oraciones",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/E6tbJlXpZ-jhRyxDAMGroqB79UiQwwYE",
+        "entityId": "cmuwt820q0019lvcq40ftk1rx",
+        "readAt": "2026-10-09T09:47:41.908Z",
+        "createdAt": "2026-10-09T09:05:57.432Z",
+        "updatedAt": "2026-10-09T09:47:41.909Z"
+      },
+      {
+        "id": "cmv0qq94p000jligii55jh55d",
+        "userId": "cmutqyaty0019iojj8ra1olmw",
+        "type": "invite",
+        "title": "Invitación a Juglares, cuentos y oraciones",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/d-mbeTFRqHXh1fs6MXqvSjjVbXn0ErLs",
+        "entityId": "cmuwt820q0019lvcq40ftk1rx",
+        "readAt": "2026-10-09T09:26:39.655Z",
+        "createdAt": "2026-10-09T09:05:57.432Z",
+        "updatedAt": "2026-10-09T09:26:39.656Z"
+      },
+      {
+        "id": "cmv0qq94o000bligi7297emt3",
+        "userId": "cmutqyatu0013iojjqr7ylxky",
+        "type": "invite",
+        "title": "Invitación a Juglares, cuentos y oraciones",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/5_sSZVH8nmYPsDOfCW2HWlLYajcwHZEN",
+        "entityId": "cmuwt820q0019lvcq40ftk1rx",
+        "readAt": "2026-10-09T09:22:14.002Z",
+        "createdAt": "2026-10-09T09:05:57.432Z",
+        "updatedAt": "2026-10-09T09:22:14.003Z"
+      },
+      {
+        "id": "cmv0qq94p000hligi86midnr9",
+        "userId": "cmutqyatp000yiojj14wmqidy",
+        "type": "invite",
+        "title": "Invitación a Juglares, cuentos y oraciones",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/QwVv0bUtrjcgGpeouTPvCcDRjK4ee5Oe",
+        "entityId": "cmuwt820q0019lvcq40ftk1rx",
+        "readAt": "2026-10-09T09:36:10.313Z",
+        "createdAt": "2026-10-09T09:05:57.432Z",
+        "updatedAt": "2026-10-09T09:36:10.314Z"
+      },
+      {
+        "id": "cmv0qxjqu000nligiff6a8tnx",
+        "userId": "cmutqyau0001ciojj5kkec3b4",
+        "type": "invite",
+        "title": "Invitación a Números para el día a día",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/Y2q-kbJJOKwKRPdBdFwyEZ8LMwLB4srJ",
+        "entityId": "cmutxpzem000hbfd5yewfewkv",
+        "readAt": "2026-10-09T09:35:08.077Z",
+        "createdAt": "2026-10-09T09:11:37.782Z",
+        "updatedAt": "2026-10-09T09:35:08.078Z"
+      },
+      {
+        "id": "cmv0qxvlg000rligitb0cyzm4",
+        "userId": "cmutqyaty0019iojj8ra1olmw",
+        "type": "invite",
+        "title": "Invitación a Números para el día a día",
+        "body": "Ábrela para unirte a la clase.",
+        "link": "/invitacion/Y3g_XR6Jn76_C6SX-zKabrTdCrxVa74n",
+        "entityId": "cmutxpzem000hbfd5yewfewkv",
+        "readAt": "2026-10-09T09:26:34.577Z",
+        "createdAt": "2026-10-09T09:11:53.141Z",
+        "updatedAt": "2026-10-09T09:26:34.578Z"
+      }
+    ]
+  }
+}
