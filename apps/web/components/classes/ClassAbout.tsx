@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button, Icon, RichText, RichView } from "@/components/ui";
-import { Chip, EmptyState } from "@/components/layout";
+import { EmptyState } from "@/components/layout";
 import { useClearClassCover, useUpdateClass, useUploadClassCover } from "@/lib/api/classes";
 import { resourceUrl } from "@/lib/api/client";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
@@ -372,11 +372,8 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         </div>
       ) : null}
 
-      <div style={{ clear: "both", display: "flex", flexWrap: "wrap", gap: 18, paddingTop: 18 }}>
-        <Chip icon="academic-cap">{c.code}</Chip>
-        <Chip icon="users">{c.students} alumnos</Chip>
-        <Chip icon="calendar">{c.nextSession}</Chip>
-      </div>
+      {/* Cierra la portada flotante para que la ficha la envuelva entera. */}
+      <div style={{ clear: "both" }} />
     </section>
   );
 }
