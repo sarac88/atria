@@ -349,7 +349,7 @@ function UnitTitleEditForm({
   );
 }
 
-function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; flat?: boolean; aside?: React.ReactNode; onGrade: (activityId: string) => void }) {
+function ModulesRailLayout({ klass, flat, aside, canEdit, onGrade }: { klass: ClassInfo; flat?: boolean; aside?: React.ReactNode; canEdit: boolean; onGrade: (activityId: string) => void }) {
   const classId = klass.id;
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
@@ -389,21 +389,21 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
               unit={m}
               active={m.id === (current?.id ?? "")}
               onSelect={() => setSel(m.id)}
-              onDelete={m.id !== NONE_UNIT ? () => setDeleting({ id: m.id, title: m.title }) : undefined}
+              onDelete={canEdit && m.id !== NONE_UNIT ? () => setDeleting({ id: m.id, title: m.title }) : undefined}
             />
           ))}
           {units.length === 0 ? <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px" }}>Aún no hay unidades.</div> : null}
         </div>
-        <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
+        {canEdit ? <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} /> : null}
       </div>
 
       {showAbout ? (
         <div className="atria-modmain" style={{ paddingLeft: 28 }}>
-          <ClassAbout c={klass} canEdit embedded />
+          <ClassAbout c={klass} canEdit={canEdit} embedded />
         </div>
       ) : current ? (
         <div key={current.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
-          {editing === current.id ? (
+          {canEdit && editing === current.id ? (
             <UnitTitleEditForm
               title={current.title}
               pending={updateModule.isPending}
@@ -420,7 +420,7 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
               </span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
                 <h3 style={{ fontSize: 18, margin: 0 }}>{current.title}</h3>
-                {current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+                {canEdit && current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
               </span>
               <span style={{ flex: 1 }} />
               {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
@@ -431,35 +431,43 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
             coverUrl={current.coverUrl}
             classId={classId}
             moduleId={current.id !== NONE_UNIT ? current.id : undefined}
-            canEdit={current.id !== NONE_UNIT}
+            canEdit={canEdit && current.id !== NONE_UNIT}
           />
           {current.id !== NONE_UNIT ? (
             <>
-              <div style={SECTION_LABEL}>Sesión online</div>
-              <div style={{ marginBottom: 22 }}>
-                <ModuleSessions
-                  classId={classId}
-                  moduleId={current.id}
-                  moduleTitle={current.title}
-                  sessions={current.sessions}
-                  canManage
-                />
-              </div>
-              <div style={SECTION_LABEL}>Recursos</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <ModuleResourceGrid
-                  classId={classId}
-                  items={current.items}
-                  canDelete
-                  onAdd={() => setAddTo({ id: current.id, title: current.title })}
-                />
-              </div>
+              {canEdit || current.sessions.length ? (
+                <>
+                  <div style={SECTION_LABEL}>Sesión online</div>
+                  <div style={{ marginBottom: 22 }}>
+                    <ModuleSessions
+                      classId={classId}
+                      moduleId={current.id}
+                      moduleTitle={current.title}
+                      sessions={current.sessions}
+                      canManage={canEdit}
+                    />
+                  </div>
+                </>
+              ) : null}
+              {canEdit || current.items.length ? (
+                <>
+                  <div style={SECTION_LABEL}>Recursos</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <ModuleResourceGrid
+                      classId={classId}
+                      items={current.items}
+                      canDelete={canEdit}
+                      onAdd={canEdit ? () => setAddTo({ id: current.id, title: current.title }) : undefined}
+                    />
+                  </div>
+                </>
+              ) : null}
             </>
           ) : null}
           <UnitActivities
             activities={actsOf(current.id)}
             onOpen={setDetail}
-            onAdd={() => setCreatingIn(current.id === NONE_UNIT ? "" : current.id)}
+            onAdd={canEdit ? () => setCreatingIn(current.id === NONE_UNIT ? "" : current.id) : undefined}
           />
         </div>
       ) : (
@@ -495,7 +503,7 @@ function ModulesRailLayout({ klass, flat, aside, onGrade }: { klass: ClassInfo; 
   );
 }
 
-function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (activityId: string) => void }) {
+function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEdit: boolean; onGrade: (activityId: string) => void }) {
   const classId = klass.id;
   const { data: modules } = useModules(classId);
   const { data: activities } = useActivities(classId);
@@ -530,7 +538,7 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
         </button>
         {aboutOpen ? (
           <div style={{ padding: "16px 20px 18px", borderTop: "1px solid var(--border-subtle)" }}>
-            <ClassAbout c={klass} canEdit embedded />
+            <ClassAbout c={klass} canEdit={canEdit} embedded />
           </div>
         ) : null}
       </div>
@@ -560,7 +568,7 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
                   <Icon name="chevron-down" size={20} />
                 </span>
               </button>
-              {!isNone ? (
+              {canEdit && !isNone ? (
                 <UnitEditButton
                   onClick={() => {
                     setEditing(m.id);
@@ -571,7 +579,7 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
             </div>
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
-                {!isNone && editing === m.id ? (
+                {canEdit && !isNone && editing === m.id ? (
                   <UnitTitleEditForm
                     title={m.title}
                     pending={updateModule.isPending}
@@ -588,10 +596,10 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
                     coverUrl={m.coverUrl}
                     classId={classId}
                     moduleId={m.id}
-                    canEdit
+                    canEdit={canEdit}
                   />
                 ) : null}
-                {!isNone ? (
+                {!isNone && (canEdit || m.sessions.length) ? (
                   <>
                     <div style={SECTION_LABEL}>Sesión online</div>
                     <ModuleSessions
@@ -599,25 +607,25 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
                       moduleId={m.id}
                       moduleTitle={m.title}
                       sessions={m.sessions}
-                      canManage
+                      canManage={canEdit}
                     />
                   </>
                 ) : null}
-                {!isNone ? (
+                {!isNone && (canEdit || m.items.length) ? (
                   <>
                     <div style={SECTION_LABEL}>Recursos</div>
                     <ModuleResourceGrid
                       classId={classId}
                       items={m.items}
-                      canDelete
-                      onAdd={() => setAddTo({ id: m.id, title: m.title })}
+                      canDelete={canEdit}
+                      onAdd={canEdit ? () => setAddTo({ id: m.id, title: m.title }) : undefined}
                     />
                   </>
                 ) : null}
                 <UnitActivities
                   activities={actsOf(m.id)}
                   onOpen={setDetail}
-                  onAdd={() => setCreatingIn(m.id === NONE_UNIT ? "" : m.id)}
+                  onAdd={canEdit ? () => setCreatingIn(m.id === NONE_UNIT ? "" : m.id) : undefined}
                 />
               </div>
             ) : null}
@@ -625,7 +633,7 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
         );
       })}
       {units.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
-      <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} />
+      {canEdit ? <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} /> : null}
       {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
       {creatingIn !== null ? (
         <CreateActivityModal
@@ -640,20 +648,20 @@ function ModulesAccordion({ klass, onGrade }: { klass: ClassInfo; onGrade: (acti
   );
 }
 
-function ClassModules({ klass, layout, aside, onGrade }: { klass: ClassInfo; layout: ModLayout; aside?: React.ReactNode; onGrade: (activityId: string) => void }) {
-  if (layout === "plano") return <ModulesRailLayout klass={klass} flat aside={aside} onGrade={onGrade} />;
+function ClassModules({ klass, layout, aside, canEdit, onGrade }: { klass: ClassInfo; layout: ModLayout; aside?: React.ReactNode; canEdit: boolean; onGrade: (activityId: string) => void }) {
+  if (layout === "plano") return <ModulesRailLayout klass={klass} flat aside={aside} canEdit={canEdit} onGrade={onGrade} />;
   // El acordeón no tiene un bloque blanco único donde meter la columna: va al lado.
   if (layout === "acordeon") {
     return (
       <div className="atria-modsplit" style={{ display: "grid", gridTemplateColumns: aside ? "minmax(0, 1fr) 320px" : "1fr", gap: 40, alignItems: "start" }}>
-        <div style={{ minWidth: 0 }}><ModulesAccordion klass={klass} onGrade={onGrade} /></div>
+        <div style={{ minWidth: 0 }}><ModulesAccordion klass={klass} canEdit={canEdit} onGrade={onGrade} /></div>
         {aside ? (
           <div className="atria-modaside" style={{ paddingLeft: 28, borderLeft: "1px solid rgb(237, 236, 236)", position: "sticky", top: 0 }}>{aside}</div>
         ) : null}
       </div>
     );
   }
-  return <ModulesRailLayout klass={klass} aside={aside} onGrade={onGrade} />;
+  return <ModulesRailLayout klass={klass} aside={aside} canEdit={canEdit} onGrade={onGrade} />;
 }
 
 function ClassStudents({ klass }: { klass: ClassInfo }) {
@@ -708,8 +716,8 @@ function OverviewActivityCard({
   moduleLabel: string;
   showModule?: boolean;
   onOpen: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const [tIcon, tColor] = typeMeta(activity.type);
@@ -749,57 +757,59 @@ function OverviewActivityCard({
         <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>{meta}</div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            opacity: hovered ? 1 : 0,
-            transition: "opacity .15s ease",
-          }}
-        >
-          <button
-            type="button"
-            aria-label="Editar actividad"
-            title="Editar actividad"
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        {onEdit && onDelete ? (
+          <div
             style={{
-              width: 32,
-              height: 32,
-              border: "none",
-              borderRadius: "var(--radius-md)",
-              cursor: "pointer",
-              background: "rgba(255,255,255,0.92)",
-              color: "var(--primary-600)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "var(--shadow-sm)",
+              display: "flex",
+              gap: 6,
+              opacity: hovered ? 1 : 0,
+              transition: "opacity .15s ease",
             }}
           >
-            <Icon name="pencil" size={16} />
-          </button>
-          <button
-            type="button"
-            aria-label="Eliminar actividad"
-            title="Eliminar actividad"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            style={{
-              width: 32,
-              height: 32,
-              border: "none",
-              borderRadius: "var(--radius-md)",
-              cursor: "pointer",
-              background: "rgba(255,255,255,0.92)",
-              color: "var(--status-error)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            <Icon name="trash" size={16} />
-          </button>
-        </div>
+            <button
+              type="button"
+              aria-label="Editar actividad"
+              title="Editar actividad"
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              style={{
+                width: 32,
+                height: 32,
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+                background: "rgba(255,255,255,0.92)",
+                color: "var(--primary-600)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <Icon name="pencil" size={16} />
+            </button>
+            <button
+              type="button"
+              aria-label="Eliminar actividad"
+              title="Eliminar actividad"
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              style={{
+                width: 32,
+                height: 32,
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+                background: "rgba(255,255,255,0.92)",
+                color: "var(--status-error)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <Icon name="trash" size={16} />
+            </button>
+          </div>
+        ) : null}
         <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{activity.submitted}/{activity.total}</span>
         {showModule ? (
           <Badge
@@ -818,7 +828,7 @@ function OverviewActivityCard({
 
 const ALL_ACTIVITIES = "all";
 
-function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: string) => void }) {
+function ClassOverview({ c, canEdit, onGrade }: { c: ClassInfo; canEdit: boolean; onGrade: (activityId: string) => void }) {
   const { data: activities } = useActivities(c.id);
   const { data: modules } = useModules(c.id);
   const deleteActivity = useDeleteActivity(c.id);
@@ -896,8 +906,8 @@ function ClassOverview({ c, onGrade }: { c: ClassInfo; onGrade: (activityId: str
                   moduleLabel={moduleLabelOf(a.moduleId)}
                   showModule={activeTab === ALL_ACTIVITIES}
                   onOpen={() => setDetail(a)}
-                  onEdit={() => setEditing(a)}
-                  onDelete={() => setDeleting(a)}
+                  onEdit={canEdit ? () => setEditing(a) : undefined}
+                  onDelete={canEdit ? () => setDeleting(a) : undefined}
                 />
               ))
             )}
@@ -977,11 +987,51 @@ function HeaderAction({ icon, label, danger, onClick }: { icon: string; label: s
   );
 }
 
+const EDIT_MODE_KEY = "atria-class-edit-mode";
+
+/** Interruptor de la cabecera que muestra u oculta los controles de edición. */
+function EditModeToggle({ on, onChange }: { on: boolean; onChange: (next: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      onClick={() => onChange(!on)}
+      style={{ display: "inline-flex", alignItems: "center", gap: 9, height: 38, padding: "0 12px 0 14px", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "var(--header-btn-bg)", color: "var(--header-fg)", fontFamily: "var(--font-sans)", fontSize: 13, fontWeight: 700, transition: "background .15s ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--header-btn-bg-hover)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--header-btn-bg)"; }}
+    >
+      Editar
+      <span aria-hidden="true" style={{ position: "relative", width: 34, height: 20, borderRadius: 999, flexShrink: 0, background: on ? "var(--header-tab)" : "rgba(255,255,255,0.25)", transition: "background .15s ease" }}>
+        <span style={{ position: "absolute", top: 3, left: on ? 17 : 3, width: 14, height: 14, borderRadius: "50%", background: on ? "var(--header-ink)" : "#fff", boxShadow: "0 1px 2px rgba(16,27,63,.3)", transition: "left .15s ease" }} />
+      </span>
+    </button>
+  );
+}
+
 export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onProfile, onLogout, onNewActivity, onEdit, onDelete }: ClassDetailProps) {
   const { role, modLayout } = useSettings();
   const [tab, setTab] = useState(initialTab && CLASS_TABS.includes(initialTab) ? initialTab : "resumen");
   const [gradeSub, setGradeSub] = useState<SubmissionDto | null>(null);
   const c = klass;
+
+  // Los botones de edición van ocultos por defecto; el modo se recuerda entre clases.
+  const [editMode, setEditMode] = useState(false);
+  useEffect(() => {
+    try {
+      setEditMode(localStorage.getItem(EDIT_MODE_KEY) === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const toggleEditMode = (next: boolean) => {
+    setEditMode(next);
+    try {
+      localStorage.setItem(EDIT_MODE_KEY, next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
 
   const { data: activities } = useActivities(c.id);
   const [activityId, setActivityId] = useState<string>(initialActivityId ?? "");
@@ -1030,8 +1080,13 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
         badge={c.status}
         actions={
           <>
-            <HeaderAction icon="pencil" label="Editar clase" onClick={() => onEdit(c)} />
-            <HeaderAction icon="trash" label="Eliminar clase" danger onClick={() => onDelete(c)} />
+            <EditModeToggle on={editMode} onChange={toggleEditMode} />
+            {editMode ? (
+              <>
+                <HeaderAction icon="pencil" label="Editar clase" onClick={() => onEdit(c)} />
+                <HeaderAction icon="trash" label="Eliminar clase" danger onClick={() => onDelete(c)} />
+              </>
+            ) : null}
           </>
         }
         tab={tab}
@@ -1047,11 +1102,12 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
           { label: "Foro", value: "foro" },
         ]}
       >
-        {tab === "resumen" ? <ClassOverview c={c} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
+        {tab === "resumen" ? <ClassOverview c={c} canEdit={editMode} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
         {tab === "modulos" ? (
           <ClassModules
             klass={c}
             layout={modLayout}
+            canEdit={editMode}
             onGrade={(id) => { setActivityId(id); setTab("entregas"); }}
             aside={
               <div className="atria-modaside-card">

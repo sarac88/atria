@@ -73,6 +73,7 @@ export function ClassShell({
     ["--header-btn-danger-hover" as string]: "rgba(239,68,68,0.35)",
     ["--header-danger-fg" as string]: "#fecaca",
     ["--header-tab" as string]: theme.tint,
+    ["--header-ink" as string]: theme.ink,
   };
 
   const backBtnBg = "rgba(255,255,255,0.10)";
