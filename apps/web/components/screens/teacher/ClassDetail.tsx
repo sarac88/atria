@@ -36,12 +36,14 @@ import {
 import { useSettings, type ModLayout } from "@/components/settings/SettingsContext";
 import { activityTypeMeta } from "@/lib/activity-meta";
 import { buildUnits, NONE_UNIT } from "@/lib/units";
+import { stripEmptyParagraphs } from "@/lib/rich-text";
 import type { Activity, BadgeColor, ClassInfo, Module, SubmissionDto } from "@/lib/types";
 
 const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
 
 /** "Actividades" section for a unit — simple clickable rows, ghost add pill at the end. */
 function UnitActivities({ activities, onOpen, onAdd }: { activities: Activity[]; onOpen: (a: Activity) => void; onAdd?: () => void }) {
+  if (!activities.length && !onAdd) return null;
   return (
     <div style={{ marginTop: 22 }}>
       <div style={SECTION_LABEL}>Actividades</div>
@@ -50,6 +52,23 @@ function UnitActivities({ activities, onOpen, onAdd }: { activities: Activity[];
         {onAdd ? <AddActivityPill onClick={onAdd} /> : null}
       </div>
     </div>
+  );
+}
+
+/** Unidad sin nada que mostrar fuera del modo edición. */
+function unitIsEmpty(m: Module, acts: Activity[]) {
+  return !stripEmptyParagraphs(m.description).trim() && !m.coverUrl && !m.items.length && !m.sessions.length && !acts.length;
+}
+
+/** Estado vacío de una unidad cuando el modo edición está apagado. */
+function EmptyUnit() {
+  return (
+    <EmptyState
+      compact
+      illo="sin-cursos"
+      title="Esta unidad aún no tiene contenido"
+      text="Activa «Editar» en la cabecera para añadir recursos, sesiones y actividades."
+    />
   );
 }
 
@@ -426,6 +445,7 @@ function ModulesRailLayout({ klass, flat, aside, canEdit, onGrade }: { klass: Cl
               {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
             </div>
           )}
+          {!canEdit && unitIsEmpty(current, actsOf(current.id)) ? <EmptyUnit /> : null}
           <UnitDescription
             text={current.description}
             coverUrl={current.coverUrl}
@@ -590,6 +610,7 @@ function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEd
                     }}
                   />
                 ) : null}
+                {!canEdit && unitIsEmpty(m, actsOf(m.id)) ? <EmptyUnit /> : null}
                 {!isNone ? (
                   <UnitDescription
                     text={m.description}
@@ -828,7 +849,7 @@ function OverviewActivityCard({
 
 const ALL_ACTIVITIES = "all";
 
-function ClassOverview({ c, canEdit, onGrade }: { c: ClassInfo; canEdit: boolean; onGrade: (activityId: string) => void }) {
+function ClassOverview({ c, canEdit, onGrade, onNewActivity }: { c: ClassInfo; canEdit: boolean; onGrade: (activityId: string) => void; onNewActivity: () => void }) {
   const { data: activities } = useActivities(c.id);
   const { data: modules } = useModules(c.id);
   const deleteActivity = useDeleteActivity(c.id);
@@ -897,7 +918,13 @@ function ClassOverview({ c, canEdit, onGrade }: { c: ClassInfo; canEdit: boolean
           ) : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {visible.length === 0 ? (
-              <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay actividades.</div>
+              <EmptyState
+                compact
+                illo="sin-notas"
+                title="Aún no hay actividades"
+                text={canEdit ? "Crea la primera tarea, cuestionario o debate de la clase." : "Activa «Editar» en la cabecera para crear la primera actividad."}
+                action={canEdit ? <Button variant="accent" size="small" iconLeft={<Icon name="plus" size={16} />} onClick={onNewActivity}>Nueva actividad</Button> : undefined}
+              />
             ) : (
               visible.map((a) => (
                 <OverviewActivityCard
@@ -1102,7 +1129,7 @@ export function ClassDetail({ klass, initialTab, initialActivityId, onBack, onPr
           { label: "Foro", value: "foro" },
         ]}
       >
-        {tab === "resumen" ? <ClassOverview c={c} canEdit={editMode} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} /> : null}
+        {tab === "resumen" ? <ClassOverview c={c} canEdit={editMode} onGrade={(id) => { setActivityId(id); setTab("entregas"); }} onNewActivity={() => onNewActivity(c)} /> : null}
         {tab === "modulos" ? (
           <ClassModules
             klass={c}

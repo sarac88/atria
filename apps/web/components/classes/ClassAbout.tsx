@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button, Icon, RichText, RichView } from "@/components/ui";
-import { Chip } from "@/components/layout";
+import { Chip, EmptyState } from "@/components/layout";
 import { useClearClassCover, useUpdateClass, useUploadClassCover } from "@/lib/api/classes";
 import { resourceUrl } from "@/lib/api/client";
 import { stripEmptyParagraphs } from "@/lib/rich-text";
@@ -353,9 +353,17 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
         // Mismo margen que la portada flotante, para que texto e imagen arranquen a la par.
         <RichView html={desc} style={{ fontSize: 15, marginTop: 14 }} />
       ) : !editingDesc ? (
-        <p style={{ fontSize: 14.5, color: "var(--text-muted)", margin: "14px 0 0", lineHeight: 1.6 }}>
-          {canEdit ? "Todavía no hay descripción. Usa «Editar texto» para contar de qué va el curso." : "Este curso aún no tiene descripción."}
-        </p>
+        <EmptyState
+          compact
+          illo="sin-clases"
+          title="Aún no hay descripción"
+          text={canEdit ? "Cuenta de qué va el curso, sus objetivos y cómo se organiza." : "Este curso todavía no tiene descripción."}
+          action={canEdit ? (
+            <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEditDesc}>
+              Escribir descripción
+            </Button>
+          ) : undefined}
+        />
       ) : null}
 
       {error ? (
