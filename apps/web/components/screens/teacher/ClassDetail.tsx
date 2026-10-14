@@ -411,14 +411,18 @@ function ModulesRailLayout({ klass, flat, aside, canEdit, onGrade }: { klass: Cl
               onDelete={canEdit && m.id !== NONE_UNIT ? () => setDeleting({ id: m.id, title: m.title }) : undefined}
             />
           ))}
-          {units.length === 0 ? <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px" }}>Aún no hay unidades.</div> : null}
+          {units.length === 0 ? (
+            <div style={{ fontSize: 13, color: "var(--text-muted)", padding: "4px 8px", lineHeight: 1.5 }}>
+              Aún no hay unidades.{canEdit ? null : <> Activa «Editar» en la cabecera para crear la primera.</>}
+            </div>
+          ) : null}
         </div>
         {canEdit ? <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} /> : null}
       </div>
 
       {showAbout ? (
         <div className="atria-modmain" style={{ paddingLeft: 28 }}>
-          <ClassAbout c={klass} canEdit={canEdit} embedded />
+          <ClassAbout c={klass} canEdit={canEdit} editHint={!canEdit} embedded />
         </div>
       ) : current ? (
         <div key={current.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
@@ -558,7 +562,7 @@ function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEd
         </button>
         {aboutOpen ? (
           <div style={{ padding: "16px 20px 18px", borderTop: "1px solid var(--border-subtle)" }}>
-            <ClassAbout c={klass} canEdit={canEdit} embedded />
+            <ClassAbout c={klass} canEdit={canEdit} editHint={!canEdit} embedded />
           </div>
         ) : null}
       </div>
@@ -653,7 +657,11 @@ function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEd
           </div>
         );
       })}
-      {units.length === 0 ? <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Aún no hay unidades.</div> : null}
+      {units.length === 0 ? (
+        <div style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
+          Aún no hay unidades.{canEdit ? null : <> Activa «Editar» en la cabecera para crear la primera.</>}
+        </div>
+      ) : null}
       {canEdit ? <AddInline label="Añadir unidad" pending={createModule.isPending} onAdd={(title) => createModule.mutate({ title })} /> : null}
       {addTo ? <AddResourceModal classId={classId} moduleId={addTo.id} moduleTitle={addTo.title} onClose={() => setAddTo(null)} onDone={() => setAddTo(null)} /> : null}
       {creatingIn !== null ? (

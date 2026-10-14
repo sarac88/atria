@@ -77,8 +77,9 @@ export const RAIL_DIVIDER: React.CSSProperties = { height: 1, background: "var(-
  * derecha o ancho completo). El docente puede subir/quitar la imagen y editar
  * el título y el texto por separado en el mismo sitio.
  * `embedded`: sin tarjeta propia, para ir dentro del panel de Módulos.
+ * `editHint`: el docente con el modo edición apagado; los vacíos le indican cómo activarlo.
  */
-export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: boolean; embedded?: boolean }) {
+export function ClassAbout({ c, canEdit, embedded, editHint }: { c: ClassInfo; canEdit?: boolean; embedded?: boolean; editHint?: boolean }) {
   const uploadCover = useUploadClassCover(c.id);
   const clearCover = useClearClassCover(c.id);
   const updateClass = useUpdateClass(c.id);
@@ -357,7 +358,13 @@ export function ClassAbout({ c, canEdit, embedded }: { c: ClassInfo; canEdit?: b
           compact
           illo="sin-clases"
           title="Aún no hay descripción"
-          text={canEdit ? "Cuenta de qué va el curso, sus objetivos y cómo se organiza." : "Este curso todavía no tiene descripción."}
+          text={
+            canEdit
+              ? "Cuenta de qué va el curso, sus objetivos y cómo se organiza."
+              : editHint
+                ? "Activa «Editar» en la cabecera de la clase para escribirla."
+                : "Este curso todavía no tiene descripción."
+          }
           action={canEdit ? (
             <Button variant="outline" size="small" iconLeft={<Icon name="pencil" size={15} />} onClick={startEditDesc}>
               Escribir descripción
