@@ -60,10 +60,11 @@ export function LoginScreen({
           {mode === "choose" ? (
             <>
               <h2 style={{ fontSize: 30, margin: "0 0 8px" }}>Bienvenida a Atria</h2>
-              <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Explora la plataforma con datos de ejemplo o accede con tu cuenta.</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Explora la plataforma con datos de ejemplo.</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <Button variant="primary" iconLeft={<Icon name="play" size={18} />} style={{ width: "100%" }} onClick={() => setMode("demo")}>Probar demo</Button>
-                <Button variant="outline" style={{ width: "100%" }} onClick={() => setMode("login")}>Iniciar sesión</Button>
+                {/* Oculto mientras sólo hay cuentas de demo; el modo "login" sigue disponible. */}
+                {/* <Button variant="outline" style={{ width: "100%" }} onClick={() => setMode("login")}>Iniciar sesión</Button> */}
               </div>
             </>
           ) : (
