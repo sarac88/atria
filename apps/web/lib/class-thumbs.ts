@@ -7,15 +7,16 @@ import { CLASS_THUMBS, type ClassThumbId } from "@atria/types";
 
 export type ClassThumbSubject = "math" | "science" | "physics" | "literature" | "history" | "social" | "art" | "computing";
 
+// Nombres de las materias de la ESO (LOMLOE), en su forma corta habitual.
 export const CLASS_THUMB_SUBJECTS: { id: ClassThumbSubject; label: string }[] = [
   { id: "math", label: "Matemáticas" },
-  { id: "science", label: "Naturales" },
+  { id: "science", label: "Biología y Geología" },
   { id: "physics", label: "Física y Química" },
-  { id: "literature", label: "Lengua" },
-  { id: "history", label: "Historia" },
-  { id: "social", label: "Ciencias sociales" },
-  { id: "art", label: "Arte" },
-  { id: "computing", label: "Informática" },
+  { id: "literature", label: "Lengua y Literatura" },
+  { id: "history", label: "Geografía e Historia" },
+  { id: "social", label: "Economía y Emprendimiento" },
+  { id: "art", label: "Educación Plástica" },
+  { id: "computing", label: "Tecnología y Digitalización" },
 ];
 
 export interface ClassThumbPreset {

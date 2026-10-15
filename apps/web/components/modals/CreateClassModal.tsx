@@ -152,7 +152,7 @@ export function CreateClassModal({ klass, onClose, onDone }: { klass?: ClassInfo
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={t.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "right center", display: "block" }} />
                 </span>
-                <span style={{ display: "block", padding: "9px 10px", fontSize: 13, fontWeight: 600, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sj.label}</span>
+                <span style={{ display: "block", padding: "9px 10px", fontSize: 13, lineHeight: 1.3, fontWeight: 600, color: "var(--text-strong)", textWrap: "balance" }}>{sj.label}</span>
               </button>
             );
           })}
