@@ -62,6 +62,7 @@ interface SettingsContextValue extends Appearance {
   authed: boolean;
   authLoading: boolean;
   refreshSession: () => void;
+  setSession: (user: UserDto) => void;
   logout: () => Promise<void>;
 }
 
@@ -88,14 +89,23 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     void qc.invalidateQueries({ queryKey: ["me"] });
   }, [qc]);
 
+  /** Fija la sesión con el usuario que devuelve el login, sin esperar a /users/me. */
+  const setSession = useCallback(
+    (u: UserDto) => {
+      qc.setQueryData(["me"], u);
+    },
+    [qc],
+  );
+
   const logout = useCallback(async () => {
     try {
       await apiLogout();
     } catch {
       /* ignore network errors on logout */
     }
+    // Fuera los datos del usuario anterior, para que el siguiente no los vea.
     qc.setQueryData(["me"], null);
-    void qc.invalidateQueries({ queryKey: ["me"] });
+    qc.removeQueries({ predicate: (q) => q.queryKey[0] !== "me" });
   }, [qc]);
 
   // ---- appearance persistence ----
@@ -126,8 +136,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const role: Role = user?.role ?? DEFAULT_ROLE;
 
   const value = useMemo<SettingsContextValue>(
-    () => ({ ...appearance, set, user, role, authed, authLoading, refreshSession, logout }),
-    [appearance, set, user, role, authed, authLoading, refreshSession, logout],
+    () => ({ ...appearance, set, user, role, authed, authLoading, refreshSession, setSession, logout }),
+    [appearance, set, user, role, authed, authLoading, refreshSession, setSession, logout],
   );
 
   const acc = ACCENTS[appearance.accent] ?? ACCENTS["#F4B223"];

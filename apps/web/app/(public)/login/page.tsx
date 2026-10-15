@@ -18,7 +18,7 @@ export default function LoginPage() {
 function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshSession } = useSettings();
+  const { setSession } = useSettings();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -30,8 +30,10 @@ function LoginPageInner() {
     setPending(true);
     setError(null);
     try {
-      await apiLogin({ email, password });
-      refreshSession();
+      // El login devuelve el usuario: se guarda ya como sesión para que la zona
+      // privada no vea la sesión anterior (null tras cerrar sesión) y nos
+      // devuelva aquí antes de que termine de recargarse /users/me.
+      setSession(await apiLogin({ email, password }));
       router.push(target);
     } catch (e) {
       setError(
