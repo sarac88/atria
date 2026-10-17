@@ -42,16 +42,44 @@ import type { Activity, BadgeColor, ClassInfo, Module, SubmissionDto } from "@/l
 
 const SECTION_LABEL: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 };
 
-/** "Actividades" section for a unit — simple clickable rows, ghost add pill at the end. */
-function UnitActivities({ activities, onOpen, onAdd }: { activities: Activity[]; onOpen: (a: Activity) => void; onAdd?: () => void }) {
+/**
+ * "Actividades" section for a unit — simple clickable rows, ghost add pill at the end.
+ * Con `manage` (modo edición) cada fila ofrece editar y eliminar la actividad.
+ */
+function UnitActivities({ activities, onOpen, onAdd, manage }: { activities: Activity[]; onOpen: (a: Activity) => void; onAdd?: () => void; manage?: ClassInfo }) {
+  const deleteActivity = useDeleteActivity(manage?.id ?? "");
+  const [editing, setEditing] = useState<Activity | null>(null);
+  const [deleting, setDeleting] = useState<Activity | null>(null);
   if (!activities.length && !onAdd) return null;
   return (
     <div style={{ marginTop: 22 }}>
       <div style={SECTION_LABEL}>Actividades</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {activities.map((a) => <ActivityPill key={a.id} activity={a} onOpen={() => onOpen(a)} />)}
+        {activities.map((a) => (
+          <ActivityPill
+            key={a.id}
+            activity={a}
+            onOpen={() => onOpen(a)}
+            onEdit={manage ? () => setEditing(a) : undefined}
+            onDelete={manage ? () => setDeleting(a) : undefined}
+          />
+        ))}
         {onAdd ? <AddActivityPill onClick={onAdd} /> : null}
       </div>
+      {manage && editing ? (
+        <CreateActivityModal klass={manage} activity={editing} onClose={() => setEditing(null)} onDone={() => setEditing(null)} />
+      ) : null}
+      {deleting ? (
+        <ConfirmDialog
+          title="Eliminar actividad"
+          message={<>¿Seguro que quieres eliminar «{deleting.title}»? Esta acción no se puede deshacer.</>}
+          onClose={() => setDeleting(null)}
+          onConfirm={async () => {
+            await deleteActivity.mutateAsync(deleting.id);
+            setDeleting(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -511,6 +539,7 @@ function ModulesRailLayout({ klass, flat, aside, canEdit, onGrade }: { klass: Cl
             activities={actsOf(current.id)}
             onOpen={setDetail}
             onAdd={canEdit ? () => setCreatingIn(current.id === NONE_UNIT ? "" : current.id) : undefined}
+            manage={canEdit ? klass : undefined}
           />
         </div>
       ) : (
@@ -671,6 +700,7 @@ function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEd
                   activities={actsOf(m.id)}
                   onOpen={setDetail}
                   onAdd={canEdit ? () => setCreatingIn(m.id === NONE_UNIT ? "" : m.id) : undefined}
+                  manage={canEdit ? klass : undefined}
                 />
               </div>
             ) : null}

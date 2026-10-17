@@ -9,22 +9,32 @@ import type { Activity, BadgeColor } from "@/lib/types";
  * Clickable card for an activity inside a unit (Módulos / Contenido).
  * `badge` overrides the default (teacher) status pill — pass a value for the student's submission
  * state, or `null` to hide the pill entirely. Leave undefined for the teacher's activity status.
+ * Con `onEdit`/`onDelete` muestra, al pasar el ratón, los botones de editar y eliminar.
  */
 export function ActivityPill({
   activity,
   onOpen,
   badge,
+  onEdit,
+  onDelete,
 }: {
   activity: Activity;
   onOpen: () => void;
   badge?: { label: string; color: BadgeColor } | null;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   const [icon, color] = activityTypeMeta(activity.type);
   const pill = badge === undefined ? { label: activity.status[0], color: activity.status[1] } : badge;
+  // Un <div> con rol de botón: dentro van los botones de editar/eliminar, y un
+  // <button> no puede contener otros.
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onOpen(); } }}
       style={{
         display: "flex",
         alignItems: "center",
@@ -37,11 +47,14 @@ export function ActivityPill({
         borderLeft: `10px solid ${color}`,
         padding: "14px 18px",
         borderRadius: "var(--radius-sm)",
-        boxShadow: "var(--ring-hairline), var(--shadow-sm)",
+        boxShadow: hovered ? "var(--ring-hairline), var(--shadow-md)" : "var(--ring-hairline), var(--shadow-sm)",
+        transform: hovered ? "translateY(-1px)" : "none",
         transition: "box-shadow .18s ease, transform .18s ease",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--ring-hairline), var(--shadow-md)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--ring-hairline), var(--shadow-sm)"; e.currentTarget.style.transform = "none"; }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHovered(false); }}
     >
       <span style={{ width: 44, height: 44, flexShrink: 0, borderRadius: "var(--radius-md)", background: `color-mix(in srgb, ${color} 16%, #fff)`, color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         <Icon name={icon} size={22} />
@@ -57,10 +70,30 @@ export function ActivityPill({
           {activity.due ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>· <Icon name="calendar" size={13} /> {activity.due}</span> : null}
         </span>
       </span>
+      {onEdit || onDelete ? (
+        <span style={{ display: "flex", gap: 6, opacity: hovered ? 1 : 0, pointerEvents: hovered ? "auto" : "none", transition: "opacity .15s ease" }}>
+          {onEdit ? <PillAction icon="pencil" label="Editar actividad" color="var(--primary-600)" onClick={onEdit} /> : null}
+          {onDelete ? <PillAction icon="trash" label="Eliminar actividad" color="var(--status-error)" onClick={onDelete} /> : null}
+        </span>
+      ) : null}
       {pill ? <Badge color={pill.color}>{pill.label}</Badge> : null}
       <span style={{ width: 28, height: 28, flexShrink: 0, borderRadius: "50%", background: "var(--surface-sunken)", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
         <Icon name="chevron-right" size={16} />
       </span>
+    </div>
+  );
+}
+
+function PillAction({ icon, label, color, onClick }: { icon: string; label: string; color: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ width: 32, height: 32, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "rgba(255,255,255,0.92)", color, display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}
+    >
+      <Icon name={icon} size={16} />
     </button>
   );
 }
