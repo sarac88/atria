@@ -31,9 +31,11 @@ async function main() {
     exportedAt: string;
     tables: Record<string, Row[]>;
   };
-  // Todas las fechas se adelantan los días que han pasado desde la exportación,
+  // Todas las fechas se adelantan el tiempo que ha pasado desde la exportación,
   // para que plazos, entregas y avisos sigan viéndose igual de recientes.
-  const shiftDays = Math.max(0, Math.floor((Date.now() - Date.parse(exportedAt)) / DAY));
+  // Semanas completas, para que cada fecha caiga en el mismo día de la semana
+  // (las unidades empiezan en lunes y acaban en viernes).
+  const shiftDays = Math.max(0, Math.floor((Date.now() - Date.parse(exportedAt)) / (7 * DAY)) * 7);
 
   for (const model of [...MODEL_ORDER].reverse()) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

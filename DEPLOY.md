@@ -215,8 +215,9 @@ versión de TypeScript y falla con `TS5109`.)
 La semilla restaura la demo desde `apps/api/prisma/demo/`: `data.json` (la
 foto de la base de datos) y `files/` (los ficheros subidos que usa). **Borra
 todo antes de cargarla**, tanto las tablas como el contenido de `uploads/`, así
-que relanzarla deja la demo como recién instalada. Las fechas se adelantan los
-días transcurridos desde la exportación y las invitaciones pendientes se
+que relanzarla deja la demo como recién instalada. Las fechas se adelantan las
+semanas completas transcurridas desde la exportación (así conservan el día de
+la semana) y las invitaciones pendientes se
 renuevan, para que la demo no envejezca.
 
 Para cambiar la demo: edítala en local desde la interfaz y vuelve a hacer la
