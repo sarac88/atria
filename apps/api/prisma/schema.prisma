@@ -164,6 +164,9 @@ model Module {
   coverUrl    String          @default("")
   position    Int             @default(0)
   done        Boolean         @default(false)
+  /// Fechas informativas de inicio y fin de la unidad (sólo día, sin hora).
+  startsOn    DateTime?       @db.Date
+  endsOn      DateTime?       @db.Date
   class       Class           @relation(fields: [classId], references: [id], onDelete: Cascade)
   resources   Resource[]
   sessions    OnlineSession[]

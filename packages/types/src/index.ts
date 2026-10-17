@@ -214,6 +214,10 @@ export interface Module {
   description: string;
   /** Cabecera de la introducción de la unidad, o "" si no tiene imagen. */
   coverUrl: string;
+  /** Fecha de inicio "YYYY-MM-DD", o null si no se ha definido. */
+  startsOn: string | null;
+  /** Fecha de fin "YYYY-MM-DD", o null si no se ha definido. */
+  endsOn: string | null;
   done: boolean;
   items: ModuleItem[];
   sessions: OnlineSessionDto[];
@@ -370,7 +374,7 @@ export interface StudentTaskDto extends Activity {
 }
 
 /** Categorías de evento que el calendario sabe pintar. */
-export type CalendarKind = "entrega" | "examen" | "sesion";
+export type CalendarKind = "entrega" | "examen" | "sesion" | "unidad";
 
 /** Un evento con fecha para GET /calendar. */
 export interface CalendarEventDto {
@@ -616,10 +620,20 @@ export const createModuleSchema = z.object({
 });
 export type CreateModuleInput = z.infer<typeof createModuleSchema>;
 
-export const updateModuleSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
-});
+/** Día "YYYY-MM-DD" (lo que da un <input type="date">), o null para quitarlo. */
+const dayOrNull = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable();
+
+export const updateModuleSchema = z
+  .object({
+    title: z.string().min(1).optional(),
+    description: z.string().optional(),
+    startsOn: dayOrNull.optional(),
+    endsOn: dayOrNull.optional(),
+  })
+  .refine((m) => !m.startsOn || !m.endsOn || m.startsOn <= m.endsOn, {
+    message: "La fecha de fin no puede ser anterior a la de inicio.",
+    path: ["endsOn"],
+  });
 export type UpdateModuleInput = z.infer<typeof updateModuleSchema>;
 
 export const addResourceSchema = z.object({

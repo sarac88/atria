@@ -8,6 +8,7 @@ import { StudentTaskList } from "@/components/student/StudentTaskList";
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ModuleSessions } from "@/components/modules/ModuleSessions";
 import { UnitDescription } from "@/components/modules/UnitDescription";
+import { UnitDates } from "@/components/modules/UnitDates";
 import { ActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
 import { ActivityDetailModal } from "@/components/modals/ActivityDetailModal";
@@ -134,7 +135,10 @@ export function StudentClass({ klass, onBack, onProfile, onLogout }: StudentClas
                 <span style={{ width: 32, height: 32, borderRadius: "50%", background: curMod.done ? "var(--success-100)" : "var(--surface-soft)", color: curMod.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name={curMod.done ? "check" : "book-open"} size={18} />
                 </span>
-                <h3 style={{ fontSize: 18, margin: 0, flex: 1 }}>{curMod.title}</h3>
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontSize: 18, margin: 0 }}>{curMod.title}</h3>
+                  <UnitDates startsOn={curMod.startsOn} endsOn={curMod.endsOn} />
+                </span>
                 {curMod.id !== NONE_UNIT ? <Chip>{curMod.items.length} recursos</Chip> : null}
               </div>
               <UnitDescription text={curMod.description} coverUrl={curMod.coverUrl} />

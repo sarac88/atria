@@ -52,7 +52,7 @@ export class ModulesService {
     return toModuleDto(mod);
   }
 
-  /** Renombra la unidad y/o actualiza su descripción. */
+  /** Renombra la unidad, actualiza su descripción y/o sus fechas. */
   async updateModule(user: AuthUser, moduleId: string, input: UpdateModuleInput): Promise<ModuleDto> {
     const mod = await this.prisma.module.findUnique({ where: { id: moduleId }, select: { classId: true } });
     if (!mod) throw new NotFoundException();
@@ -62,6 +62,8 @@ export class ModulesService {
       data: {
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.description !== undefined ? { description: input.description } : {}),
+        ...(input.startsOn !== undefined ? { startsOn: input.startsOn ? new Date(input.startsOn) : null } : {}),
+        ...(input.endsOn !== undefined ? { endsOn: input.endsOn ? new Date(input.endsOn) : null } : {}),
       },
     });
     return this.moduleDto(moduleId);

@@ -6,7 +6,7 @@ export const NONE_UNIT = "__none__";
 export function buildUnits(modules: Module[], activities: Activity[]): { units: Module[]; actsOf: (id: string) => Activity[] } {
   const unassigned = activities.filter((a) => !a.moduleId);
   const units = unassigned.length
-    ? [...modules, { id: NONE_UNIT, title: "Sin unidad", description: "", coverUrl: "", done: false, items: [], sessions: [] }]
+    ? [...modules, { id: NONE_UNIT, title: "Sin unidad", description: "", coverUrl: "", startsOn: null, endsOn: null, done: false, items: [], sessions: [] }]
     : modules;
   const actsOf = (id: string) => (id === NONE_UNIT ? unassigned : activities.filter((a) => a.moduleId === id));
   return { units, actsOf };

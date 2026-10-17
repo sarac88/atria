@@ -9,8 +9,8 @@ export class CalendarService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * GET /calendar — entregas, exámenes y sesiones online de las clases que ve el
-   * usuario. Devuelve todo el histórico: el cliente recorta por mes, y el volumen
+   * GET /calendar — entregas, exámenes, sesiones online e inicio/fin de unidades
+   * de las clases que ve el usuario. Devuelve todo el histórico: el cliente recorta por mes, y el volumen
    * por usuario es pequeño.
    */
   async list(user: AuthUser): Promise<CalendarEventDto[]> {
@@ -22,7 +22,7 @@ export class CalendarService {
     // Los alumnos no ven borradores; el docente dueño y admin sí.
     const activityWhere = user.role === "alumno" ? { classId: { in: classIds }, status: { not: "draft" as const } } : { classId: { in: classIds } };
 
-    const [activities, sessions] = await Promise.all([
+    const [activities, sessions, modules] = await Promise.all([
       this.prisma.activity.findMany({
         where: activityWhere,
         select: { id: true, classId: true, title: true, type: true, dueAt: true },
@@ -30,6 +30,10 @@ export class CalendarService {
       this.prisma.onlineSession.findMany({
         where: { startsAt: { not: null }, module: { classId: { in: classIds } } },
         select: { id: true, label: true, startsAt: true, module: { select: { classId: true } } },
+      }),
+      this.prisma.module.findMany({
+        where: { classId: { in: classIds }, OR: [{ startsOn: { not: null } }, { endsOn: { not: null } }] },
+        select: { id: true, classId: true, title: true, startsOn: true, endsOn: true },
       }),
     ]);
 
@@ -60,6 +64,15 @@ export class CalendarService {
         date: toDateKey(startsAt),
         time: toTimeLabel(startsAt),
       });
+    }
+
+    // Las unidades abarcan semanas: se marcan sólo el día que empiezan y el que
+    // terminan, para no llenar cada casilla del mes. @db.Date llega como
+    // medianoche UTC, así que el día es la parte ISO.
+    for (const m of modules) {
+      const base = { kind: "unidad" as const, classId: m.classId, className: nameOf.get(m.classId) ?? "", time: "" };
+      if (m.startsOn) events.push({ ...base, id: `unit-start:${m.id}`, title: `Empieza: ${m.title}`, date: m.startsOn.toISOString().slice(0, 10) });
+      if (m.endsOn) events.push({ ...base, id: `unit-end:${m.id}`, title: `Termina: ${m.title}`, date: m.endsOn.toISOString().slice(0, 10) });
     }
 
     return events.sort((a, b) => (a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date)));

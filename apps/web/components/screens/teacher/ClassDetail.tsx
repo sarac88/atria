@@ -18,6 +18,7 @@ import { ClassIdentityPanel, ClassUnitProgressPanel } from "@/components/classes
 import { ModuleResourceGrid } from "@/components/modules/ModuleResourceGrid";
 import { ModuleSessions } from "@/components/modules/ModuleSessions";
 import { UnitDescription } from "@/components/modules/UnitDescription";
+import { UnitDates } from "@/components/modules/UnitDates";
 import { ActivityPill, AddActivityPill } from "@/components/activities/ActivityPill";
 import { DebateBoard } from "@/components/activities/DebateBoard";
 import {
@@ -262,13 +263,13 @@ const UNIT_FIELD: React.CSSProperties = {
   background: "#fff",
 };
 
-/** Botón discreto para abrir la edición del título de una unidad. */
+/** Botón discreto para abrir la edición del título y las fechas de una unidad. */
 function UnitEditButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
-      aria-label="Editar título"
-      title="Editar título"
+      aria-label="Editar unidad"
+      title="Editar unidad"
       onClick={onClick}
       style={{ width: 32, height: 32, flexShrink: 0, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", background: "transparent", color: "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background .15s ease, color .15s ease" }}
       onMouseEnter={(e) => { e.currentTarget.style.background = "var(--state-hover-tint)"; e.currentTarget.style.color = "var(--primary-600)"; }}
@@ -331,24 +332,28 @@ function UnitRailItem({
   );
 }
 
-/** Formulario en línea para renombrar la unidad. */
-function UnitTitleEditForm({
-  title,
+/** Formulario en línea para renombrar la unidad y fijar sus fechas. */
+function UnitEditForm({
+  unit,
   pending,
   onSave,
   onCancel,
 }: {
-  title: string;
+  unit: Module;
   pending?: boolean;
-  onSave: (title: string) => void;
+  onSave: (patch: { title: string; startsOn: string | null; endsOn: string | null }) => void;
   onCancel: () => void;
 }) {
-  const [val, setVal] = useState(title);
+  const [val, setVal] = useState(unit.title);
+  const [startsOn, setStartsOn] = useState(unit.startsOn ?? "");
+  const [endsOn, setEndsOn] = useState(unit.endsOn ?? "");
+  const badRange = !!startsOn && !!endsOn && endsOn < startsOn;
   const commit = () => {
     const v = val.trim();
-    if (!v) return;
-    onSave(v);
+    if (!v || badRange) return;
+    onSave({ title: v, startsOn: startsOn || null, endsOn: endsOn || null });
   };
+  const dateField = { ...UNIT_FIELD, height: 38, padding: "0 10px", fontSize: 14 };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
       <input
@@ -360,8 +365,19 @@ function UnitTitleEditForm({
         aria-label="Nombre de la unidad"
         style={{ ...UNIT_FIELD, height: 42, padding: "0 12px", fontSize: 16, fontWeight: 700 }}
       />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)" }}>
+          Inicio
+          <input type="date" value={startsOn} max={endsOn || undefined} onChange={(e) => setStartsOn(e.target.value)} style={dateField} />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)" }}>
+          Fin
+          <input type="date" value={endsOn} min={startsOn || undefined} onChange={(e) => setEndsOn(e.target.value)} style={dateField} />
+        </label>
+      </div>
+      {badRange ? <div style={{ fontSize: 12.5, color: "var(--status-error)" }}>La fecha de fin no puede ser anterior a la de inicio.</div> : null}
       <div style={{ display: "flex", gap: 8 }}>
-        <Button size="small" variant="accent" disabled={!val.trim() || pending} onClick={commit}>Guardar</Button>
+        <Button size="small" variant="accent" disabled={!val.trim() || badRange || pending} onClick={commit}>Guardar</Button>
         <Button size="small" variant="ghost" onClick={onCancel}>Cancelar</Button>
       </div>
     </div>
@@ -427,12 +443,12 @@ function ModulesRailLayout({ klass, flat, aside, canEdit, onGrade }: { klass: Cl
       ) : current ? (
         <div key={current.id} className="atria-modmain" style={{ paddingLeft: 28 }}>
           {canEdit && editing === current.id ? (
-            <UnitTitleEditForm
-              title={current.title}
+            <UnitEditForm
+              unit={current}
               pending={updateModule.isPending}
               onCancel={() => setEditing(null)}
-              onSave={(title) => {
-                updateModule.mutate({ id: current.id, title });
+              onSave={(patch) => {
+                updateModule.mutate({ id: current.id, ...patch });
                 setEditing(null);
               }}
             />
@@ -441,9 +457,12 @@ function ModulesRailLayout({ klass, flat, aside, canEdit, onGrade }: { klass: Cl
               <span style={{ width: 32, height: 32, borderRadius: "50%", background: current.done ? "var(--success-100)" : "var(--surface-soft)", color: current.done ? "var(--success-600)" : "var(--text-muted)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                 <Icon name={current.done ? "check" : "book-open"} size={18} />
               </span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
-                <h3 style={{ fontSize: 18, margin: 0 }}>{current.title}</h3>
-                {canEdit && current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+              <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+                  <h3 style={{ fontSize: 18, margin: 0 }}>{current.title}</h3>
+                  {canEdit && current.id !== NONE_UNIT ? <UnitEditButton onClick={() => setEditing(current.id)} /> : null}
+                </span>
+                <UnitDates startsOn={current.startsOn} endsOn={current.endsOn} />
               </span>
               <span style={{ flex: 1 }} />
               {current.id !== NONE_UNIT ? <Chip>{current.items.length} recursos</Chip> : null}
@@ -586,6 +605,7 @@ function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEd
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: "var(--text-strong)" }}>{lead}</span>
                   {sub ? <span style={{ display: "block", fontSize: 13, color: "var(--text-muted)", marginTop: 1 }}>{sub}</span> : null}
+                  {!isNone && (m.startsOn || m.endsOn) ? <span style={{ display: "block", marginTop: 2 }}><UnitDates startsOn={m.startsOn} endsOn={m.endsOn} /></span> : null}
                 </span>
                 <Chip>{isNone ? `${actsOf(m.id).length} actividades` : `${m.items.length} recursos`}</Chip>
                 <span style={{ color: "var(--text-muted)", display: "inline-flex", transition: "transform .15s ease", transform: expanded ? "rotate(180deg)" : "none" }}>
@@ -604,12 +624,12 @@ function ModulesAccordion({ klass, canEdit, onGrade }: { klass: ClassInfo; canEd
             {expanded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 20px 18px", borderTop: "1px solid var(--border-subtle)", paddingTop: 16 }}>
                 {canEdit && !isNone && editing === m.id ? (
-                  <UnitTitleEditForm
-                    title={m.title}
+                  <UnitEditForm
+                    unit={m}
                     pending={updateModule.isPending}
                     onCancel={() => setEditing(null)}
-                    onSave={(title) => {
-                      updateModule.mutate({ id: m.id, title });
+                    onSave={(patch) => {
+                      updateModule.mutate({ id: m.id, ...patch });
                       setEditing(null);
                     }}
                   />

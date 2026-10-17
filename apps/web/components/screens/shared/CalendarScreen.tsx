@@ -20,6 +20,7 @@ const CATS: Record<CalendarKind, CatDef> = {
   entrega: { label: "Entregas", icon: "document-text", color: "var(--event-entrega)", tint: "var(--event-entrega-soft)" },
   sesion: { label: "Sesiones", icon: "academic-cap", color: "var(--event-sesion)", tint: "var(--event-sesion-soft)" },
   examen: { label: "Exámenes", icon: "clipboard-check", color: "var(--event-examen)", tint: "var(--event-examen-soft)" },
+  unidad: { label: "Unidades", icon: "book-open", color: "var(--event-unidad)", tint: "var(--event-unidad-soft)" },
 };
 
 const KINDS = Object.keys(CATS) as CalendarKind[];
@@ -35,7 +36,7 @@ const mondayOffset = (y: number, m: number) => (new Date(y, m, 1).getDay() + 6) 
 export function CalendarScreen() {
   const router = useRouter();
   const { data, isLoading } = useCalendarEvents();
-  const [active, setActive] = useState<Record<CalendarKind, boolean>>({ entrega: true, sesion: true, examen: true });
+  const [active, setActive] = useState<Record<CalendarKind, boolean>>({ entrega: true, sesion: true, examen: true, unidad: true });
   const [cursor, setCursor] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };

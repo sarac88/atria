@@ -274,8 +274,15 @@ export function toModuleDto(m: ModuleWithResources): ModuleDto {
     title: m.title,
     description: m.description,
     coverUrl: m.coverUrl,
+    startsOn: m.startsOn ? toDay(m.startsOn) : null,
+    endsOn: m.endsOn ? toDay(m.endsOn) : null,
     done: m.done,
     items: m.resources.map((r) => ({ id: r.id, type: r.type, label: r.label, meta: r.meta, state: r.state, url: r.url })),
     sessions: m.sessions.map(toOnlineSessionDto),
   };
+}
+
+/** Las columnas @db.Date llegan como medianoche UTC: el día es la parte ISO. */
+function toDay(d: Date): string {
+  return d.toISOString().slice(0, 10);
 }
