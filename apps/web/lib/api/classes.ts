@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ClassInfo, CreateClassInput, UpdateClassInput } from "@atria/types";
+import type { ClassInfo, CreateClassInput, TeacherOverviewDto, UpdateClassInput } from "@atria/types";
 import { apiFetch } from "./client";
 
 export const getClasses = () => apiFetch<ClassInfo[]>("/classes");
@@ -11,6 +11,11 @@ export function useClasses() {
 
 export function useClass(id: string) {
   return useQuery({ queryKey: ["classes", id], queryFn: () => getClass(id), enabled: !!id });
+}
+
+/** Panel de inicio del docente. Cuelga de ["classes"] para refrescarse con cualquier cambio de clase o nota. */
+export function useTeacherOverview() {
+  return useQuery({ queryKey: ["classes", "teacher-overview"], queryFn: () => apiFetch<TeacherOverviewDto>("/classes/teacher/overview") });
 }
 
 export function useCreateClass() {

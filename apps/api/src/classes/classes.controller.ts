@@ -26,6 +26,13 @@ export class ClassesController {
     return this.classes.studentTasks(user);
   }
 
+  @Get("teacher/overview")
+  @UseGuards(RolesGuard)
+  @Roles("docente", "admin")
+  teacherOverview(@CurrentUser() user: AuthUser) {
+    return this.classes.teacherOverview(user);
+  }
+
   @Get(":id")
   @UseGuards(ClassMembershipGuard)
   findOne(@Param("id") id: string, @CurrentUser() user: AuthUser) {

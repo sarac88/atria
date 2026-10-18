@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { unlink } from "fs/promises";
 import { join } from "path";
-import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, Student, StudentTaskDto, SubmissionDto, UpdateClassInput } from "@atria/types";
+import type { Activity, CreateActivityInput, GradebookDto, ClassInfo, CreateClassInput, MeetingProvider, OverviewClassRef, OverviewStudentDto, Student, StudentTaskDto, SubmissionDto, TeacherOverviewDto, UpdateClassInput } from "@atria/types";
 import type { Prisma } from "@prisma/client";
 import type { AuthUser } from "../auth/decorators";
 import { PrismaService } from "../prisma/prisma.service";
@@ -393,5 +393,89 @@ export class ClassesService {
       className: nameOf.get(a.classId) ?? "",
       mySubmission: myByActivity.get(a.id) ?? null,
     }));
+  }
+
+  /**
+   * GET /classes/teacher/overview — el panel de inicio del docente: próximas
+   * videollamadas y sus alumnos con la participación de cada uno. El admin ve
+   * el de todas las clases.
+   */
+  async teacherOverview(user: AuthUser): Promise<TeacherOverviewDto> {
+    const classes = await this.prisma.class.findMany({
+      where: user.role === "admin" ? {} : { ownerId: user.userId },
+      select: { id: true, name: true, thumb: true, color: true, icon: true },
+      orderBy: { createdAt: "asc" },
+    });
+    if (classes.length === 0) return { sessions: [], students: [] };
+    const classIds = classes.map((c) => c.id);
+    const byId = new Map(classes.map((c) => [c.id, c]));
+    const classRef = (classId: string): OverviewClassRef => {
+      const c = byId.get(classId);
+      return { classId, className: c?.name ?? "", classThumb: c?.thumb ?? "", classColor: c?.color ?? "", classIcon: c?.icon ?? "" };
+    };
+
+    // Una sesión sigue "próxima" hasta hora y media después de empezar, igual que el "En curso" del cliente.
+    const since = new Date(Date.now() - 90 * 60_000);
+    const [sessions, enrollments, activityCounts, delivered] = await Promise.all([
+      this.prisma.onlineSession.findMany({
+        where: { startsAt: { gte: since }, module: { classId: { in: classIds } } },
+        include: { module: { select: { classId: true, title: true } } },
+        orderBy: { startsAt: "asc" },
+        take: 4,
+      }),
+      this.prisma.enrollment.findMany({
+        where: { classId: { in: classIds }, roleInClass: "student" },
+        include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      this.prisma.activity.groupBy({
+        by: ["classId"],
+        where: { classId: { in: classIds }, status: { not: "draft" } },
+        _count: true,
+      }),
+      this.prisma.submission.findMany({
+        where: { status: { in: ["entregado", "atrasado"] }, activity: { classId: { in: classIds }, status: { not: "draft" } } },
+        select: { studentId: true, activity: { select: { classId: true } } },
+      }),
+    ]);
+
+    const studentsOf = new Map<string, { id: string; name: string; avatarUrl: string | null }[]>();
+    for (const e of enrollments) {
+      const list = studentsOf.get(e.classId) ?? [];
+      list.push({ id: e.user.id, name: e.user.name, avatarUrl: e.user.avatarUrl ?? null });
+      studentsOf.set(e.classId, list);
+    }
+
+    // Participación: entregas en actividades publicadas sobre las publicadas en sus clases.
+    const totalOf = new Map(activityCounts.map((a) => [a.classId, a._count]));
+    const deliveredOf = new Map<string, number>();
+    for (const s of delivered) {
+      const key = `${s.studentId}:${s.activity.classId}`;
+      deliveredOf.set(key, (deliveredOf.get(key) ?? 0) + 1);
+    }
+    const students = new Map<string, OverviewStudentDto>();
+    for (const e of enrollments) {
+      const cur = students.get(e.user.id) ?? { id: e.user.id, name: e.user.name, avatarUrl: e.user.avatarUrl ?? null, classes: [], participation: 0, submitted: 0, total: 0 };
+      cur.classes.push(byId.get(e.classId)?.name ?? "");
+      cur.submitted += deliveredOf.get(`${e.user.id}:${e.classId}`) ?? 0;
+      cur.total += totalOf.get(e.classId) ?? 0;
+      students.set(e.user.id, cur);
+    }
+
+    return {
+      sessions: sessions.map((s) => ({
+        id: s.id,
+        provider: s.provider as MeetingProvider,
+        label: s.label,
+        url: s.url,
+        startsAt: s.startsAt!.toISOString(),
+        moduleTitle: s.module.title,
+        students: studentsOf.get(s.module.classId) ?? [],
+        ...classRef(s.module.classId),
+      })),
+      students: [...students.values()]
+        .map((s) => ({ ...s, participation: s.total ? Math.min(1, s.submitted / s.total) : 0 }))
+        .sort((a, b) => b.participation - a.participation || a.name.localeCompare(b.name, "es")),
+    };
   }
 }

@@ -87,8 +87,8 @@ export function FormSection({ label, hint, children, columns, first }: { label?:
   );
 }
 
-/** Generic white card / panel. */
-export function Panel({ children, title, action, pad = 20, style = {} }: { children?: ReactNode; title?: ReactNode; action?: ReactNode; pad?: number; style?: CSSProperties }) {
+/** Generic white card / panel. Con `scroll` y una altura fija en `style`, el cuerpo hace scroll bajo el título. */
+export function Panel({ children, title, action, pad = 20, style = {}, scroll = false }: { children?: ReactNode; title?: ReactNode; action?: ReactNode; pad?: number; style?: CSSProperties; scroll?: boolean }) {
   return (
     <section style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)", overflow: "hidden", display: "flex", flexDirection: "column", ...style }}>
       {title ? (
@@ -97,7 +97,14 @@ export function Panel({ children, title, action, pad = 20, style = {} }: { child
           {action || null}
         </div>
       ) : null}
-      <div style={{ padding: pad, flex: 1 }}>{children}</div>
+      {scroll ? (
+        // El padding queda fuera de la zona que hace scroll: un margen blanco fijo que el contenido no pisa.
+        <div style={{ padding: pad, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>{children}</div>
+        </div>
+      ) : (
+        <div style={{ padding: pad, flex: 1 }}>{children}</div>
+      )}
     </section>
   );
 }

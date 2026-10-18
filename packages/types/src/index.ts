@@ -396,6 +396,43 @@ export interface CalendarEventDto {
   time: string;
 }
 
+/** La clase a la que pertenece una fila del panel del docente, para pintar su miniatura. */
+export interface OverviewClassRef {
+  classId: string;
+  className: string;
+  classThumb: string;
+  classColor: string;
+  classIcon: string;
+}
+
+/** Una videollamada programada que aún no ha terminado. */
+export interface OverviewSessionDto extends OnlineSessionDto, OverviewClassRef {
+  /** Siempre presente: las salas permanentes no entran en la lista. */
+  startsAt: string;
+  moduleTitle: string;
+  /** Alumnos matriculados en la clase, los invitados a la llamada. */
+  students: { id: string; name: string; avatarUrl: string | null }[];
+}
+
+/** Un alumno del docente, sumando todas las clases en las que está matriculado. */
+export interface OverviewStudentDto {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  /** Nombres de las clases del docente en las que está, en orden de alta. */
+  classes: string[];
+  /** 0–1: actividades publicadas entregadas sobre las publicadas en sus clases. */
+  participation: number;
+  submitted: number;
+  total: number;
+}
+
+/** GET /classes/teacher/overview — lo que reúne el panel de inicio del docente. */
+export interface TeacherOverviewDto {
+  sessions: OverviewSessionDto[];
+  students: OverviewStudentDto[];
+}
+
 export interface GradebookColumn {
   id: string;
   title: string;
