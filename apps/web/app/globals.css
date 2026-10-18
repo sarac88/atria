@@ -195,8 +195,8 @@
   --event-sesion-soft: #fbe4ee;
   --event-examen: #c88a00;
   --event-examen-soft: #fdf2ce;
-  --event-unidad: #5a8f3c;
-  --event-unidad-soft: #e6f2dd;
+  --event-unidad: #9a9a9a;
+  --event-unidad-soft: #eeeeee;
 
   /* Interactive states */
   --state-hover-tint: rgba(22, 36, 74, 0.06);
@@ -372,7 +372,7 @@ a { color: var(--text-link); }
   --event-entrega: #6fc5ec;  --event-entrega-soft: #12314a;
   --event-sesion: #f09bc0;   --event-sesion-soft: #3d1f2e;
   --event-examen: #f2c14e;   --event-examen-soft: #3b3116;
-  --event-unidad: #9fd27d;   --event-unidad-soft: #1f3317;
+  --event-unidad: #93a0bb;   --event-unidad-soft: #232e4c;
 }
 [data-theme="dark"] textarea { background: var(--surface-card) !important; color: var(--text-strong) !important; }
 [data-theme="dark"] div:has(> input:not([type="checkbox"]):not([type="radio"])) { background: var(--surface-card) !important; }

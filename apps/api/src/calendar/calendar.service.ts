@@ -17,7 +17,11 @@ export class CalendarService {
     const classes = await this.visibleClasses(user);
     if (classes.length === 0) return [];
     const classIds = classes.map((c) => c.id);
-    const nameOf = new Map(classes.map((c) => [c.id, c.name]));
+    const byId = new Map(classes.map((c) => [c.id, c]));
+    const classFields = (classId: string) => {
+      const c = byId.get(classId);
+      return { className: c?.name ?? "", classSubject: c?.subject ?? "", classThumb: c?.thumb ?? "", classColor: c?.color ?? "" };
+    };
 
     // Los alumnos no ven borradores; el docente dueño y admin sí.
     const activityWhere = user.role === "alumno" ? { classId: { in: classIds }, status: { not: "draft" as const } } : { classId: { in: classIds } };
@@ -47,7 +51,7 @@ export class CalendarService {
         kind: a.type === "cuestionario" ? "examen" : "entrega",
         title: a.title,
         classId: a.classId,
-        className: nameOf.get(a.classId) ?? "",
+        ...classFields(a.classId),
         date: toDateKey(date),
         time: "",
       });
@@ -60,19 +64,28 @@ export class CalendarService {
         kind: "sesion",
         title: s.label,
         classId: s.module.classId,
-        className: nameOf.get(s.module.classId) ?? "",
+        ...classFields(s.module.classId),
         date: toDateKey(startsAt),
         time: toTimeLabel(startsAt),
       });
     }
 
-    // Las unidades abarcan semanas: se marcan sólo el día que empiezan y el que
-    // terminan, para no llenar cada casilla del mes. @db.Date llega como
-    // medianoche UTC, así que el día es la parte ISO.
+    // Cada unidad es un único evento de varios días (date → endDate); el cliente
+    // la pinta como una barra. Si sólo tiene una de las dos fechas, ocupa ese día.
+    // @db.Date llega como medianoche UTC, así que el día es la parte ISO.
     for (const m of modules) {
-      const base = { kind: "unidad" as const, classId: m.classId, className: nameOf.get(m.classId) ?? "", time: "" };
-      if (m.startsOn) events.push({ ...base, id: `unit-start:${m.id}`, title: `Empieza: ${m.title}`, date: m.startsOn.toISOString().slice(0, 10) });
-      if (m.endsOn) events.push({ ...base, id: `unit-end:${m.id}`, title: `Termina: ${m.title}`, date: m.endsOn.toISOString().slice(0, 10) });
+      const start = (m.startsOn ?? m.endsOn)!.toISOString().slice(0, 10);
+      const end = (m.endsOn ?? m.startsOn)!.toISOString().slice(0, 10);
+      events.push({
+        id: `unit:${m.id}`,
+        kind: "unidad",
+        title: m.title,
+        classId: m.classId,
+        ...classFields(m.classId),
+        date: start < end ? start : end,
+        endDate: start < end ? end : start,
+        time: "",
+      });
     }
 
     return events.sort((a, b) => (a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date)));
@@ -86,6 +99,6 @@ export class CalendarService {
         : user.role === "docente"
           ? { ownerId: user.userId }
           : { enrollments: { some: { userId: user.userId } } };
-    return this.prisma.class.findMany({ where, select: { id: true, name: true } });
+    return this.prisma.class.findMany({ where, select: { id: true, name: true, subject: true, thumb: true, color: true } });
   }
 }

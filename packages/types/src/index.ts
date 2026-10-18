@@ -383,8 +383,15 @@ export interface CalendarEventDto {
   title: string;
   classId: string;
   className: string;
+  /** Asignatura de la clase, o "" si no se eligió. */
+  classSubject: string;
+  /** Ilustración y color de la clase, para pintar con el color de su cabecera. */
+  classThumb: string;
+  classColor: string;
   /** Fecha local en formato YYYY-MM-DD. */
   date: string;
+  /** Último día (incluido, YYYY-MM-DD) de los eventos que abarcan varios días (unidades). */
+  endDate?: string;
   /** Hora "HH:MM" cuando el evento la tiene (sesiones), o "" si es de día completo. */
   time: string;
 }

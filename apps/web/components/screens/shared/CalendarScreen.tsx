@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui";
 import { Page, PageHead, Panel } from "@/components/layout";
 import { useCalendarEvents } from "@/lib/api/calendar";
+import { classHeaderTheme } from "@/lib/class-thumbs";
 import type { CalendarEventDto, CalendarKind } from "@/lib/types";
 
 interface CatDef {
@@ -63,7 +64,50 @@ export function CalendarScreen() {
   const monthLabel = monthFmt.format(new Date(year, month, 1));
   const titled = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
-  const visible = (d: number) => (byDate.get(dateKey(year, month, d)) ?? []).filter((e) => active[e.kind]);
+  // Las unidades se pintan como barras, no como eventos de un día.
+  const visible = (d: number) => (byDate.get(dateKey(year, month, d)) ?? []).filter((e) => e.kind !== "unidad" && active[e.kind]);
+
+  // Unidades que tocan este mes, recortadas a sus días dentro de él.
+  const units = useMemo(() => {
+    if (!active.unidad) return [];
+    const first = dateKey(year, month, 1);
+    const last = dateKey(year, month, daysInMonth);
+    return (data ?? [])
+      .filter((e) => e.kind === "unidad" && e.date <= last && (e.endDate ?? e.date) >= first)
+      .map((e) => {
+        const end = e.endDate ?? e.date;
+        return {
+          event: e,
+          startDay: e.date < first ? 1 : Number(e.date.slice(8, 10)),
+          endDay: end > last ? daysInMonth : Number(end.slice(8, 10)),
+          startsInMonth: e.date >= first,
+          endsInMonth: end <= last,
+        };
+      });
+  }, [data, year, month, daysInMonth, active.unidad]);
+
+  /** La unidad de la misma clase en cuya barra cae el evento, si la hay. */
+  const unitOf = (e: CalendarEventDto) =>
+    units.find((u) => u.event.classId === e.classId && u.event.date <= e.date && (u.event.endDate ?? u.event.date) >= e.date)?.event.id;
+
+  const weeks = Array.from({ length: cells / 7 }, (_, w) => {
+    const segs: { unit: (typeof units)[number]; a: number; b: number; lane: number }[] = [];
+    for (const u of units) {
+      const a = Math.max(u.startDay + offset - 1, w * 7) - w * 7;
+      const b = Math.min(u.endDay + offset - 1, w * 7 + 6) - w * 7;
+      if (a <= b) segs.push({ unit: u, a, b, lane: 0 });
+    }
+    // Cada barra ocupa el primer carril libre de la semana.
+    segs.sort((x, y) => x.a - y.a || y.b - x.b);
+    const laneEnds: number[] = [];
+    for (const s of segs) {
+      let lane = laneEnds.findIndex((end) => end < s.a);
+      if (lane === -1) lane = laneEnds.length;
+      laneEnds[lane] = s.b;
+      s.lane = lane;
+    }
+    return { segs, lanes: laneEnds.length };
+  });
   const toggle = (k: CalendarKind) => setActive((a) => ({ ...a, [k]: !a[k] }));
   const shift = (delta: number) => setCursor(({ year, month }) => {
     const d = new Date(year, month + delta, 1);
@@ -76,40 +120,31 @@ export function CalendarScreen() {
     [data, year, month, active],
   );
 
-  const chip = (e: CalendarEventDto) => {
-    const c = CATS[e.kind];
-    const sub = e.time ? `${e.time} · ${e.className}` : e.className;
-    return (
-      <button
-        key={e.id}
-        type="button"
-        title={`${e.title} · ${e.className}`}
-        onClick={() => router.push(`/clase/${e.classId}`)}
-        style={{
-          display: "block",
-          width: "100%",
-          boxSizing: "border-box",
-          textAlign: "left",
-          background: c.tint,
-          borderRadius: 6,
-          border: "none",
-          borderLeft: `3px solid ${c.color}`,
-          padding: "4px 8px",
-          minWidth: 0,
-          maxWidth: "100%",
-          overflow: "hidden",
-          cursor: "pointer",
-          fontFamily: "var(--font-sans)",
-          transition: "filter .15s ease",
-        }}
-        onMouseEnter={(ev) => { ev.currentTarget.style.filter = "brightness(0.96)"; }}
-        onMouseLeave={(ev) => { ev.currentTarget.style.filter = "none"; }}
-      >
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.title}</div>
-        <div style={{ fontSize: 10, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sub}</div>
-      </button>
-    );
-  };
+  const dot = (e: CalendarEventDto) => (
+    <button
+      key={e.id}
+      type="button"
+      title={`${e.time ? `${e.time} · ` : ""}${e.title} · ${e.className}`}
+      onClick={() => router.push(`/clase/${e.classId}`)}
+      style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", minWidth: 0, boxSizing: "border-box", textAlign: "left", background: "transparent", border: "none", borderRadius: 4, padding: "2px 3px", cursor: "pointer", fontFamily: "var(--font-sans)", transition: "background .15s ease" }}
+      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--state-hover-tint)")}
+      onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
+    >
+      <span style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0, background: CATS[e.kind].color }} />
+      <span style={{ flex: 1, minWidth: 0, fontSize: 11, fontWeight: 600, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        {e.time ? <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>{e.time} </span> : null}
+        {e.title}
+      </span>
+    </button>
+  );
+
+  /** Hasta 3 eventos y un «+N más». */
+  const dotList = (evs: CalendarEventDto[]) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
+      {evs.slice(0, 3).map(dot)}
+      {evs.length > 3 ? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", padding: "0 4px" }}>+{evs.length - 3} más</span> : null}
+    </div>
+  );
 
   return (
     <Page>
@@ -194,24 +229,65 @@ export function CalendarScreen() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid var(--border-subtle)" }}>
             {dows.map((d, i) => <div key={i} style={{ padding: "10px 0", textAlign: "center", fontSize: 12, fontWeight: 700, letterSpacing: ".03em", color: "var(--text-muted)" }}>{d}</div>)}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}>
-            {days.map((d, i) => {
-              const valid = d >= 1 && d <= daysInMonth;
-              const evs = valid ? visible(d) : [];
-              const shown = evs.slice(0, 3);
-              const extra = evs.length - shown.length;
-              const isToday = d === todayDay;
-              return (
-                <div key={i} style={{ minHeight: 124, minWidth: 0, display: "flex", flexDirection: "column", padding: 8, gap: 4, borderRight: i % 7 !== 6 ? "1px solid var(--border-subtle)" : "none", borderBottom: i < days.length - 7 ? "1px solid var(--border-subtle)" : "none", background: valid ? "transparent" : "var(--surface-soft)" }}>
-                  {valid ? <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: "50%", fontSize: 13, fontWeight: 700, color: isToday ? "#fff" : "var(--text-strong)", background: isToday ? "var(--brand-primary)" : "transparent", alignSelf: "flex-start" }}>{d}</div> : null}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 3, width: "100%", minWidth: 0 }}>
-                    {shown.map((e) => chip(e))}
-                    {extra > 0 ? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", padding: "0 4px" }}>+{extra} más</span> : null}
+          {weeks.map(({ segs, lanes }, w) => {
+            const week = days.slice(w * 7, w * 7 + 7);
+            const valid = (d: number) => d >= 1 && d <= daysInMonth;
+            return (
+              <div
+                key={w}
+                style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gridTemplateRows: `auto ${"auto auto ".repeat(lanes)}1fr`, minHeight: 124, borderBottom: w < weeks.length - 1 ? "1px solid var(--border-subtle)" : "none" }}
+              >
+                {/* Fondo y bordes de cada día, detrás de barras y eventos. */}
+                {week.map((d, c) => (
+                  <div key={"bg" + c} style={{ gridColumn: c + 1, gridRow: "1 / -1", borderRight: c !== 6 ? "1px solid var(--border-subtle)" : "none", background: valid(d) ? "transparent" : "var(--surface-soft)" }} />
+                ))}
+
+                {week.map((d, c) => (
+                  <div key={"n" + c} style={{ gridColumn: c + 1, gridRow: 1, padding: "8px 8px 4px" }}>
+                    {valid(d) ? <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: "50%", fontSize: 13, fontWeight: 700, color: d === todayDay ? "#fff" : "var(--text-strong)", background: d === todayDay ? "var(--brand-primary)" : "transparent" }}>{d}</div> : null}
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                ))}
+
+                {/* Cada unidad: una barra de fondo que abarca dos filas (título y eventos);
+                    los eventos van en las columnas de la semana para cuadrar con cada día. */}
+                {segs.map(({ unit, a, b, lane }) => {
+                  const u = unit.event;
+                  const endsHere = unit.endsInMonth && unit.endDay + offset - 1 === w * 7 + b;
+                  const subject = u.classSubject || u.className;
+                  const span = `${a + 1} / ${b + 2}`;
+                  const right = endsHere ? 6 : 0;
+                  return [
+                    <div
+                      key={u.id + ":bar"}
+                      style={{ gridColumn: span, gridRow: `${2 + 2 * lane} / span 2`, marginRight: right, marginBottom: 4, background: "color-mix(in srgb, var(--event-unidad-soft) 55%, transparent)", borderLeft: `4px solid ${classHeaderTheme(u.classThumb, u.classColor).ink}`, zIndex: 1 }}
+                    />,
+                    <button
+                      key={u.id + ":title"}
+                      type="button"
+                      title={`${u.title} · ${subject} · ${u.className}`}
+                      onClick={() => router.push(`/clase/${u.classId}`)}
+                      style={{ gridColumn: span, gridRow: 2 + 2 * lane, zIndex: 2, display: "flex", alignItems: "baseline", gap: 6, minWidth: 0, marginRight: right, background: "transparent", border: "none", padding: "5px 6px 2px 9px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)", whiteSpace: "nowrap", overflow: "hidden" }}
+                    >
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-strong)", overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>{u.title}</span>
+                      <span style={{ fontSize: 10, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", flexShrink: 2, minWidth: 0 }}>{subject}</span>
+                    </button>,
+                    ...week.slice(a, b + 1).map((d, k) => (
+                      <div key={`${u.id}:${k}`} style={{ gridColumn: a + k + 1, gridRow: 3 + 2 * lane, zIndex: 2, minWidth: 0, padding: `0 ${a + k === b ? 6 + right : 6}px 5px 6px` }}>
+                        {dotList(visible(d).filter((e) => unitOf(e) === u.id))}
+                      </div>
+                    )),
+                  ];
+                })}
+
+                {/* Eventos que no caen dentro de ninguna unidad visible. */}
+                {week.map((d, c) => (
+                  <div key={"e" + c} style={{ gridColumn: c + 1, gridRow: 2 + 2 * lanes, minWidth: 0, padding: "0 6px 8px" }}>
+                    {valid(d) ? dotList(visible(d).filter((e) => !unitOf(e))) : null}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </Panel>
       </div>
     </Page>
