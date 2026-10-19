@@ -63,8 +63,10 @@ export function LoginScreen({
               <p style={{ color: "var(--text-muted)", fontSize: 14.5, margin: "0 0 30px" }}>Explora la plataforma con datos de ejemplo.</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <Button variant="primary" iconLeft={<Icon name="play" size={18} />} style={{ width: "100%" }} onClick={() => setMode("demo")}>Probar demo</Button>
-                {/* Oculto mientras sólo hay cuentas de demo; el modo "login" sigue disponible. */}
-                {/* <Button variant="outline" style={{ width: "100%" }} onClick={() => setMode("login")}>Iniciar sesión</Button> */}
+                {/* Sólo en local: en producción sólo hay cuentas de demo. */}
+                {process.env.NODE_ENV === "development" ? (
+                  <Button variant="outline" style={{ width: "100%" }} onClick={() => setMode("login")}>Iniciar sesión</Button>
+                ) : null}
               </div>
             </>
           ) : (
