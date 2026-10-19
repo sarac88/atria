@@ -1,5 +1,5 @@
 {
-  "exportedAt": "2026-10-17T18:08:11.198Z",
+  "exportedAt": "2026-10-19T15:02:39.034Z",
   "tables": {
     "user": [
       {
@@ -11,7 +11,7 @@
         "avatarUrl": null,
         "hashedRefreshToken": null,
         "createdAt": "2026-10-04T11:37:49.617Z",
-        "updatedAt": "2026-10-17T17:57:15.391Z"
+        "updatedAt": "2026-10-19T14:48:49.736Z"
       },
       {
         "id": "u-marc",
@@ -22,7 +22,7 @@
         "avatarUrl": null,
         "hashedRefreshToken": null,
         "createdAt": "2026-10-04T11:37:49.620Z",
-        "updatedAt": "2026-10-16T11:38:01.446Z"
+        "updatedAt": "2026-10-19T14:48:54.415Z"
       },
       {
         "id": "u-admin",
@@ -66,7 +66,7 @@
         "avatarUrl": null,
         "hashedRefreshToken": null,
         "createdAt": "2026-10-04T11:37:49.652Z",
-        "updatedAt": "2026-10-09T09:41:33.333Z"
+        "updatedAt": "2026-10-19T14:35:14.728Z"
       },
       {
         "id": "cmutqyaty0019iojj8ra1olmw",
@@ -253,6 +253,26 @@
         "mime": "application/pdf",
         "createdAt": "2026-10-09T10:22:17.044Z",
         "updatedAt": "2026-10-09T10:22:17.044Z"
+      },
+      {
+        "id": "cmvfcq5b6000gluywhzs7hu4h",
+        "ownerId": "cmutqyatw0016iojjx25ix8qr",
+        "key": "18551dfe-ce61-4540-b2cd-d91b1b94e5dc.pdf",
+        "name": "mi_mapa_linguistico_completado.pdf",
+        "size": 29017,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-19T14:30:30.498Z",
+        "updatedAt": "2026-10-19T14:30:30.498Z"
+      },
+      {
+        "id": "cmvfcvvr1000pluywed2z6ial",
+        "ownerId": "cmutqyatw0016iojjx25ix8qr",
+        "key": "298f60d7-9abb-41ee-8095-a1395338daa1.pdf",
+        "name": "Analisis_15_oraciones.pdf",
+        "size": 32765,
+        "mime": "application/pdf",
+        "createdAt": "2026-10-19T14:34:58.046Z",
+        "updatedAt": "2026-10-19T14:34:58.046Z"
       }
     ],
     "class": [
@@ -406,7 +426,7 @@
         "token": "ZN094WzbMZ9UNgxtqa-FU3phuTFDRHCp",
         "status": "pending",
         "invitedById": "u-elena",
-        "expiresAt": "2026-10-21T08:59:24.582Z",
+        "expiresAt": "2026-10-25T09:11:47.287Z",
         "acceptedAt": null,
         "emailSentAt": "2026-10-04T15:00:56.703Z",
         "createdAt": "2026-10-04T15:00:55.265Z",
@@ -419,7 +439,7 @@
         "token": "_F4ngmjr1d3K4_z2ZJln8ZMjMg0DdOAL",
         "status": "pending",
         "invitedById": "u-elena",
-        "expiresAt": "2026-10-21T08:59:24.582Z",
+        "expiresAt": "2026-10-25T09:11:47.287Z",
         "acceptedAt": null,
         "emailSentAt": "2026-10-04T15:00:56.701Z",
         "createdAt": "2026-10-04T15:00:55.268Z",
@@ -2766,9 +2786,170 @@
         "link": null,
         "createdAt": "2026-10-09T16:14:19.160Z",
         "updatedAt": "2026-10-09T16:14:19.160Z"
+      },
+      {
+        "id": "cmvdpz5cq0001rlinmtz3ab8q",
+        "activityId": "cmuwrwhrn000tlvcqp7o2p2x4",
+        "studentId": "u-marc",
+        "status": "entregado",
+        "submittedAt": "2026-10-18T11:05:53.113Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": {
+          "2x8tn7": "0",
+          "4wo0lo": "1",
+          "5a0oim": "0",
+          "gw189b": "2",
+          "hg70i3": "1",
+          "j8yso6": "0",
+          "mc1whs": "1",
+          "u5tl4y": "0"
+        },
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-18T11:05:53.114Z",
+        "updatedAt": "2026-10-18T11:05:53.114Z"
+      },
+      {
+        "id": "cmvfcjxx9000dluywihax11h4",
+        "activityId": "cmuzfdbzw0001u1ppm2i14la6",
+        "studentId": "cmutqyatw0016iojjx25ix8qr",
+        "status": "entregado",
+        "submittedAt": "2026-10-19T14:25:40.988Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": {
+          "2ve88p": "1",
+          "mb7hpf": "0",
+          "mpsa3h": "2",
+          "ovvqcg": "1",
+          "pmr2uv": "0",
+          "rxurvo": "0"
+        },
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-19T14:25:40.989Z",
+        "updatedAt": "2026-10-19T14:25:40.989Z"
+      },
+      {
+        "id": "cmvfcq5b8000iluywu17h5coc",
+        "activityId": "cmuzfotno0005u1ppcb6z5hn4",
+        "studentId": "cmutqyatw0016iojjx25ix8qr",
+        "status": "entregado",
+        "submittedAt": "2026-10-19T14:30:30.500Z",
+        "fileId": "cmvfcq5b6000gluywhzs7hu4h",
+        "fileName": "mi_mapa_linguistico_completado.pdf",
+        "comment": null,
+        "answers": null,
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-19T14:30:30.501Z",
+        "updatedAt": "2026-10-19T14:30:30.501Z"
+      },
+      {
+        "id": "cmvfcr8g9000mluywxr6x2hrr",
+        "activityId": "cmuzfxkll0009u1ppko0me66p",
+        "studentId": "cmutqyatw0016iojjx25ix8qr",
+        "status": "entregado",
+        "submittedAt": "2026-10-19T14:31:21.225Z",
+        "fileId": null,
+        "fileName": null,
+        "comment": null,
+        "answers": {
+          "2tu6c6": "1",
+          "f5l1s1": "1",
+          "feb60x": "1",
+          "kgo3t0": "0",
+          "lr05p8": "0",
+          "nyshs5": "1",
+          "qjh2zf": "1",
+          "x0nwbp": "0"
+        },
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-19T14:31:21.226Z",
+        "updatedAt": "2026-10-19T14:31:21.226Z"
+      },
+      {
+        "id": "cmvfcvvr3000rluywtsk28eyg",
+        "activityId": "cmuzgiy1d000bu1ppynf0vnfk",
+        "studentId": "cmutqyatw0016iojjx25ix8qr",
+        "status": "entregado",
+        "submittedAt": "2026-10-19T14:34:58.047Z",
+        "fileId": "cmvfcvvr1000pluywed2z6ial",
+        "fileName": "Analisis_15_oraciones.pdf",
+        "comment": null,
+        "answers": null,
+        "text": null,
+        "link": null,
+        "createdAt": "2026-10-19T14:34:58.048Z",
+        "updatedAt": "2026-10-19T14:34:58.048Z"
       }
     ],
-    "grade": [],
+    "grade": [
+      {
+        "id": "cmvfcavu70001luywivorpth6",
+        "submissionId": "cmv0to0wg000amkhtzs720ydv",
+        "score": 4,
+        "feedback": "",
+        "gradedById": "u-elena",
+        "gradedAt": "2026-10-19T14:18:38.382Z",
+        "createdAt": "2026-10-19T14:18:38.382Z",
+        "updatedAt": "2026-10-19T14:18:38.382Z"
+      },
+      {
+        "id": "cmvfcbiqj0005luyw99ojfolj",
+        "submissionId": "cmv15nxhb000gmkhtqyd4bpob",
+        "score": 7,
+        "feedback": "",
+        "gradedById": "u-elena",
+        "gradedAt": "2026-10-19T14:19:08.059Z",
+        "createdAt": "2026-10-19T14:19:08.059Z",
+        "updatedAt": "2026-10-19T14:19:08.059Z"
+      },
+      {
+        "id": "cmvfcbopy0009luywhtfab4lq",
+        "submissionId": "cmv1614pj000kmkht05ue7a6z",
+        "score": 6,
+        "feedback": "",
+        "gradedById": "u-elena",
+        "gradedAt": "2026-10-19T14:19:15.814Z",
+        "createdAt": "2026-10-19T14:19:15.814Z",
+        "updatedAt": "2026-10-19T14:19:15.814Z"
+      },
+      {
+        "id": "cmvfcwpm6000vluyw6uixb33n",
+        "submissionId": "cmvfcjxx9000dluywihax11h4",
+        "score": 5,
+        "feedback": "",
+        "gradedById": "u-elena",
+        "gradedAt": "2026-10-19T14:35:36.750Z",
+        "createdAt": "2026-10-19T14:35:36.750Z",
+        "updatedAt": "2026-10-19T14:35:36.750Z"
+      },
+      {
+        "id": "cmvfcwyr8000zluywj7dxn4hd",
+        "submissionId": "cmv0sbbjg001lligiqzxikkld",
+        "score": 5,
+        "feedback": "",
+        "gradedById": "u-elena",
+        "gradedAt": "2026-10-19T14:35:48.597Z",
+        "createdAt": "2026-10-19T14:35:48.597Z",
+        "updatedAt": "2026-10-19T14:35:48.597Z"
+      },
+      {
+        "id": "cmvfcx8ob0013luyw8fsaokyc",
+        "submissionId": "cmv0tdkbg0001mkht6tj4loyf",
+        "score": 7,
+        "feedback": "",
+        "gradedById": "u-elena",
+        "gradedAt": "2026-10-19T14:36:01.451Z",
+        "createdAt": "2026-10-19T14:36:01.451Z",
+        "updatedAt": "2026-10-19T14:36:01.451Z"
+      }
+    ],
     "conversation": [],
     "conversationParticipant": [],
     "message": [],
@@ -2953,6 +3134,18 @@
         "readAt": "2026-10-09T09:26:34.577Z",
         "createdAt": "2026-10-09T09:11:53.141Z",
         "updatedAt": "2026-10-09T09:26:34.578Z"
+      },
+      {
+        "id": "cmvfcwpmg000xluyw1vt9lix0",
+        "userId": "cmutqyatw0016iojjx25ix8qr",
+        "type": "grade",
+        "title": "Nueva nota",
+        "body": "Has recibido una nota en «Lenguas y variedades»",
+        "link": "/clase/cmuwt820q0019lvcq40ftk1rx",
+        "entityId": "cmvfcjxx9000dluywihax11h4",
+        "readAt": null,
+        "createdAt": "2026-10-19T14:35:36.761Z",
+        "updatedAt": "2026-10-19T14:35:36.761Z"
       }
     ]
   }
