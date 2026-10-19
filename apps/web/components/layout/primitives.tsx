@@ -11,7 +11,7 @@ export function Page({ children, width = 1180 }: { children?: ReactNode; width?:
 
 export function PageHead({ title, subtitle, actions }: { title?: ReactNode; subtitle?: ReactNode; actions?: ReactNode; icon?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: "calc(22px * var(--d,1))" }}>
+    <div style={{ display: "flex", alignItems: subtitle ? "flex-end" : "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: "calc(22px * var(--d,1))" }}>
       <div>
         <h2 style={{ fontSize: "clamp(22px, 2.4vw, 30px)", margin: 0 }}>{title}</h2>
         {subtitle ? <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "6px 0 0" }}>{subtitle}</p> : null}

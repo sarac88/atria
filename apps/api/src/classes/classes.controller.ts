@@ -26,6 +26,11 @@ export class ClassesController {
     return this.classes.studentTasks(user);
   }
 
+  @Get("sessions/upcoming")
+  upcomingSessions(@CurrentUser() user: AuthUser) {
+    return this.classes.upcomingSessions(user);
+  }
+
   @Get("teacher/overview")
   @UseGuards(RolesGuard)
   @Roles("docente", "admin")

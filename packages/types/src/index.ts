@@ -405,7 +405,7 @@ export interface OverviewClassRef {
   classIcon: string;
 }
 
-/** Una videollamada programada que aún no ha terminado. */
+/** GET /classes/sessions/upcoming — una videollamada programada que aún no ha terminado. */
 export interface OverviewSessionDto extends OnlineSessionDto, OverviewClassRef {
   /** Siempre presente: las salas permanentes no entran en la lista. */
   startsAt: string;
@@ -427,9 +427,8 @@ export interface OverviewStudentDto {
   total: number;
 }
 
-/** GET /classes/teacher/overview — lo que reúne el panel de inicio del docente. */
+/** GET /classes/teacher/overview — los alumnos del panel de inicio del docente. */
 export interface TeacherOverviewDto {
-  sessions: OverviewSessionDto[];
   students: OverviewStudentDto[];
 }
 

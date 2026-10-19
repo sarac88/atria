@@ -10,7 +10,8 @@ import { AdminDashboard } from "@/components/screens/admin/AdminDashboard";
 import { CreateClassModal } from "@/components/modals/CreateClassModal";
 import type { ClassInfo } from "@/lib/types";
 
-const navPath = (key: string) => (key === "clases" ? "/clases" : key === "usuarios" ? "/usuarios" : "/");
+const NAV_PATHS: Record<string, string> = { clases: "/clases", usuarios: "/usuarios", tareas: "/tareas", calendario: "/calendario" };
+const navPath = (key: string) => NAV_PATHS[key] ?? "/";
 
 export default function DashboardPage() {
   const router = useRouter();
