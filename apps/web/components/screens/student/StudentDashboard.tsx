@@ -81,13 +81,12 @@ export function StudentDashboard({ classes, onOpenClass, onNav }: { classes: Cla
     <Page width={1320}>
       <PageHead
         title={<span>Hola{greeting ? `, ${greeting}` : ""} <span style={{ fontFamily: "system-ui" }}>👋</span></span>}
-        subtitle={subtitle}
       />
 
       {/* La misma rejilla que el inicio del docente: cada fila alinea la altura de sus dos columnas. */}
       <div className="atria-2col" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 360px", gap: DASH_GAP }}>
         <div style={{ minWidth: 0 }}>
-          <Panel title="Próximas entregas" action={stats.pending ? <Badge color="warning">{stats.pending}</Badge> : undefined}>
+          <Panel title="Próximas entregas" action={<span style={{ fontSize: 13.5, color: "var(--text-muted)", textAlign: "right" }}>{subtitle}</span>}>
             {stats.next.length ? (
               <div className="atria-classgrid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }}>
                 {stats.next.map((task) => <TaskCard key={task.id} task={task} onOpen={() => onNav("tareas")} />)}
