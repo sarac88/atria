@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, Button, Badge, Icon } from "@/components/ui";
 import { Page, PageHead, Panel, ProgressBar, EmptyState } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
+import { classSubject } from "@/lib/class-label";
 import { DASH_GAP, UpcomingSessionsCard, WeekSchedule, ellipsis } from "@/components/dashboard/DashboardBlocks";
 import { useSettings } from "@/components/settings/SettingsContext";
 import { useUpcomingSessions } from "@/lib/api/classes";
@@ -113,7 +114,7 @@ export function StudentDashboard({ classes, onOpenClass, onNav }: { classes: Cla
           {classes.length ? (
             <div className="atria-classgrid3" style={{ display: "grid", gridTemplateColumns: `repeat(${COURSE_LIST}, minmax(0, 1fr))`, gap: DASH_GAP }}>
               {classes.slice(0, COURSE_LIST).map((c) => (
-                <Card key={c.id} title={c.name} subtitle={c.code} interactive media={<ClassThumb thumb={c.thumb} cover={c.coverUrl} color={c.color} icon={c.icon} name={c.name} iconSize={46} />} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
+                <Card key={c.id} title={c.name} subtitle={classSubject(c)} interactive media={<ClassThumb thumb={c.thumb} cover={c.coverUrl} color={c.color} icon={c.icon} name={c.name} iconSize={46} />} onClick={() => onOpenClass(c)} footer={<div style={{ width: "100%" }}><ProgressBar value={c.progress} showLabel /></div>} />
               ))}
             </div>
           ) : (

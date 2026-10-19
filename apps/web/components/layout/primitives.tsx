@@ -13,8 +13,8 @@ export function PageHead({ title, subtitle, actions }: { title?: ReactNode; subt
   return (
     <div style={{ display: "flex", alignItems: subtitle ? "flex-end" : "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: "calc(22px * var(--d,1))" }}>
       <div>
-        <h2 style={{ fontSize: "clamp(22px, 2.4vw, 30px)", margin: 0 }}>{title}</h2>
-        {subtitle ? <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "6px 0 0" }}>{subtitle}</p> : null}
+        <h2 style={{ fontSize: "clamp(22px, 2.4vw, 30px)", lineHeight: 1.15, margin: 0 }}>{title}</h2>
+        {subtitle ? <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "4px 0 0" }}>{subtitle}</p> : null}
       </div>
       {actions ? <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{actions}</div> : null}
     </div>
@@ -48,8 +48,8 @@ export function FormPage({
       ) : null}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: "calc(22px * var(--d,1))" }}>
         <div>
-          <h2 style={{ fontSize: "clamp(22px, 2.4vw, 30px)", margin: 0 }}>{title}</h2>
-          {subtitle ? <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "6px 0 0" }}>{subtitle}</p> : null}
+          <h2 style={{ fontSize: "clamp(22px, 2.4vw, 30px)", lineHeight: 1.15, margin: 0 }}>{title}</h2>
+          {subtitle ? <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "4px 0 0" }}>{subtitle}</p> : null}
         </div>
       </div>
       <div

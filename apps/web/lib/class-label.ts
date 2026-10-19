@@ -11,7 +11,12 @@ import { CLASS_STAGE_LABEL, type ClassInfo } from "@/lib/types";
  */
 export function classSubtitle(c: Pick<ClassInfo, "subject" | "stage" | "thumb" | "code" | "room">): string {
   const stage = c.stage ? CLASS_STAGE_LABEL[c.stage] : "";
-  const subject = c.subject || classThumbPreset(c.thumb)?.label || "";
+  const subject = classSubject(c);
   if (subject) return [subject, stage].filter(Boolean).join(" · ");
   return [stage, c.code, c.room].filter((v) => v && v !== "—").join(" · ");
+}
+
+/** Solo la asignatura (sin etapa), para las tarjetas del alumno. */
+export function classSubject(c: Pick<ClassInfo, "subject" | "thumb">): string {
+  return c.subject || classThumbPreset(c.thumb)?.label || "";
 }

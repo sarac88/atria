@@ -190,14 +190,14 @@ export function CalendarScreen() {
 
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-strong)", marginBottom: 10 }}>{titled}</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
-            {dows.map((d, i) => <div key={"h" + i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", paddingBottom: 4 }}>{d}</div>)}
+            {dows.map((d, i) => <div key={"h" + i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: i >= 5 ? "var(--calendar-weekend)" : "var(--text-muted)", paddingBottom: 4 }}>{d}</div>)}
             {days.map((d, i) => {
               const valid = d >= 1 && d <= daysInMonth;
               const evs = valid ? visible(d) : [];
               const isToday = d === todayDay;
               return (
                 <div key={i} style={{ aspectRatio: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%", fontSize: 11.5, fontWeight: isToday ? 700 : 500, color: !valid ? "var(--text-muted)" : isToday ? "#fff" : "var(--text-body)", background: isToday ? "var(--brand-primary)" : "transparent", opacity: valid ? 1 : 0.4 }}>{valid ? d : ""}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%", fontSize: 11.5, fontWeight: isToday ? 700 : 500, color: !valid ? "var(--text-muted)" : isToday ? "#fff" : i % 7 >= 5 ? "var(--calendar-weekend)" : "var(--text-body)", background: isToday ? "var(--brand-primary)" : "transparent", opacity: valid ? 1 : 0.4 }}>{valid ? d : ""}</span>
                   <span style={{ display: "flex", gap: 2, height: 4 }}>
                     {evs.slice(0, 3).map((e, k) => <span key={k} style={{ width: 4, height: 4, borderRadius: "50%", background: CATS[e.kind].color }} />)}
                   </span>
@@ -227,7 +227,7 @@ export function CalendarScreen() {
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid var(--border-subtle)" }}>
-            {dows.map((d, i) => <div key={i} style={{ padding: "10px 0", textAlign: "center", fontSize: 12, fontWeight: 700, letterSpacing: ".03em", color: "var(--text-muted)" }}>{d}</div>)}
+            {dows.map((d, i) => <div key={i} style={{ padding: "10px 0", textAlign: "center", fontSize: 12, fontWeight: 700, letterSpacing: ".03em", color: i >= 5 ? "var(--calendar-weekend)" : "var(--text-muted)" }}>{d}</div>)}
           </div>
           {weeks.map(({ segs, lanes }, w) => {
             const week = days.slice(w * 7, w * 7 + 7);
@@ -237,14 +237,14 @@ export function CalendarScreen() {
                 key={w}
                 style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gridTemplateRows: `auto ${"auto auto ".repeat(lanes)}1fr`, minHeight: 124, borderBottom: w < weeks.length - 1 ? "1px solid var(--border-subtle)" : "none" }}
               >
-                {/* Fondo y bordes de cada día, detrás de barras y eventos. */}
+                {/* Fondo y bordes de cada día, detrás de barras y eventos; los findes, en rojo. */}
                 {week.map((d, c) => (
-                  <div key={"bg" + c} style={{ gridColumn: c + 1, gridRow: "1 / -1", borderRight: c !== 6 ? "1px solid var(--border-subtle)" : "none", background: valid(d) ? "transparent" : "var(--surface-soft)" }} />
+                  <div key={"bg" + c} style={{ gridColumn: c + 1, gridRow: "1 / -1", borderRight: c !== 6 ? "1px solid var(--border-subtle)" : "none", background: c >= 5 ? "var(--calendar-weekend-soft)" : "transparent" }} />
                 ))}
 
                 {week.map((d, c) => (
                   <div key={"n" + c} style={{ gridColumn: c + 1, gridRow: 1, padding: "8px 8px 4px" }}>
-                    {valid(d) ? <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: "50%", fontSize: 13, fontWeight: 700, color: d === todayDay ? "#fff" : "var(--text-strong)", background: d === todayDay ? "var(--brand-primary)" : "transparent" }}>{d}</div> : null}
+                    {valid(d) ? <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: "50%", fontSize: 13, fontWeight: 700, color: d === todayDay ? "#fff" : c >= 5 ? "var(--calendar-weekend)" : "var(--text-strong)", background: d === todayDay ? "var(--brand-primary)" : "transparent" }}>{d}</div> : null}
                   </div>
                 ))}
 
