@@ -30,7 +30,7 @@ const CLASS_LIST = 5;
 const STUDENT_LIST = 6;
 
 /** Altura común de la fila inferior (actividad, clases, alumnos); lo que no cabe hace scroll. */
-const BOTTOM_ROW_HEIGHT = 420;
+const BOTTOM_ROW_HEIGHT = 340;
 
 /** Separador entre filas de una lista, más suave que el borde de los paneles. */
 const ROW_DIVIDER: CSSProperties = { height: 1, background: "color-mix(in srgb, var(--border-subtle) 55%, transparent)", margin: "3px 0" };
