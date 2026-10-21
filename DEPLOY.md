@@ -198,7 +198,8 @@ Son los datos de producción: cuidado al editar a mano.
 
 ### Datos de ejemplo
 
-La semilla no se ejecuta sola. Si quieres los datos de demo:
+La semilla la lanza cada noche el reset de la demo (ver abajo). Para
+ejecutarla a mano:
 
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec api \
@@ -225,6 +226,38 @@ foto con `npm run db:export-demo --workspace @atria/api`.
 
 Todas las cuentas de la semilla usan la contraseña `atria2025`, que está
 escrita en el código. Con la app expuesta a internet, tenlo en cuenta.
+
+### Reset de la demo
+
+Cada noche el cron del servidor lanza `docker/reset-demo.sh`, que ejecuta la
+semilla de arriba y deja la demo como recién instalada. Sólo funciona en el
+servidor: sin `.env.prod` (en local no existe) se niega a ejecutarse. Si el
+contenedor `api` no está en marcha, no hace nada y lo deja escrito en el log.
+
+El reset cierra la sesión de quien esté dentro (los usuarios se recrean sin
+sus sesiones), por eso va de madrugada. La instancia va en UTC: las 3:00 UTC
+son las 4:00 en Madrid en invierno y las 5:00 en verano.
+
+Activarlo, una sola vez, en la instancia:
+
+```bash
+crontab -e
+```
+
+y añadir al final:
+
+```
+0 3 * * * sh /home/ubuntu/atria/docker/reset-demo.sh >> /home/ubuntu/reset-demo.log 2>&1
+```
+
+El log va fuera del clon a propósito: el despliegue exige que `~/atria` no
+tenga cambios. Para comprobarlo:
+
+```bash
+crontab -l                      # la línea está programada
+sh ~/atria/docker/reset-demo.sh # lanzarlo a mano, ahora
+tail ~/reset-demo.log           # última ejecución del cron
+```
 
 ### Los ficheros subidos
 
