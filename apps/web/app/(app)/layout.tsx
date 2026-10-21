@@ -7,6 +7,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/components/settings/SettingsContext";
+import { DemoNotice } from "@/components/modals/DemoNotice";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -18,5 +19,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (authLoading) return <div style={{ minHeight: "100vh", background: "var(--surface-page)" }} />;
   if (!authed) return null;
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <DemoNotice />
+    </>
+  );
 }
