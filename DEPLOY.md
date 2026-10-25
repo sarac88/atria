@@ -7,6 +7,9 @@ demostración multiplican el coste sin aportar nada.
 Coste aproximado: **11-14 $/mes**, o 0 € mientras duren los créditos de la
 cuenta nueva.
 
+La demo está publicada en **https://atria-demo.duckdns.org** (IP elástica
+`54.220.183.94`).
+
 ---
 
 ## 1. Cuenta AWS
@@ -47,14 +50,21 @@ Es gratis mientras esté asociada; si la dejas suelta, se factura.
 
 Caddy pide el certificado TLS solo, pero necesita un nombre que apunte a la IP.
 
-- **Con dominio propio:** un registro `A` hacia la IP elástica. Si usas
-  Route 53, la zona alojada cuesta 0,50 $/mes.
-- **Sin dominio:** [DuckDNS](https://duckdns.org) es gratis y funciona bien
-  con Let's Encrypt.
-- Evita `nip.io` / `sslip.io` para esto: al ser dominios compartidos por mucha
-  gente es fácil toparse con los límites de emisión de Let's Encrypt.
+Aquí se usa **[DuckDNS](https://duckdns.org)**, que es gratis y funciona bien
+con Let's Encrypt: el subdominio `atria-demo` con *current ip* =
+`54.220.183.94`. Como la IP es elástica y no cambia, no hace falta instalar en
+la instancia el script actualizador de DuckDNS.
 
-Espera a que el DNS resuelva antes del paso 5, o Caddy fallará al validar.
+Alternativas: con dominio propio, un registro `A` hacia la IP elástica (si usas
+Route 53, la zona alojada cuesta 0,50 $/mes). Evita `nip.io` / `sslip.io`: al
+ser dominios compartidos por mucha gente es fácil toparse con los límites de
+emisión de Let's Encrypt.
+
+Comprueba que resuelve antes del paso 5, o Caddy fallará al validar:
+
+```bash
+dig +short atria-demo.duckdns.org   # tiene que devolver la IP elástica
+```
 
 ## 4. Preparar la instancia
 
