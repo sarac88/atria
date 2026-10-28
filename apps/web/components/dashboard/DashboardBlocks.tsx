@@ -3,7 +3,7 @@
 // Bloques comunes de los tableros de inicio del docente y del alumno.
 
 import type { CSSProperties, ReactNode } from "react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Button, Icon, Avatar } from "@/components/ui";
 import { EmptyState } from "@/components/layout";
 import { MEETING_BRAND } from "@/components/icons/brand-glyphs";
@@ -78,22 +78,6 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
   }, [events]);
   const empty = days.every((d) => !d.groups.length);
 
-  // Hora actual (HH:MM), refrescada cada minuto para mover la línea de «ahora».
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-  const nowLabel = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  // La línea va antes del primer evento de hoy que aún no ha empezado; los de todo el día cuentan como ya pasados.
-  const nowBefore = days[0].groups.flatMap((g) => g.items).find((e) => e.time && e.time > nowLabel)?.id ?? null;
-  const nowLine = (
-    <div key="now" aria-label={`Ahora, ${nowLabel}`} style={{ position: "relative", display: "flex", alignItems: "center", gap: 4, margin: "2px 0" }}>
-      <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", background: "var(--calendar-weekend)", borderRadius: 999, padding: "1px 6px", fontVariantNumeric: "tabular-nums" }}>{nowLabel}</span>
-      <span aria-hidden="true" style={{ flex: 1, height: 2, borderRadius: 1, background: "var(--calendar-weekend)" }} />
-    </div>
-  );
-
   return (
     <section style={{ ...card, padding: 20 }}>
       <SectionHead title="Mi semana" action={<Button variant="link" size="small" onClick={onCalendar}>Ver calendario</Button>} />
@@ -118,9 +102,7 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
               <div style={{ position: "relative", minHeight: 260, display: "flex", flexDirection: "column", gap: 12, paddingTop: 4 }}>
                 <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: 0, bottom: 0, borderLeft: `1.5px dashed ${i === 0 ? "var(--text-strong)" : "var(--border-strong)"}`, opacity: i === 0 ? 0.5 : 0.6 }} />
                 {d.groups.map((g) => (
-                  <Fragment key={g.title}>
-                  {i === 0 && nowBefore === g.items[0].id ? nowLine : null}
-                  <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+                  <div key={g.title} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
                     {/* Título de la asignatura, con fondo para tapar la línea discontinua. */}
                     <span
                       title={g.title}
@@ -129,12 +111,11 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
                       <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: g.ink }} />
                       <span style={ellipsis}>{g.title}</span>
                     </span>
-                    {g.items.map((e, k) => {
+                    {g.items.map((e) => {
                       const meta = KIND_META[e.kind]!;
                       return (
-                        <Fragment key={e.id}>
-                        {i === 0 && k > 0 && nowBefore === e.id ? nowLine : null}
                         <button
+                          key={e.id}
                           type="button"
                           onClick={() => onOpenEvent(e)}
                           title={`${e.title} · ${e.className}`}
@@ -165,13 +146,10 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
                             <span style={{ fontSize: 11, color: "var(--text-muted)", ...ellipsis }}>{e.time ? meta.label : `${meta.label} · todo el día`}</span>
                           </span>
                         </button>
-                        </Fragment>
                       );
                     })}
                   </div>
-                  </Fragment>
                 ))}
-                {i === 0 && !nowBefore ? nowLine : null}
               </div>
             </div>
           ))}
