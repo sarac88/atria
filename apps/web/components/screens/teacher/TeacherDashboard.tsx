@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Badge, Icon, Avatar } from "@/components/ui";
+import { Button, Badge, statusBadgeColor, Icon, Avatar } from "@/components/ui";
 import { DASH_GAP, UpcomingSessionsCard, WeekSchedule, ellipsis } from "@/components/dashboard/DashboardBlocks";
 import { Page, PageHead, Panel, Chip, EmptyState } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
@@ -33,7 +33,7 @@ const STUDENT_LIST = 6;
 const BOTTOM_ROW_HEIGHT = 340;
 
 /** Separador entre filas de una lista, más suave que el borde de los paneles. */
-const ROW_DIVIDER: CSSProperties = { height: 1, background: "color-mix(in srgb, var(--border-subtle) 55%, transparent)", margin: "3px 0" };
+const ROW_DIVIDER: CSSProperties = { height: 1, background: "color-mix(in srgb, var(--border-subtle) 55%, transparent)", margin: "10px 0" };
 
 /** Verde, ámbar o rojo según lo bien que va el alumno. */
 function participationColor(p: number): string {
@@ -74,21 +74,35 @@ function StudentsPanel({ students }: { students: OverviewStudentDto[] }) {
   const avg = students.length ? students.reduce((n, s) => n + s.participation, 0) / students.length : 0;
   const atRisk = students.filter((s) => s.participation < 0.4).length;
   return (
-    <Panel title="Alumnos inscritos" action={<Badge color="default">{students.length}</Badge>} scroll style={{ height: BOTTOM_ROW_HEIGHT }}>
+    <Panel title="Alumnos inscritos" action={<Badge count>{students.length}</Badge>} scroll style={{ height: BOTTOM_ROW_HEIGHT }}>
       {students.length ? (
         <>
-          <div style={{ borderRadius: "var(--radius-lg)", boxShadow: "var(--ring-hairline)", padding: 14, marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontSize: 32, fontWeight: 700, color: "var(--text-strong)", lineHeight: 1 }}>{Math.round(avg * 100)}%</span>
-              <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
-                <strong style={{ color: "var(--text-strong)" }}>participación</strong> media
-              </span>
-            </div>
-            <div style={{ fontSize: 12.5, color: atRisk ? "var(--status-error)" : "var(--text-muted)", marginTop: 8 }}>
-              {atRisk ? `${atRisk} ${atRisk === 1 ? "alumno entrega" : "alumnos entregan"} menos del 40 % de las actividades` : "Todos entregan al menos el 40 % de las actividades"}
+          {/* El resumen se queda fijo arriba y cierra con un filete; la sombra que cae
+              desde él deja ver que las filas siguen por debajo. */}
+          <div
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              background: "var(--surface-card)",
+              paddingBottom: 10,
+              borderBottom: "1px solid var(--border-subtle)",
+              boxShadow: "0 7px 6px -6px rgba(16, 27, 63, 0.16)",
+            }}
+          >
+            <div style={{ borderRadius: "var(--radius-lg)", background: "var(--surface-tint-warm)", padding: 14 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontSize: 32, fontWeight: 700, color: "var(--text-strong)", lineHeight: 1 }}>{Math.round(avg * 100)}%</span>
+                <span style={{ fontSize: 13.5, color: "var(--text-on-tint-warm)" }}>
+                  <strong>participación</strong> media
+                </span>
+              </div>
+              <div style={{ fontSize: 12.5, color: atRisk ? "var(--status-error)" : "var(--text-muted)", marginTop: 8 }}>
+                {atRisk ? `${atRisk} ${atRisk === 1 ? "alumno entrega" : "alumnos entregan"} menos del 40 % de las actividades` : "Todos entregan al menos el 40 % de las actividades"}
+              </div>
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", flexDirection: "column", paddingTop: 4 }}>
             {students.slice(0, STUDENT_LIST).map((s) => <StudentRow key={s.id} s={s} />)}
           </div>
         </>
@@ -105,18 +119,26 @@ function ReviewCard({ c, onOpen }: { c: ClassInfo; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)", width: "100%" }}
-      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--state-hover-tint)")}
-      onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
+      // Crema con filete amarillo: lo pendiente de revisar se lee como aviso, no como fondo neutro.
+      style={{ position: "relative", display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", borderRadius: "var(--radius-md)", border: "1px solid var(--yellow-300)", background: "var(--yellow-100)", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)", width: "100%", transition: "background .15s ease" }}
+      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--yellow-200)")}
+      onMouseLeave={(ev) => (ev.currentTarget.style.background = "var(--yellow-100)")}
     >
       <span style={{ width: 38, height: 38, flexShrink: 0, borderRadius: "var(--radius-sm)", overflow: "hidden", display: "inline-flex" }}>
         <ClassThumb thumb={c.thumb} color={c.color} icon={c.icon} name={c.name} iconSize={19} />
       </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
+      <span style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-strong)", display: "block", ...ellipsis }}>{c.name}</span>
         <span style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1, display: "block", ...ellipsis }}>{c.pending === 1 ? "entrega sin nota" : "entregas sin nota"}</span>
       </span>
-      <Badge color="warning">{c.pending}</Badge>
+      {/* Pegatina en la esquina, como un aviso: el aro la recorta sobre el filete de la tarjeta. */}
+      <Badge
+        count
+        color="warning"
+        style={{ position: "absolute", top: -7, right: -7, minWidth: 21, height: 21, padding: "0 5px", fontSize: 11.5, boxShadow: "0 0 0 2px var(--surface-card)" }}
+      >
+        {c.pending}
+      </Badge>
     </button>
   );
 }
@@ -127,7 +149,8 @@ function ClassRow({ c, onOpen }: { c: ClassInfo; onOpen: () => void }) {
       type="button"
       onClick={onOpen}
       style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", border: "none", borderRadius: "var(--radius-lg)", background: "transparent", cursor: "pointer", padding: "10px 8px", fontFamily: "var(--font-sans)", transition: "background .15s ease" }}
-      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--state-hover-tint)")}
+      // Hover en el crema cálido, no en el gris translúcido del resto de filas.
+      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--surface-paper)")}
       onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
     >
       <span style={{ width: 40, height: 40, flexShrink: 0, borderRadius: "var(--radius-md)", overflow: "hidden", display: "inline-flex" }}>
@@ -138,7 +161,7 @@ function ClassRow({ c, onOpen }: { c: ClassInfo; onOpen: () => void }) {
         <span style={{ fontSize: 12.5, color: "var(--text-muted)", display: "block", ...ellipsis }}>{classSubtitle(c)}</span>
       </span>
       <Chip icon="users">{c.students}</Chip>
-      <Badge color={c.status[1]}>{c.status[0]}</Badge>
+      <Badge color={statusBadgeColor(c.status[1])}>{c.status[0]}</Badge>
     </button>
   );
 }
@@ -182,10 +205,11 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
         <div style={{ minWidth: 0 }}>
           <Panel
             title="Pendientes de revisar"
+            padTop={0}
             action={review ? (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>{subtitle}</span>
-                <Badge color="warning">{review}</Badge>
+                <Badge count>{review}</Badge>
               </span>
             ) : undefined}
           >
@@ -228,7 +252,7 @@ export function TeacherDashboard({ classes, onOpenClass, onCreate, onNav }: { cl
             )}
           </Panel>
 
-          <Panel title="Mis clases" pad={10} scroll style={{ height: BOTTOM_ROW_HEIGHT }} action={classes.length > CLASS_LIST ? <Button variant="link" size="small" onClick={() => onNav("clases")}>Ver todas</Button> : undefined}>
+          <Panel title="Mis clases" pad={10} padTop={0} scroll style={{ height: BOTTOM_ROW_HEIGHT }} action={classes.length > CLASS_LIST ? <Button variant="link" size="small" onClick={() => onNav("clases")}>Ver todas</Button> : undefined}>
             {classes.length ? (
               // El padding lateral alinea las filas con la línea bajo el título del panel.
               <div style={{ display: "flex", flexDirection: "column", padding: "0 10px" }}>

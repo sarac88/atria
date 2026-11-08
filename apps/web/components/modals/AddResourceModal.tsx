@@ -101,8 +101,8 @@ export function AddResourceModal({
   };
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(11,18,38,.45)", backdropFilter: "blur(2px)", zIndex: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 600, maxHeight: "90vh", background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-2xl)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="atria-overlay" onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(11,18,38,.45)", backdropFilter: "blur(2px)", zIndex: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div className="atria-modal" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 600, maxHeight: "90vh", background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-2xl)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "20px 24px 18px", borderBottom: "1px solid var(--border-subtle)" }}>
           <div>

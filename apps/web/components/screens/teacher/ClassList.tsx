@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Icon } from "@/components/ui";
+import { Badge, statusBadgeColor, Icon } from "@/components/ui";
 import { Page, PageHead, Chip } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { classSubtitle } from "@/lib/class-label";
@@ -49,7 +49,7 @@ function ClassCard({ c, onOpen, onEdit, onDelete }: { c: ClassInfo; onOpen: () =
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", marginTop: 4 }}>
           <Chip icon="users">{c.students} alumnos</Chip>
-          <Badge color={c.status[1]}>{c.status[0]}</Badge>
+          <Badge color={statusBadgeColor(c.status[1])}>{c.status[0]}</Badge>
         </div>
       </div>
     </div>

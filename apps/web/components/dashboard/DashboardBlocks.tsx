@@ -3,7 +3,7 @@
 // Bloques comunes de los tableros de inicio del docente y del alumno.
 
 import type { CSSProperties, ReactNode } from "react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Icon, Avatar } from "@/components/ui";
 import { EmptyState } from "@/components/layout";
 import { MEETING_BRAND } from "@/components/icons/brand-glyphs";
@@ -33,36 +33,63 @@ export const ellipsis: CSSProperties = { whiteSpace: "nowrap", overflow: "hidden
 const pad = (n: number) => String(n).padStart(2, "0");
 const localKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const dayFmt = new Intl.DateTimeFormat("es-ES", { weekday: "short", day: "numeric" });
+const monthNameFmt = new Intl.DateTimeFormat("es-ES", { month: "long" });
 
-export function SectionHead({ title, action }: { title: ReactNode; action?: ReactNode }) {
+/** «2 – 8 de noviembre» o «30 de noviembre – 6 de diciembre»; el año solo si no es el actual. */
+function weekRangeLabel(monday: Date, sunday: Date, currentYear: number) {
+  const startMonth = monthNameFmt.format(monday);
+  const endMonth = monthNameFmt.format(sunday);
+  const year = monday.getFullYear() !== currentYear || sunday.getFullYear() !== currentYear ? ` de ${sunday.getFullYear()}` : "";
+  const start = startMonth === endMonth ? `${monday.getDate()}` : `${monday.getDate()} de ${startMonth}`;
+  return `${start} – ${sunday.getDate()} de ${endMonth}${year}`;
+}
+
+export function SectionHead({ title, aside, action }: { title: ReactNode; aside?: ReactNode; action?: ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-      <h3 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>{title}</h3>
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px 12px", minWidth: 0 }}>
+        <h3 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>{title}</h3>
+        {aside ?? null}
+      </div>
       {action ?? null}
     </div>
   );
 }
 
 /** Avatares solapados con un "+N" al final, como en las tarjetas de videollamada. */
-function AvatarStack({ people, max = 3 }: { people: { id: string; name: string; avatarUrl: string | null }[]; max?: number }) {
+function AvatarStack({ people, max = 3, onInverse = false }: { people: { id: string; name: string; avatarUrl: string | null }[]; max?: number; onInverse?: boolean }) {
   if (!people.length) return null;
   const extra = people.length - max;
+  // Sobre el azul el aro imita el fondo; sobre el gris va blanco, que es como se ven mejor.
+  const ring = onInverse ? "var(--surface-feature)" : "var(--surface-card)";
   return (
     <span style={{ display: "inline-flex", alignItems: "center" }}>
       {people.slice(0, max).map((p, i) => (
-        <Avatar key={p.id} name={p.name} src={p.avatarUrl ? resourceUrl(p.avatarUrl) : undefined} size={28} style={{ marginLeft: i ? -8 : 0, boxShadow: "0 0 0 2px var(--surface-card)" }} />
+        <Avatar key={p.id} name={p.name} src={p.avatarUrl ? resourceUrl(p.avatarUrl) : undefined} size={28} style={{ marginLeft: i ? -8 : 0, boxShadow: `0 0 0 2px ${ring}` }} />
       ))}
-      {extra > 0 ? <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", marginLeft: 6 }}>+{extra}</span> : null}
+      {extra > 0 ? <span style={{ fontSize: 12, fontWeight: 700, color: onInverse ? "rgba(255,255,255,.72)" : "var(--text-muted)", marginLeft: 6 }}>+{extra}</span> : null}
     </span>
   );
 }
 
-/** Próximos siete días: una columna por día con sus videollamadas, entregas y exámenes. */
+const WEEK_COLUMN_MIN = 100;
+const WEEK_COLUMN_GAP = 8;
+
+/** Semana de lunes a domingo, con flechas para cambiarla: una columna por día con sus videollamadas, entregas y exámenes. */
 export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: CalendarEventDto[]; onOpenEvent: (e: CalendarEventDto) => void; onCalendar: () => void }) {
-  const days = useMemo(() => {
+  // Semanas de distancia respecto a la actual: 0 es esta, -1 la anterior, 1 la siguiente.
+  const [weekOffset, setWeekOffset] = useState(0);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const todayColumnRef = useRef<HTMLDivElement>(null);
+
+  const { days, range } = useMemo(() => {
     const today = new Date();
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+    const todayKey = localKey(today);
+    // getDay() empieza en domingo (0); así el lunes queda como primer día.
+    const mondayDate = today.getDate() - ((today.getDay() + 6) % 7) + weekOffset * 7;
+    const dateAt = (i: number) => new Date(today.getFullYear(), today.getMonth(), mondayDate + i);
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = dateAt(i);
       const key = localKey(d);
       const items = events.filter((e) => e.date === key && KIND_META[e.kind]);
       // Agrupa por asignatura (o por clase si no tiene), en el orden en que aparecen.
@@ -73,19 +100,53 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
         g.items.push(e);
         groups.set(title, g);
       }
-      return { key, label: i === 0 ? "Hoy" : dayFmt.format(d), groups: [...groups.values()] };
+      return { key, isToday: key === todayKey, label: dayFmt.format(d), groups: [...groups.values()] };
     });
-  }, [events]);
+    return { days, range: weekRangeLabel(dateAt(0), dateAt(6), today.getFullYear()) };
+  }, [events, weekOffset]);
   const empty = days.every((d) => !d.groups.length);
+
+  // En pantallas estrechas la rejilla hace scroll: se centra el día de hoy para que no quede fuera,
+  // y en cualquier otra semana se vuelve al lunes.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const column = todayColumnRef.current?.getBoundingClientRect();
+    scroller.scrollLeft = column ? scroller.scrollLeft + column.left - scroller.getBoundingClientRect().left - (scroller.clientWidth - column.width) / 2 : 0;
+  }, [weekOffset]);
+
+  const weekNav = (
+    // Las flechas van antes de la fecha para no moverse de sitio cuando cambia el ancho del texto.
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ display: "flex", gap: 4 }}>
+        {([["arrow-left", "Semana anterior", -1], ["arrow-right", "Semana siguiente", 1]] as [string, string, number][]).map(([icon, label, delta]) => (
+          <button
+            key={icon}
+            type="button"
+            aria-label={label}
+            title={label}
+            onClick={() => setWeekOffset((w) => w + delta)}
+            style={{ width: 30, height: 30, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border-default)", background: "var(--surface-sunken)", borderRadius: "var(--radius-md)", color: "var(--text-strong)", cursor: "pointer", transition: "background .15s ease" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--state-hover-tint)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--surface-sunken)")}
+          >
+            <Icon name={icon} size={15} />
+          </button>
+        ))}
+      </div>
+      <span aria-live="polite" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-muted)" }}>{range}</span>
+    </div>
+  );
 
   return (
     <section style={{ ...card, padding: 20 }}>
-      <SectionHead title="Mi semana" action={<Button variant="link" size="small" onClick={onCalendar}>Ver calendario</Button>} />
-      <div style={{ overflowX: "auto", margin: "0 -4px", padding: "0 4px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(112px, 1fr))", gap: 8, minWidth: 7 * 112 + 6 * 8 }}>
-          {days.map((d, i) => (
-            <div key={d.key} style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8, minWidth: 0 }}>
+      <SectionHead title="Mi semana" aside={weekNav} action={<Button variant="link" size="small" onClick={onCalendar}>Ver calendario</Button>} />
+      <div ref={scrollerRef} style={{ overflowX: "auto", margin: "0 -4px", padding: "0 4px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(7, minmax(${WEEK_COLUMN_MIN}px, 1fr))`, gap: WEEK_COLUMN_GAP, minWidth: 7 * WEEK_COLUMN_MIN + 6 * WEEK_COLUMN_GAP }}>
+          {days.map((d) => (
+            <div key={d.key} ref={d.isToday ? todayColumnRef : undefined} style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8, minWidth: 0 }}>
               <span
+                aria-current={d.isToday ? "date" : undefined}
                 style={{
                   textAlign: "center",
                   fontSize: 13,
@@ -93,14 +154,14 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
                   padding: "7px 0",
                   borderRadius: "var(--radius-md)",
                   textTransform: "capitalize",
-                  background: i === 0 ? "var(--surface-inverse)" : "var(--surface-sunken)",
-                  color: i === 0 ? "var(--text-on-inverse, #fff)" : "var(--text-muted)",
+                  background: d.isToday ? "var(--surface-inverse)" : "var(--surface-sunken)",
+                  color: d.isToday ? "var(--text-on-inverse, #fff)" : "var(--text-muted)",
                 }}
               >
                 {d.label}
               </span>
               <div style={{ position: "relative", minHeight: 260, display: "flex", flexDirection: "column", gap: 12, paddingTop: 4 }}>
-                <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: 0, bottom: 0, borderLeft: `1.5px dashed ${i === 0 ? "var(--text-strong)" : "var(--border-strong)"}`, opacity: i === 0 ? 0.5 : 0.6 }} />
+                <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: 0, bottom: 0, borderLeft: `1.5px dashed ${d.isToday ? "var(--text-strong)" : "var(--border-strong)"}`, opacity: d.isToday ? 0.5 : 0.6 }} />
                 {d.groups.map((g) => (
                   <div key={g.title} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
                     {/* Título de la asignatura, con fondo para tapar la línea discontinua. */}
@@ -124,7 +185,6 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
                             textAlign: "left",
                             cursor: "pointer",
                             border: "none",
-                            borderLeft: `3px solid ${meta.color}`,
                             borderRadius: "var(--radius-sm)",
                             background: meta.tint,
                             padding: "7px 8px",
@@ -155,7 +215,7 @@ export function WeekSchedule({ events, onOpenEvent, onCalendar }: { events: Cale
           ))}
         </div>
       </div>
-      {empty ? <p style={{ margin: "8px 0 0", fontSize: 13, color: "var(--text-muted)", textAlign: "center" }}>Nada programado en los próximos siete días.</p> : null}
+      {empty ? <p style={{ margin: "8px 0 0", fontSize: 13, color: "var(--text-muted)", textAlign: "center" }}>Nada programado esta semana.</p> : null}
     </section>
   );
 }
@@ -165,27 +225,29 @@ export function SessionItem({ s, featured }: { s: OverviewSessionDto; featured: 
   const live = schedule.tone === "live";
   const brand = MEETING_BRAND[s.provider];
   const open = () => window.open(s.url, "_blank", "noopener,noreferrer");
+  // La próxima llamada va sobre azul primario para destacar, así que sus textos se invierten.
+  // Las demás bajan de tono: fondo azul muy claro y título en azul apagado, no en negro.
+  const ink = featured ? "var(--text-on-inverse, #fff)" : "var(--primary-400)";
+  const inkSoft = featured ? "rgba(255,255,255,.72)" : "var(--text-muted)";
   return (
-    <div style={{ borderRadius: "var(--radius-lg)", padding: 14, background: featured ? "var(--surface-sunken)" : "transparent", boxShadow: featured ? "none" : "var(--ring-hairline)" }}>
+    <div style={{ borderRadius: "var(--radius-lg)", padding: 14, background: featured ? "var(--surface-feature)" : "var(--surface-tint-blue-soft)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span
           style={{
-            width: 40,
-            height: 40,
             flexShrink: 0,
-            borderRadius: "50%",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            background: featured ? "var(--surface-inverse)" : "var(--surface-sunken)",
-            color: featured ? "var(--text-on-inverse, #fff)" : "var(--text-strong)",
+            // Sin círculo: la campana va suelta, amarilla sobre el azul de la destacada
+            // y del mismo azul apagado que el título en las demás.
+            color: featured ? "var(--brand-accent)" : "var(--primary-400)",
           }}
         >
-          <Icon name="bell" size={19} />
+          <Icon name="bell" size={28} />
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-strong)", ...ellipsis }}>{s.label}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: live ? "var(--status-success)" : "var(--text-muted)", marginTop: 2, fontWeight: live ? 700 : 400 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: ink, ...ellipsis }}>{s.label}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: live ? (featured ? "var(--success-300)" : "var(--status-success)") : inkSoft, marginTop: 2, fontWeight: live ? 700 : 400 }}>
             <Icon name="clock" size={13} />
             <span style={ellipsis}>{schedule.label} · {s.className}</span>
           </div>
@@ -194,8 +256,18 @@ export function SessionItem({ s, featured }: { s: OverviewSessionDto; featured: 
       </div>
       {featured ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 14 }}>
-          <AvatarStack people={s.students} />
-          <Button size="small" variant={live ? "accent" : "outline"} iconLeft={brand ? <span style={{ display: "inline-flex" }}>{brand.glyph(16)}</span> : <Icon name="video-camera" size={16} />} onClick={open}>
+          <AvatarStack people={s.students} onInverse />
+          {/* Amarillo claro: el de marca pesa demasiado sobre el azul, y «outline» se perdería.
+              Al pasar el ratón sube al amarillo de marca, en vez del oscurecido que trae el botón. */}
+          <Button
+            size="small"
+            variant="accent"
+            style={{ background: "var(--yellow-400)" }}
+            onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--brand-accent)")}
+            onMouseLeave={(ev) => { ev.currentTarget.style.background = "var(--yellow-400)"; ev.currentTarget.style.transform = "none"; }}
+            iconLeft={brand ? <span style={{ display: "inline-flex" }}>{brand.glyph(16)}</span> : <Icon name="video-camera" size={16} />}
+            onClick={open}
+          >
             Entrar a la clase
           </Button>
         </div>

@@ -88,22 +88,23 @@ export function FormSection({ label, hint, children, columns, first }: { label?:
 }
 
 /** Generic white card / panel. Con `scroll` y una altura fija en `style`, el cuerpo hace scroll bajo el título. */
-export function Panel({ children, title, action, pad = 20, style = {}, scroll = false }: { children?: ReactNode; title?: ReactNode; action?: ReactNode; pad?: number; style?: CSSProperties; scroll?: boolean }) {
+export function Panel({ children, title, action, pad = 20, padTop, style = {}, scroll = false }: { children?: ReactNode; title?: ReactNode; action?: ReactNode; pad?: number; /** Hueco bajo el título, cuando los 20px de `pad` separan demasiado. */ padTop?: number; style?: CSSProperties; scroll?: boolean }) {
+  const body: CSSProperties = { padding: pad, paddingTop: padTop ?? pad };
   return (
     <section style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--ring-hairline), var(--shadow-md)", overflow: "hidden", display: "flex", flexDirection: "column", ...style }}>
       {title ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 20px", padding: "14px 0", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0, height: 55, boxSizing: "border-box" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 20px", padding: "14px 0", flexShrink: 0, height: 55, boxSizing: "border-box" }}>
           <h3 style={{ fontSize: 17, margin: 0, fontWeight: 700 }}>{title}</h3>
           {action || null}
         </div>
       ) : null}
       {scroll ? (
         // El padding queda fuera de la zona que hace scroll: un margen blanco fijo que el contenido no pisa.
-        <div style={{ padding: pad, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ ...body, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>{children}</div>
         </div>
       ) : (
-        <div style={{ padding: pad, flex: 1 }}>{children}</div>
+        <div style={{ ...body, flex: 1 }}>{children}</div>
       )}
     </section>
   );
@@ -158,8 +159,8 @@ export function EmptyState({ illo = "learning", title, text, action, plain = fal
 
 export function Modal({ title, children, onClose, footer, width = 520 }: { title?: ReactNode; children?: ReactNode; onClose?: () => void; footer?: ReactNode; width?: number }) {
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(11,18,38,.45)", backdropFilter: "blur(2px)", zIndex: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div onClick={(ev) => ev.stopPropagation()} style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-2xl)", width: "100%", maxWidth: width, maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="atria-overlay" onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(11,18,38,.45)", backdropFilter: "blur(2px)", zIndex: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div className="atria-modal" onClick={(ev) => ev.stopPropagation()} style={{ background: "var(--surface-card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-2xl)", width: "100%", maxWidth: width, maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid var(--border-subtle)" }}>
           <h3 style={{ fontSize: 19, margin: 0 }}>{title}</h3>
           <button onClick={onClose} aria-label="Cerrar" style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-muted)", display: "inline-flex" }}>

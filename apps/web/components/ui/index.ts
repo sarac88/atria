@@ -9,7 +9,7 @@ export { Avatar } from "./Avatar";
 export type { AvatarProps } from "./Avatar";
 export { Card } from "./Card";
 export type { CardProps } from "./Card";
-export { Badge } from "./Badge";
+export { Badge, statusBadgeColor } from "./Badge";
 export type { BadgeProps } from "./Badge";
 export { Checkbox } from "./Checkbox";
 export type { CheckboxProps } from "./Checkbox";

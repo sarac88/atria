@@ -151,7 +151,8 @@ export function Messages() {
           })}
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "var(--surface-page)" }}>
+      {/* Mensajes es la única pantalla que conserva el crema: el hilo va sobre --surface-paper. */}
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, background: "var(--surface-paper)" }}>
         {activeConv ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 20px", borderBottom: "1px solid var(--border-subtle)", background: "var(--surface-card)" }}>

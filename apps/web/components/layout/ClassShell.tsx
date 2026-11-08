@@ -4,7 +4,7 @@
 // class thumbnail, or the chosen color + icon pair.
 
 import type { CSSProperties, ReactNode } from "react";
-import { Icon, Badge } from "@/components/ui";
+import { Icon, Badge, statusBadgeColor } from "@/components/ui";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { AccountMenu } from "./AccountMenu";
@@ -89,12 +89,17 @@ export function ClassShell({
           // que puede colocarse donde sea sin que se vea el borde; el degradado de
           // la máscara tapa la pequeña diferencia de tono que deja la compresión.
           // Queda a la izquierda de la campana y la cuenta para no pisarlas.
+          // La imagen trae mucho aire alrededor del dibujo, así que a tamaño justo
+          // el motivo se queda pequeño y flotando. Se amplía por encima de la
+          // cabecera y se baja: el dibujo llena el alto y se sale por abajo, donde
+          // el recorte lo corta. Como el fondo es del mismo color, el corte sólo se
+          // nota en el propio dibujo, que es lo que buscamos.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={preset.src}
             alt=""
             aria-hidden="true"
-            style={{ position: "absolute", top: 0, right: "calc(clamp(16px, 3vw, 32px) + 190px)", height: "100%", width: "auto", maxWidth: "50%", objectFit: "contain", objectPosition: "right center", maskImage: HEADER_ART_MASK, WebkitMaskImage: HEADER_ART_MASK, pointerEvents: "none", userSelect: "none" }}
+            style={{ position: "absolute", top: "4%", right: "calc(clamp(16px, 3vw, 32px) + 190px)", height: "155%", width: "auto", maxWidth: "62%", objectFit: "contain", objectPosition: "right center", maskImage: HEADER_ART_MASK, WebkitMaskImage: HEADER_ART_MASK, pointerEvents: "none", userSelect: "none" }}
           />
         ) : null}
         <div style={{ ...contentLayer, display: "flex", alignItems: "center", gap: 14, height: 60 }}>
@@ -124,7 +129,7 @@ export function ClassShell({
           <div style={{ flex: 1, minWidth: 180 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <h2 style={{ color: "var(--header-fg)", fontSize: 24, margin: 0 }}>{c.name || "Clase"}</h2>
-              {badge ? <Badge color={badge[1]}>{badge[0]}</Badge> : null}
+              {badge ? <Badge color={statusBadgeColor(badge[1])}>{badge[0]}</Badge> : null}
               {actions ? <div style={{ display: "flex", gap: 8 }}>{actions}</div> : null}
             </div>
             {meta ? <p style={{ color: "var(--header-muted)", fontSize: 13.5, margin: "5px 0 0" }}>{meta}</p> : null}

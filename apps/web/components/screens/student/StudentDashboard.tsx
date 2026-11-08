@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Button, Badge, Icon } from "@/components/ui";
+import { Card, Button, Icon } from "@/components/ui";
 import { Page, PageHead, Panel, ProgressBar, EmptyState } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import { classSubject } from "@/lib/class-label";
@@ -38,9 +38,10 @@ function TaskCard({ task, onOpen }: { task: StudentTaskDto; onOpen: () => void }
     <button
       type="button"
       onClick={onOpen}
-      style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: "var(--radius-md)", boxShadow: "var(--ring-hairline)", border: "none", background: "transparent", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)", width: "100%" }}
-      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--state-hover-tint)")}
-      onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}
+      // Mismo crema con filete amarillo que lo pendiente de revisar del docente.
+      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", borderRadius: "var(--radius-md)", border: "1px solid var(--yellow-300)", background: "var(--yellow-100)", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)", width: "100%", transition: "background .15s ease" }}
+      onMouseEnter={(ev) => (ev.currentTarget.style.background = "var(--yellow-200)")}
+      onMouseLeave={(ev) => (ev.currentTarget.style.background = "var(--yellow-100)")}
     >
       <span style={{ width: 38, height: 38, borderRadius: "var(--radius-sm)", background: `color-mix(in srgb, ${color} 16%, var(--surface-card))`, color, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icon name={icon} size={19} />
@@ -48,8 +49,9 @@ function TaskCard({ task, onOpen }: { task: StudentTaskDto; onOpen: () => void }
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-strong)", display: "block", ...ellipsis }}>{task.title}</span>
         <span style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1, display: "block", ...ellipsis }}>{task.className}</span>
+        {/* El plazo cierra la tarjeta como texto naranja: sin la etiqueta, el título gana el ancho que ocupaba. */}
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--warning-500)", marginTop: 1, display: "block", ...ellipsis }}>{badge.label}</span>
       </span>
-      <Badge color={badge.color}>{badge.label}</Badge>
     </button>
   );
 }
@@ -87,7 +89,7 @@ export function StudentDashboard({ classes, onOpenClass, onNav }: { classes: Cla
       {/* La misma rejilla que el inicio del docente: cada fila alinea la altura de sus dos columnas. */}
       <div className="atria-2col" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 360px", gap: DASH_GAP }}>
         <div style={{ minWidth: 0 }}>
-          <Panel title="Próximas entregas" action={<span style={{ fontSize: 13.5, color: "var(--text-muted)", textAlign: "right" }}>{subtitle}</span>}>
+          <Panel title="Próximas entregas" padTop={0} action={<span style={{ fontSize: 13.5, color: "var(--text-muted)", textAlign: "right" }}>{subtitle}</span>}>
             {stats.next.length ? (
               <div className="atria-classgrid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }}>
                 {stats.next.map((task) => <TaskCard key={task.id} task={task} onOpen={() => onNav("tareas")} />)}

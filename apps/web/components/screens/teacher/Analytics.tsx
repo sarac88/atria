@@ -13,14 +13,14 @@ import type { Student } from "@/lib/types";
 const BANDS: [string, (n: number) => boolean, string][] = [
   ["9–10", (n) => n >= 9, "var(--success-500)"],
   ["7–8.9", (n) => n >= 7 && n < 9, "var(--info-500)"],
-  ["5–6.9", (n) => n >= 5 && n < 7, "var(--warning-500)"],
+  ["5–6.9", (n) => n >= 5 && n < 7, "var(--yellow-500)"],
   ["< 5", (n) => n < 5, "var(--status-error)"],
 ];
 
 /** Cuánto del grupo ha entregado una actividad, de más a menos. Da color a su barra. */
 const LEVELS: [string, number, string][] = [
   ["Casi todo el grupo", 0.66, "var(--info-500)"],
-  ["Parte del grupo", 0.33, "var(--warning-500)"],
+  ["Parte del grupo", 0.33, "var(--yellow-500)"],
   ["Pocas entregas", 0, "var(--status-error)"],
 ];
 

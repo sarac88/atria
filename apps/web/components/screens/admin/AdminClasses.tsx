@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable, Badge, Button, Icon, type Column } from "@/components/ui";
+import { DataTable, Badge, statusBadgeColor, Button, Icon, type Column } from "@/components/ui";
 import { Page, PageHead } from "@/components/layout";
 import { ClassThumb } from "@/components/classes/ClassThumb";
 import type { ClassInfo, StatusTuple } from "@/lib/types";
@@ -12,7 +12,7 @@ export function AdminClasses({ classes, onOpenClass }: { classes: ClassInfo[]; o
     { key: "code", label: "Código" },
     { key: "teacher", label: "Docente", render: (v) => (v as string) || "—" },
     { key: "students", label: "Alumnos", render: (v) => <span style={{ fontWeight: 700 }}>{v as number}</span> },
-    { key: "status", label: "Estado", sortable: false, render: (v) => { const t = v as StatusTuple; return <Badge color={t[1]}>{t[0]}</Badge>; } },
+    { key: "status", label: "Estado", sortable: false, render: (v) => { const t = v as StatusTuple; return <Badge color={statusBadgeColor(t[1])}>{t[0]}</Badge>; } },
   ];
   return (
     <Page>

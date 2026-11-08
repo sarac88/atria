@@ -99,7 +99,7 @@
   --info-800: rgb(2,38,62);
   --info-900: rgb(1,29,53);
   --info: var(--info-500);
-  --light: rgb(251,247,239);
+  --light: rgb(246,248,251);
   --paragraph-line-height: 24;
   --paragraph-size: 14;
   --paragraph-weight: 400;
@@ -154,11 +154,17 @@
   --brand-secondary: var(--primary-200);       /* #AAC1EC */
 
   /* Surfaces */
-  --surface-page: var(--light);                /* #FBF7EF warm paper */
+  --surface-page: var(--light);                /* #F6F8FB cool paper */
   --surface-card: #ffffff;
   --surface-soft: var(--light);
   --surface-sunken: var(--gray-100);           /* #F0F0F0 */
+  --surface-tint-blue: #e1ebfc;                /* azul claro, el mismo de las entregas en «Mi semana» */
+  --surface-tint-blue-soft: #edf3fd;           /* un punto más claro, para las videollamadas no destacadas */
+  --surface-tint-warm: var(--warning-300);     /* #FDDFBE, el resumen de participación */
+  --text-on-tint-warm: var(--warning-900);     /* #3F0C00, texto sobre ese melocotón */
   --surface-inverse: var(--primary-500);       /* navy panels / sidebar */
+  --surface-feature: var(--brand-primary);     /* elemento destacado dentro de una card */
+  --surface-paper: rgb(251,247,239);           /* #FBF7EF warm paper — solo el hilo de Mensajes */
 
   /* Text */
   --text-strong: var(--gray-500);              /* #282828 */
@@ -203,7 +209,7 @@
   /* Interactive states */
   --state-hover-tint: rgba(22, 36, 74, 0.06);
   --state-selected-tint: var(--primary-100);
-  --state-hover-row: var(--light);
+  --state-hover-row: var(--surface-paper);
   --state-disabled-bg: var(--gray-200);
   --state-disabled-text: var(--gray-400);
 
@@ -338,6 +344,25 @@ a { color: var(--text-link); }
 #root { height: 100vh; }
 .atria-root { height: 100%; transition: background .2s ease; }
 
+/* ---- Modales: entrada en fundido ----------------------------------------
+   El fondo aparece en un fundido corto y la ventana lo sigue subiendo un
+   poco, para que se entienda de dónde sale. Se montan al abrirse, así que
+   basta con la animación de entrada. */
+@keyframes atria-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes atria-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+.atria-overlay { animation: atria-overlay-in .16s ease-out both; }
+.atria-modal { animation: atria-modal-in .22s cubic-bezier(.2, .7, .3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .atria-overlay, .atria-modal { animation-duration: .01ms; }
+}
+
 /* ---- Dark theme: remap semantic tokens (brand navy/accent kept) ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
@@ -346,6 +371,13 @@ a { color: var(--text-link); }
   --surface-card: #161f3a;
   --surface-soft: #1d2950;
   --surface-sunken: #101a33;
+  /* El azul primario queda casi igual que la card en oscuro: el destacado sube de tono. */
+  --surface-feature: #2f4577;
+  --surface-paper: #0c1326;
+  --surface-tint-blue: #142a52;
+  --surface-tint-blue-soft: #16233f;
+  --surface-tint-warm: #3a2912;
+  --text-on-tint-warm: #ffd9b5;
   --text-strong: #f3f5fa;
   --text-body: #dde3ee;
   --text-muted: #93a0bb;
